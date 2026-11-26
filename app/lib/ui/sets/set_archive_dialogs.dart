@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../data/backup.dart';
 import '../../data/band_view.dart';
@@ -11,14 +12,13 @@ import '../../data/set_archive.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../sync/sync_controller.dart' show attachmentFetcherProvider;
-import '../songs/song_screen.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/export_file.dart';
 import '../widgets/export_format.dart';
 import '../widgets/file_actions.dart';
-import 'set_screen.dart';
 import '../widgets/loading_indicator.dart';
 import '../widgets/section_header.dart';
+import '../routes.dart';
 
 /// Exports [set]: as the printable set list ([exportPdf], if given) or as a
 /// setDING archive with options (ADR-0043 §1b, issue #870).
@@ -662,12 +662,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
                     leading: const Icon(Icons.library_music_outlined),
                     title: Text(song.title),
                     trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute<void>(
-                        builder: (_) => SongScreen(songId: song.id),
-                      ),
-                    ),
+                    onTap: () => context.push<void>(AppPaths.song(song.id)),
                   ),
               ],
             ],
@@ -683,17 +678,13 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
           key: const Key('set-import-open'),
           onPressed: () {
             final band = _band;
-            final navigator = Navigator.of(context);
-            navigator.pop();
+            final router = GoRouter.of(context);
+            Navigator.pop(context);
             // The set belongs to the chosen band: switch to it first.
             if (band != null) {
               ref.read(selectedBandIdProvider.notifier).select(band);
             }
-            navigator.push(
-              MaterialPageRoute<void>(
-                builder: (_) => SetScreen(setId: result.setId),
-              ),
-            );
+            router.push(AppPaths.set(result.setId));
           },
           child: Text(l10n.setImportOpen),
         ),

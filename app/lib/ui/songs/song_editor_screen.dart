@@ -67,6 +67,15 @@ class SongEditorScreen extends ConsumerStatefulWidget {
   /// Select the first ChordPro problem when the editor opens (#314).
   final bool selectFirstProblem;
 
+  /// The editor that is open, asked by [mayLeaveOpenEditor].
+  static _SongEditorScreenState? _open;
+
+  /// Whether the open editor may be left, e.g. by the browser's back
+  /// button, which does not ask the editor's [PopScope] (ADR-0065): asks to
+  /// discard unsaved changes.
+  static Future<bool> mayLeaveOpenEditor() async =>
+      await _open?._mayLeave() ?? true;
+
   @override
   ConsumerState<SongEditorScreen> createState() => _SongEditorScreenState();
 }
@@ -83,6 +92,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
   @override
   void initState() {
     super.initState();
+    SongEditorScreen._open = this;
     _original =
         widget.initialSource ?? (widget.songId == null ? newSongTemplate : '');
     _controller = ChordProEditingController(text: _original);
@@ -181,6 +191,7 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
 
   @override
   void dispose() {
+    if (SongEditorScreen._open == this) SongEditorScreen._open = null;
     _previewDebounce?.cancel();
     _controller.dispose();
     _unsaved.dispose();
@@ -207,10 +218,14 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
         source: source,
         title: AppLocalizations.of(context).untitled,
       );
-      if (mounted) Navigator.pop(context, id);
+      if (!mounted) return;
+      _leaving = true;
+      Navigator.pop(context, id);
     } else {
       await repo.updateSource(widget.songId!, source);
-      if (mounted) Navigator.pop(context, widget.songId);
+      if (!mounted) return;
+      _leaving = true;
+      Navigator.pop(context, widget.songId);
     }
   }
 
@@ -640,6 +655,17 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
     _focus.requestFocus();
   }
 
+  /// Set once the editor is being closed on purpose (saved, or changes
+  /// discarded), so leaving does not ask again.
+  bool _leaving = false;
+
+  Future<bool> _mayLeave() async {
+    if (_leaving || !_dirty) return true;
+    final discard = await _confirmDiscard();
+    if (discard) _leaving = true;
+    return discard;
+  }
+
   Future<bool> _confirmDiscard() async {
     if (!_dirty) return true;
     final l10n = AppLocalizations.of(context);
@@ -811,7 +837,10 @@ class _SongEditorScreenState extends ConsumerState<SongEditorScreen> {
       canPop: !_dirty,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-        if (await _confirmDiscard() && context.mounted) Navigator.pop(context);
+        if (await _confirmDiscard() && context.mounted) {
+          _leaving = true;
+          Navigator.pop(context);
+        }
       },
       child: CallbackShortcuts(
         bindings: {

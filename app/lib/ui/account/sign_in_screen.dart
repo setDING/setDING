@@ -1,18 +1,19 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../l10n/generated/app_localizations.dart';
 import '../../sync/auth_providers.dart';
 import '../../sync/browser_session_store.dart';
 import '../../sync/sync_backend.dart';
 import '../../util/log.dart';
-import '../bands/join_screen.dart';
 import '../widgets/dialogs.dart';
 import '../../util/semver.dart';
 import '../widgets/logo.dart';
 import '../widgets/update_required_banner.dart';
 import '../widgets/page_width.dart';
 import 'person_name_form.dart';
+import '../routes.dart';
 
 const _log = Log('account');
 
@@ -392,11 +393,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     icon: const Icon(Icons.link),
                     onPressed: _busy
                         ? null
-                        : () => Navigator.of(context).push(
-                            MaterialPageRoute<bool>(
-                              builder: (_) => const JoinScreen(),
-                            ),
-                          ),
+                        : () => context.push<bool>(AppPaths.join),
                     label: Text(l10n.accountJoin),
                   ),
               ],

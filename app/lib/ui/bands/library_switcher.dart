@@ -1,11 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../data/band_view.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../sync/auth_providers.dart';
-import 'bands_screen.dart';
+import '../routes.dart';
 
 /// App bar button of the songs tab showing the current song library: the
 /// local library or an organization's library (ADR-0017). Choosing a
@@ -38,10 +39,7 @@ class LibrarySwitcher extends ConsumerWidget {
       tooltip: l10n.librarySwitch,
       onSelected: (id) {
         if (id == _manage) {
-          Navigator.push(
-            context,
-            MaterialPageRoute<void>(builder: (_) => const BandsScreen()),
-          );
+          context.push<void>(AppPaths.bands);
         } else {
           ref.read(selectedLibraryIdProvider.notifier).select(id);
         }

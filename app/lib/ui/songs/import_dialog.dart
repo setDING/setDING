@@ -1,6 +1,7 @@
 import 'package:chordpro/chordpro.dart' as cp;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../data/backup.dart';
 import '../../data/import_export.dart';
@@ -14,7 +15,7 @@ import '../sets/set_archive_dialogs.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
 import 'song_archive_dialogs.dart';
-import 'song_screen.dart';
+import '../routes.dart';
 
 /// Shows the import dialog and imports the chosen files. [pick] chooses
 /// them (the platform's file dialog by default; tests pass their files).
@@ -31,10 +32,7 @@ Future<void> showImportDialog(
     builder: (_) => _ImportDialog(pick: pick, parent: context),
   );
   if (songId == null || !context.mounted) return;
-  await Navigator.push(
-    context,
-    MaterialPageRoute<void>(builder: (_) => SongScreen(songId: songId)),
-  );
+  await context.push<void>(AppPaths.song(songId));
 }
 
 class _ImportDialog extends ConsumerStatefulWidget {

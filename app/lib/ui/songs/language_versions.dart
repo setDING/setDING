@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../data/database.dart';
 import '../../data/song_repository.dart';
@@ -10,8 +11,8 @@ import '../widgets/dialogs.dart';
 import '../widgets/page_width.dart';
 import '../widgets/section_header.dart';
 import 'song_language.dart';
-import 'song_screen.dart';
 import 'song_list.dart';
+import '../routes.dart';
 
 /// The language versions of the work of a song, the song included and not
 /// in the trash (ADR-0053); empty while it has no group.
@@ -107,12 +108,7 @@ class LanguageVersionChips extends ConsumerWidget {
                 // The current version stays selected (not disabled).
                 onSelected: (_) => v.id == song.id
                     ? null
-                    : Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute<void>(
-                          builder: (_) => SongScreen(songId: v.id),
-                        ),
-                      ),
+                    : context.pushReplacement(AppPaths.song(v.id)),
               ),
           ],
         ),

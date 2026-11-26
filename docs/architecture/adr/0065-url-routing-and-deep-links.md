@@ -166,9 +166,43 @@ title.
 - 2026-11-26: Accepted by the owner (#1111). Implementation: router and
   browser back #1113, band context and *Not available* #1114, share links and
   App Links #1115, website page #1116.
+- 2026-11-27: Router implemented (#1113): `app/lib/ui/routes.dart` with
+  `AppPaths`; the screens that belong to no tab (bands, organizations,
+  libraries, recent changes, join, sign-in) are children of the overview, so
+  a link to them also gets a back button. Details settled during
+  implementation:
+  - **Screen arguments** besides the path are a JSON `extra` (`songExtra`:
+    the set a song was opened from; `editorExtra`; `signInExtra`), which the
+    browser history keeps; every screen also works without it (the editor
+    loads the song's source itself, live mode loads its set or song).
+  - **Full-screen dialogs** that return a value (song picker, language
+    version picker, marking a screenshot, image attachment) stay
+    `MaterialPageRoute(fullscreenDialog: true)` without a path, like the
+    other dialogs; `ui_rules_test.dart` allows no other page route.
+  - **Settings categories**: `/settings/<category>` is the category's own page
+    on narrow screens; on wide screens a category is still selected next to
+    the list without changing the URL, and `settingsJumpProvider` stays for
+    jumps from the overview (it opens the path on narrow screens).
+  - **Web sign-in gate**: not a redirect to its own page; the gate stays the
+    start screen at `/` (ADR-0018). A redirect sends a signed-out visitor of
+    any other path except `/invite/…`, `/join` and `/sign-in` there with
+    `?next=<path>`, and the app goes on to `next` after signing in. The
+    router is not refreshed on sign-in (that brought back a sign-in screen
+    that was closing). The name prompt and the invitation listener wrap the
+    main navigation.
+  - **Unsaved changes**: the editor's routes have an `onExit` that asks like
+    its `PopScope`, since the browser's back button does not ask the
+    `PopScope`.
+  - The tabs' screens have their own navigators: code that must know whether
+    a screen is on top uses `routeOnTop()` (`widgets/app_shortcuts.dart`), and
+    dialogs are closed on the root navigator.
+  - The server needed no change: PocketBase's index fallback already serves
+    `index.html` for app paths (server test in `web_test.dart`).
 
 ## Open points
 
+- On the web, the browser's back button while a dialog is open closes the
+  dialog together with the screen below it (dialogs add no history entry).
 - iOS Universal Links need the Apple Developer Team ID (open since ADR-0005).
 - Should the song list's search and filters be part of the URL
   (`/songs?q=…`)?

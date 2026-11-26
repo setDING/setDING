@@ -1,17 +1,17 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../../sync/auth_providers.dart';
 import '../widgets/dialogs.dart';
-import '../bands/join_screen.dart';
 import 'change_password_dialog.dart';
 import 'delete_account_dialog.dart';
 import 'person_name_form.dart';
-import 'sign_in_screen.dart';
 import 'sync_tile.dart';
+import '../routes.dart';
 
 /// Account tiles of the settings screen: sign-in state and server.
 class AccountSection extends ConsumerWidget {
@@ -148,17 +148,13 @@ class SignedOutActions extends StatelessWidget {
       children: [
         FilledButton(
           key: const Key('account-open-sign-in'),
-          onPressed: () => Navigator.of(
-            context,
-          ).push(MaterialPageRoute<bool>(builder: (_) => const SignInScreen())),
+          onPressed: () => context.push<bool>(AppPaths.signIn),
           child: Text(l10n.accountSignIn),
         ),
         OutlinedButton.icon(
           key: const Key('account-open-join'),
           icon: const Icon(Icons.link),
-          onPressed: () => Navigator.of(
-            context,
-          ).push(MaterialPageRoute<bool>(builder: (_) => const JoinScreen())),
+          onPressed: () => context.push<bool>(AppPaths.join),
           label: Text(l10n.accountJoin),
         ),
       ],

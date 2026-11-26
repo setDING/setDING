@@ -1,11 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:go_router/go_router.dart';
 
 import '../l10n/generated/app_localizations.dart';
 import '../sync/sync_controller.dart';
 import '../sync/sync_engine.dart';
 import 'overview/recent_changes.dart';
 import 'widgets/dialogs.dart';
+import 'routes.dart';
 
 /// Hints after a sync (#691): when someone else changed or deleted the song
 /// or set on the screen, the person is told; a deleted one closes its
@@ -65,7 +67,7 @@ void listenForLiveSummary(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final summary = liveSummaryText(l10n, report.changes);
     if (summary == null) return;
-    final navigator = Navigator.of(context);
+    final router = GoRouter.of(context);
     showMessageOn(
       ScaffoldMessenger.of(context),
       summary,
@@ -73,9 +75,7 @@ void listenForLiveSummary(BuildContext context, WidgetRef ref) {
       action: (
         label: l10n.syncHintShowChanges,
         key: null,
-        onPressed: () => navigator.push(
-          MaterialPageRoute<void>(builder: (_) => const RecentChangesScreen()),
-        ),
+        onPressed: () => router.push(AppPaths.recentChanges),
       ),
     );
   });

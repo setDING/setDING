@@ -2,7 +2,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/data/marker_icons.dart';
-import 'package:setding/ui/home_screen.dart';
 import 'package:setding/ui/home_tab.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/sets/set_screen.dart';
@@ -14,7 +13,7 @@ import 'test_app.dart';
 
 /// Keyboard shortcuts (#729, ADR-0049).
 void main() {
-  Future<TestApp> pump(WidgetTester tester, Widget home) async {
+  Future<TestApp> pump(WidgetTester tester, Widget? home) async {
     useTabletSize(tester);
     final app = await TestApp.create(prefs: {'language': 'en'});
     await tester.pumpWidget(app.build(home: home));
@@ -172,7 +171,7 @@ void main() {
     testWidgets('/ and Ctrl+F focus the search; typing stays typing', (
       tester,
     ) async {
-      final app = await pump(tester, const HomeScreen());
+      final app = await pump(tester, null);
       await openTab(tester, HomeTab.songs);
       await app.songs.createSong(source: '{title: Ending}');
       await tester.pumpAndSettle();
@@ -197,7 +196,7 @@ void main() {
     testWidgets('Esc closes the selection, also from the search', (
       tester,
     ) async {
-      final app = await pump(tester, const HomeScreen());
+      final app = await pump(tester, null);
       await openTab(tester, HomeTab.songs);
       await app.songs.createSong(source: '{title: Ending}');
       await tester.pumpAndSettle();
@@ -226,7 +225,7 @@ void main() {
     });
 
     testWidgets('a hidden tab takes no shortcuts', (tester) async {
-      final app = await pump(tester, const HomeScreen());
+      final app = await pump(tester, null);
       await openTab(tester, HomeTab.songs);
       await openTab(tester, HomeTab.sets);
       await type(tester, '/');
@@ -237,7 +236,7 @@ void main() {
 
   group('help', () {
     testWidgets('? lists the shortcuts, once', (tester) async {
-      final app = await pump(tester, const HomeScreen());
+      final app = await pump(tester, null);
       await type(tester, '?');
       expect(find.byType(ShortcutHelpDialog), findsOneWidget);
       expect(find.text('Keyboard shortcuts'), findsOneWidget);

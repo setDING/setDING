@@ -1,5 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:setding/ui/home_screen.dart';
+import 'package:setding/ui/routes.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/l10n/generated/app_localizations.dart';
 import 'package:setding/platform/input_devices.dart';
@@ -140,6 +145,19 @@ void main() {
     await openTab(tester, HomeTab.sets);
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
     await openTab(tester, HomeTab.overview);
+    expect(line('pageTurner'), findsNothing);
+    expect(app.prefs.getString(PageTurnerNotifier.lastUsedKey), isNull);
+
+    // Nor below a screen opened above the overview: its route stays current
+    // in the tab's own navigator (ADR-0065).
+    final song = await app.songs.createSong(source: '{title: Ending}');
+    final router = GoRouter.of(tester.element(find.byType(HomeScreen)));
+    unawaited(router.push(AppPaths.song(song)));
+    await tester.pumpAndSettle();
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    router.pop();
+    await tester.pumpAndSettle();
     expect(line('pageTurner'), findsNothing);
     expect(app.prefs.getString(PageTurnerNotifier.lastUsedKey), isNull);
 

@@ -5,6 +5,7 @@ import 'package:chordpro/chordpro.dart' as cp show Key, Song;
 import 'package:drift/drift.dart' show Value;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 import '../sync_hints.dart';
@@ -48,12 +49,12 @@ import 'save_attachment.dart';
 import 'midi_program_field.dart';
 import 'band_arrangement_panel.dart';
 import 'play_history_panel.dart';
-import 'song_editor_screen.dart';
 import 'adjustment_offer.dart';
 import 'language_versions.dart';
 import 'song_language.dart';
 import 'song_links_panel.dart';
 import '../widgets/menu_action.dart';
+import '../routes.dart';
 
 /// Shows a song. The band arrangement, the personal adjustments, the
 /// sources and the attachments open in side panels from the app bar, so the
@@ -112,12 +113,9 @@ class _SongScreenState extends ConsumerState<SongScreen> {
     final songs = widget.setSongs;
     final index = widget.setIndex + delta;
     if (songs == null || index < 0 || index >= songs.length) return null;
-    return () => Navigator.pushReplacement(
-      context,
-      MaterialPageRoute<void>(
-        builder: (_) =>
-            SongScreen(songId: songs[index], setSongs: songs, setIndex: index),
-      ),
+    return () => context.pushReplacement(
+      AppPaths.song(songs[index]),
+      extra: songExtra(setSongs: songs, setIndex: index),
     );
   }
 
@@ -148,14 +146,11 @@ class _SongScreenState extends ConsumerState<SongScreen> {
   /// Opens the editor; with [showProblem], the first ChordPro problem is
   /// selected (#314).
   Future<void> _editSource(SongEntry song, {bool showProblem = false}) =>
-      Navigator.push(
-        context,
-        MaterialPageRoute<void>(
-          builder: (_) => SongEditorScreen(
-            songId: song.id,
-            initialSource: song.chordproSource,
-            selectFirstProblem: showProblem,
-          ),
+      context.push(
+        AppPaths.songEdit(song.id),
+        extra: editorExtra(
+          initialSource: song.chordproSource,
+          selectFirstProblem: showProblem,
         ),
       );
 

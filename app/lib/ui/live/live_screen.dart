@@ -8,6 +8,7 @@ import 'package:flutter/gestures.dart' show Drag;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pdfrx/pdfrx.dart';
 
 import '../../data/annotation.dart' show LayoutFingerprint, textHash;
@@ -21,6 +22,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../midi/live_midi_sender.dart';
 import '../../midi/midi_connection.dart';
 import '../../providers.dart';
+import '../routes.dart' show AppPaths;
 import '../../settings/settings.dart';
 import '../annotations/annotated_page.dart';
 import '../../data/song_review.dart' show SongReportLocation;
@@ -144,7 +146,7 @@ class LiveScreen extends ConsumerStatefulWidget {
 
   /// Opens the set [setId] at its item [index], or with [firstSong] at its
   /// first song, skipping pauses and texts before it (the overview's *Start
-  /// live*, ADR-0045).
+  /// live*, ADR-0045). The route loads the set ([loadSet], ADR-0065).
   static Future<void> openSet(
     BuildContext context,
     String setId, {
@@ -152,6 +154,34 @@ class LiveScreen extends ConsumerStatefulWidget {
     bool firstSong = false,
   }) async {
     final container = ProviderScope.containerOf(context, listen: false);
+    final loaded = await loadSet(
+      container,
+      setId,
+      index: index,
+      firstSong: firstSong,
+    );
+    if (loaded.items.isEmpty || !context.mounted) return;
+    final location = AppPaths.setLive(setId, index: loaded.start);
+    _loaded[location] = loaded.items;
+    await context.push<void>(location);
+  }
+
+  /// Items [openSet] and [openSong] loaded before opening the route, so
+  /// [LiveRoute] does not load them again; taken once.
+  static final _loaded = <String, List<LiveItem>>{};
+
+  /// The items loaded for [location] by [openSet] or [openSong], once.
+  static List<LiveItem>? takeLoaded(String location) =>
+      _loaded.remove(location);
+
+  /// The items of the set [setId] and the index to start at: [index], or
+  /// with [firstSong] its first song. Empty when the set has no items.
+  static Future<({List<LiveItem> items, int start})> loadSet(
+    ProviderContainer container,
+    String setId, {
+    int index = 0,
+    bool firstSong = false,
+  }) async {
     final sets = container.read(setRepositoryProvider);
     final views = await sets.getItems(setId);
     final set = await sets.getSet(setId);
@@ -174,16 +204,11 @@ class LiveScreen extends ConsumerStatefulWidget {
             setItemId: v.item.id,
           ),
     ];
-    if (items.isEmpty || !context.mounted) return;
+    if (items.isEmpty) return (items: items, start: 0);
     final start = firstSong
         ? items.indexWhere((i) => i.song != null).clamp(0, items.length - 1)
-        : index;
-    await Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (_) => LiveScreen(items: items, initialIndex: start),
-      ),
-    );
+        : index.clamp(0, items.length - 1);
+    return (items: items, start: start);
   }
 
   /// Opens a song by itself; [attachmentId] shows that PDF attachment
@@ -194,8 +219,21 @@ class LiveScreen extends ConsumerStatefulWidget {
     String? attachmentId,
   }) async {
     final container = ProviderScope.containerOf(context, listen: false);
+    final items = await loadSong(container, songId, attachmentId: attachmentId);
+    if (items.isEmpty || !context.mounted) return;
+    final location = AppPaths.songLive(songId, attachmentId: attachmentId);
+    _loaded[location] = items;
+    await context.push<void>(location);
+  }
+
+  /// The song [songId] alone as a live item, or no item if it is missing.
+  static Future<List<LiveItem>> loadSong(
+    ProviderContainer container,
+    String songId, {
+    String? attachmentId,
+  }) async {
     final song = await container.read(songRepositoryProvider).getSong(songId);
-    if (song == null) return;
+    if (song == null) return const [];
     // Outside a set the song keeps its own key and tempo; only the sequence
     // of the band chosen on the sets tab applies (ADR-0025, #552).
     final band = container.read(arrangementBandProvider(song.libraryId));
@@ -207,21 +245,13 @@ class LiveScreen extends ConsumerStatefulWidget {
     final sequenceOnly = arrangement?.sequence == null
         ? null
         : arrangement!.copyWith(transpose: 0, tempo: const Value(null));
-    if (!context.mounted) return;
-    await Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (_) => LiveScreen(
-          items: [
-            LiveItem.song(
-              song,
-              arrangement: sequenceOnly,
-              attachmentId: attachmentId,
-            ),
-          ],
-        ),
+    return [
+      LiveItem.song(
+        song,
+        arrangement: sequenceOnly,
+        attachmentId: attachmentId,
       ),
-    );
+    ];
   }
 
   @override

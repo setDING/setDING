@@ -74,11 +74,27 @@ class _PageShortcutsState extends State<PageShortcuts> {
   );
 }
 
-/// Whether the screen of [context] takes shortcuts now: its route is current
-/// and it is visible.
+/// Whether the route of [context] is on top: current in its navigator, and
+/// that navigator's own route too, up to the root. A tab's screen has its
+/// own navigator below the root's (ADR-0065), so its route stays current
+/// while a screen or a dialog is open on the root navigator above it.
+bool routeOnTop(BuildContext context) {
+  var route = ModalRoute.of(context);
+  while (route != null) {
+    if (!route.isCurrent) return false;
+    final navigator = route.navigator;
+    if (navigator == null || !navigator.mounted) return true;
+    final outer = ModalRoute.of(navigator.context);
+    if (identical(outer, route)) return true;
+    route = outer;
+  }
+  return true;
+}
+
+/// Whether the screen of [context] takes shortcuts now: its route is on
+/// top ([routeOnTop]) and it is visible.
 bool screenActive(BuildContext context) {
-  final route = ModalRoute.of(context);
-  if (route != null && !route.isCurrent) return false;
+  if (!routeOnTop(context)) return false;
   // Hidden tabs of an IndexedStack have their tickers off.
   return TickerMode.valuesOf(context).enabled;
 }
@@ -176,7 +192,9 @@ class _ShortcutHelpKeyState extends State<ShortcutHelpKey> {
     }
     // Not above a dialog or menu.
     final route = ModalRoute.of(context);
-    if (route is! PageRoute || !route.isCurrent) return KeyEventResult.ignored;
+    if (route is! PageRoute || !routeOnTop(context)) {
+      return KeyEventResult.ignored;
+    }
     showShortcutHelp(context);
     return KeyEventResult.handled;
   }

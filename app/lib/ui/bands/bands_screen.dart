@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../data/band_view.dart';
 import '../../l10n/generated/app_localizations.dart';
@@ -12,11 +13,8 @@ import '../account/account_section.dart';
 import '../account/sign_in_screen.dart' show backendErrorText;
 import '../widgets/dialogs.dart';
 import 'band_labels.dart';
-import 'band_screen.dart';
-import 'close_organization.dart';
-import 'join_screen.dart';
-import 'organization_screen.dart';
 import '../widgets/page_width.dart';
+import '../routes.dart';
 
 /// Runs a band action and shows backend errors as a message.
 Future<bool> runBandAction(
@@ -125,12 +123,7 @@ class OrganizationBandTiles extends ConsumerWidget {
               o.isAdmin ? l10n.bandRoleOrgAdmin : l10n.bandRoleMember,
             ),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                builder: (_) => OrganizationScreen(organizationId: o.id),
-              ),
-            ),
+            onTap: () => context.push<void>(AppPaths.organization(o.id)),
           ),
           for (final b in bands)
             if (b.organizationId == o.id)
@@ -144,12 +137,7 @@ class OrganizationBandTiles extends ConsumerWidget {
                 title: Text(bandLabel(l10n, b)),
                 subtitle: Text(bandRoleLabel(l10n, b)),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (_) => BandScreen(bandId: b.id),
-                  ),
-                ),
+                onTap: () => context.push<void>(AppPaths.band(b.id)),
               ),
           const Divider(),
         ],
@@ -199,10 +187,7 @@ class BandsScreen extends ConsumerWidget {
             key: const Key('band-join'),
             tooltip: l10n.joinTitle,
             icon: const Icon(Icons.login),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute<bool>(builder: (_) => const JoinScreen()),
-            ),
+            onPressed: () => context.push<bool>(AppPaths.join),
           ),
           // Closed organizations, restorable for 30 days (ADR-0044).
           if (user != null)
@@ -210,12 +195,7 @@ class BandsScreen extends ConsumerWidget {
               key: const Key('orgs-closed'),
               tooltip: l10n.orgsClosedTitle,
               icon: const Icon(Icons.restore_from_trash),
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => const ClosedOrganizationsScreen(),
-                ),
-              ),
+              onPressed: () => context.push<void>(AppPaths.closedOrganizations),
             ),
           if (user != null)
             IconButton(

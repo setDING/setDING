@@ -12,7 +12,6 @@ import 'package:setding/platform/self_update_io.dart';
 import 'package:setding/sync/auth_providers.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/sync/update_check.dart';
-import 'package:setding/ui/home_screen.dart';
 import 'package:setding/ui/settings_screen.dart';
 import 'package:setding/update/app_update.dart';
 import 'package:setding/update/update_providers.dart';
@@ -266,7 +265,7 @@ void main() {
       TestApp app, {
       bool supported = true,
       bool enabled = true,
-      Widget home = const HomeScreen(),
+      Widget? home,
     }) => ProviderScope(
       overrides: [
         ...app.overrides,

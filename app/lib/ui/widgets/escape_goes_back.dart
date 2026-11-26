@@ -1,6 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'app_shortcuts.dart' show routeOnTop;
+
 /// Esc acts like the back button in the app bar on every screen (#726).
 ///
 /// Registered as a late key event handler, so it only sees Esc when nothing
@@ -38,7 +40,7 @@ class _EscapeGoesBackState extends State<EscapeGoesBack> {
     final context = FocusManager.instance.primaryFocus?.context;
     if (context == null || !context.mounted) return KeyEventResult.ignored;
     final route = ModalRoute.of(context);
-    if (route is! PageRoute || !route.isCurrent || !route.canPop) {
+    if (route is! PageRoute || !routeOnTop(context) || !route.canPop) {
       return KeyEventResult.ignored;
     }
     if (event is KeyDownEvent) Navigator.of(context).maybePop();

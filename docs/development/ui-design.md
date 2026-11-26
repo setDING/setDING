@@ -188,6 +188,21 @@ the others are checked in review.
 - Bottom sheets are for live mode (choices that must be reachable with one hand on
   stage); management screens use dialogs and panels.
 
+### Navigation between screens
+
+- Every screen has a **path** in `app/lib/ui/routes.dart` (`AppPaths`) and is
+  opened with `context.push(AppPaths.…)` (ADR-0065), so the browser's back and
+  forward buttons follow the app, a reload keeps the screen and a link can open
+  it. Records are named by their id. What a screen needs besides the path is a
+  JSON `extra` (`songExtra`, `editorExtra`, `signInExtra`); the screen also works
+  without it.
+- Only **full-screen dialogs** that return a value (the song picker, the
+  language version picker, marking a screenshot, an image attachment) keep a
+  `MaterialPageRoute(fullscreenDialog: true)`. `ui_rules_test.dart` fails on any
+  other page route.
+- A screen that can lose unsaved changes asks through its `PopScope` and the
+  route's `onExit` (the browser's back button does not ask the `PopScope`).
+
 ## 10. Texts, icons and accessibility
 
 - Every text is in all ARB files (de-CH without "ß", en, fr, it, es, pt, ADR-0008); sentence case
@@ -220,6 +235,7 @@ the others are checked in review.
 - [ ] Tooltips on icon buttons, texts in all ARB files.
 - [ ] A concept that needs more than a hint has a `DocsHelpButton` (section 10).
 - [ ] Shortcuts and Esc behave (ADR-0049).
+- [ ] Has a path in `routes.dart` and opens with `context.push` (section 9).
 - [ ] A screenshot on the website page (AGENTS.md, "User documentation and screenshots").
 - [ ] A list of songs uses the parts of `ui/songs/song_list.dart`, and a change to
       the song list also reaches the song picker of a set (section 3).

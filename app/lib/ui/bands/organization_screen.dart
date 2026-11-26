@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../data/band_view.dart';
 import '../../data/database.dart';
@@ -10,10 +11,8 @@ import '../../settings/settings.dart' show nameFormatProvider;
 import '../../sync/auth_providers.dart';
 import '../widgets/dialogs.dart';
 import 'band_labels.dart';
-import 'band_screen.dart';
 import 'close_organization.dart';
 import 'contacts_section.dart';
-import 'delete_band.dart';
 import 'bands_screen.dart';
 import 'invites_section.dart';
 import '../widgets/danger_zone.dart';
@@ -21,6 +20,7 @@ import '../widgets/docs_link.dart';
 import '../widgets/section_header.dart';
 import '../widgets/page_width.dart';
 import '../widgets/menu_action.dart';
+import '../routes.dart';
 
 /// An organization (ADR-0017): its bands and people. Organization admins
 /// rename it, create bands in it and manage people and their roles;
@@ -87,12 +87,7 @@ class OrganizationScreen extends ConsumerWidget {
                   title: Text(b.name),
                   subtitle: Text(bandRoleLabel(l10n, b)),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) => BandScreen(bandId: b.id),
-                    ),
-                  ),
+                  onTap: () => context.push<void>(AppPaths.band(b.id)),
                 ),
               // Organization admins create bands here (ADR-0017, ADR-0023).
               if (org.isAdmin)
@@ -118,12 +113,7 @@ class OrganizationScreen extends ConsumerWidget {
                       ),
                     );
                     if (!ok || !context.mounted) return;
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute<void>(
-                        builder: (_) => BandScreen(bandId: id),
-                      ),
-                    );
+                    await context.push<void>(AppPaths.band(id));
                   },
                 ),
               // Deleted bands, restorable for 30 days (ADR-0044).
@@ -133,13 +123,8 @@ class OrganizationScreen extends ConsumerWidget {
                   leading: const Icon(Icons.delete_outline),
                   title: Text(l10n.trashBandsTitle),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) =>
-                          DeletedBandsScreen(organizationId: organizationId),
-                    ),
-                  ),
+                  onTap: () =>
+                      context.push<void>(AppPaths.deletedBands(organizationId)),
                 ),
               // What the roles may do (#993).
               SectionHeader(

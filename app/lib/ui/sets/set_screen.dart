@@ -2,6 +2,7 @@ import 'package:chordpro/chordpro.dart' as cp;
 import 'package:drift/drift.dart' show Value;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../sync_hints.dart';
 import '../../data/attachment_lookup.dart';
@@ -21,7 +22,6 @@ import '../songs/chordpro_problems_badge.dart';
 import '../songs/song_attention.dart' show songToReviewIcon;
 import '../songs/language_versions.dart';
 import '../songs/play_history_panel.dart' show keyHistoryHint;
-import '../songs/song_screen.dart';
 import '../bands/copy_to_band.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/export_file.dart';
@@ -39,6 +39,7 @@ import 'set_list.dart';
 import 'sets_screen.dart';
 import 'song_picker.dart';
 import '../widgets/menu_action.dart';
+import '../routes.dart';
 
 /// A set with its ordered items.
 class SetScreen extends ConsumerStatefulWidget {
@@ -673,15 +674,9 @@ class _SetItemTile extends ConsumerWidget {
       },
       onTap: song == null
           ? null
-          : () => Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                builder: (_) => SongScreen(
-                  songId: song.id,
-                  setSongs: setSongs,
-                  setIndex: songPlace,
-                ),
-              ),
+          : () => context.push(
+              AppPaths.song(song.id),
+              extra: songExtra(setSongs: setSongs, setIndex: songPlace),
             ),
       // Fixed slots, so the controls line up from row to row.
       trailing: Row(

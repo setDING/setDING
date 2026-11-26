@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../data/band_view.dart';
 import '../../data/change_log.dart' show RecentChange;
@@ -17,10 +18,9 @@ import '../bands/band_switcher.dart';
 import '../bands/no_band_hint.dart';
 import '../home_tab.dart';
 import '../live/live_screen.dart';
-import '../sets/repertoire_screen.dart';
 import '../sets/sets_screen.dart' show daysBetween, formatGigDate, openSet;
 import '../songs/song_attention.dart';
-import '../songs/song_screen.dart';
+import '../widgets/app_shortcuts.dart' show routeOnTop;
 import '../widgets/app_info.dart';
 import '../../midi/midi_connection.dart';
 import '../../settings/settings.dart';
@@ -34,6 +34,7 @@ import '../settings_screen.dart' show settingsJumpProvider;
 import '../theme.dart' show StatusColors;
 import 'readiness.dart';
 import 'recent_changes.dart';
+import '../routes.dart';
 
 /// The set the overview shows (ADR-0045): the next set of the current band
 /// with a gig date from [today] on that the user plays ([planned],
@@ -423,7 +424,7 @@ class _ReadinessCardState extends ConsumerState<_ReadinessCard> {
   bool get _overviewShown =>
       mounted &&
       ref.read(homeTabProvider) == HomeTab.overview &&
-      (ModalRoute.of(context)?.isCurrent ?? true);
+      routeOnTop(context);
 
   /// Offers to pair the device a page-turn key on the overview came from
   /// (#930), once per device: only where devices can be told apart, not
@@ -663,19 +664,19 @@ class _RecentChangesCard extends StatelessWidget {
           RecentChangeTile(change),
         _ShowAll(
           buttonKey: const Key('overview-recent-changes-all'),
-          builder: (_) => const RecentChangesScreen(),
+          location: AppPaths.recentChanges,
         ),
       ],
     );
   }
 }
 
-/// *Show all* at the end of a card, opening the page of [builder].
+/// *Show all* at the end of a card, opening the screen at [location].
 class _ShowAll extends StatelessWidget {
-  const _ShowAll({required this.buttonKey, required this.builder});
+  const _ShowAll({required this.buttonKey, required this.location});
 
   final Key buttonKey;
-  final WidgetBuilder builder;
+  final String location;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -684,18 +685,15 @@ class _ShowAll extends StatelessWidget {
       alignment: AlignmentDirectional.centerEnd,
       child: TextButton(
         key: buttonKey,
-        onPressed: () =>
-            Navigator.push(context, MaterialPageRoute<void>(builder: builder)),
+        onPressed: () => context.push(location),
         child: Text(AppLocalizations.of(context).overviewShowAll),
       ),
     ),
   );
 }
 
-void _openSong(BuildContext context, String songId) => Navigator.push(
-  context,
-  MaterialPageRoute<void>(builder: (_) => SongScreen(songId: songId)),
-);
+void _openSong(BuildContext context, String songId) =>
+    context.push<void>(AppPaths.song(songId));
 
 /// The upcoming sets after the next one (#868); a tap opens the set.
 class _MoreSetsCard extends ConsumerWidget {
@@ -912,7 +910,7 @@ class _NotPlayedCard extends StatelessWidget {
           ),
         _ShowAll(
           buttonKey: const Key('overview-not-played-all'),
-          builder: (_) => RepertoireScreen(band: band),
+          location: AppPaths.repertoire(band.id),
         ),
       ],
     );

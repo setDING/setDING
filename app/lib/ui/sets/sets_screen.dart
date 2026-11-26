@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../data/database.dart';
 import '../../data/set_repository.dart';
@@ -14,14 +15,13 @@ import '../songs/chordpro_problems_badge.dart';
 import '../songs/song_attention.dart' show songToReviewIcon;
 import '../songs/song_list.dart' show songListTwoColumnWidth;
 import '../theme.dart';
-import '../trash/trash_screen.dart';
 import '../widgets/breakpoint_builder.dart';
 import '../widgets/dialogs.dart';
-import 'repertoire_screen.dart';
 import 'set_archive_dialogs.dart';
 import 'set_screen.dart';
 import '../widgets/section_header.dart';
 import 'sync_stale_banner.dart';
+import '../routes.dart';
 
 /// Minimum width for showing the list of sets and the selected set side by
 /// side (#266); the same as for the song list's two columns.
@@ -138,12 +138,7 @@ class _SetsPane extends ConsumerWidget {
               key: const Key('sets-repertoire'),
               tooltip: l10n.repertoire,
               icon: const Icon(Icons.leaderboard_outlined),
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => RepertoireScreen(band: band),
-                ),
-              ),
+              onPressed: () => context.push<void>(AppPaths.repertoire(band.id)),
             ),
           const BandSwitcher(),
         ],
@@ -250,10 +245,7 @@ class _TrashLink extends StatelessWidget {
     key: const Key('sets-trash'),
     icon: const Icon(Icons.delete_outline, size: 18),
     label: Text(AppLocalizations.of(context).trashWithCount(count)),
-    onPressed: () => Navigator.push(
-      context,
-      MaterialPageRoute<void>(builder: (_) => TrashScreen.sets(bandId: bandId)),
-    ),
+    onPressed: () => context.push<void>(AppPaths.setsTrash(bandId)),
   );
 }
 
@@ -267,10 +259,7 @@ Future<void> openSet(
 }) async {
   ref.read(selectedSetProvider.notifier).select(setId);
   if (wide) return;
-  await Navigator.push(
-    context,
-    MaterialPageRoute<void>(builder: (_) => SetScreen(setId: setId)),
-  );
+  await context.push<void>(AppPaths.set(setId));
 }
 
 /// Header of a section of the sets list; the past sets can be collapsed

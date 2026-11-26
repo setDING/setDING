@@ -25,7 +25,10 @@ dependencies:
   flutter_secure_storage: ^11.2.0
   flutter_soloud: ^5.4.0
   flutter_svg: ^2.5.1
+  flutter_web_plugins:
+    sdk: flutter
   flutter_zxing: ^4.0.0
+  go_router: ^18.1.4
   http: ^1.6.0
   http_parser: ^4.1.2
   intl: ^0.20.3

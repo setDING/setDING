@@ -1,16 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../data/band_view.dart';
 import '../../data/play_history.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../bands/bands_screen.dart' show runBandAction;
-import '../songs/song_screen.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/section_header.dart';
 import 'sets_screen.dart' show formatGigDate;
 import '../widgets/page_width.dart';
+import '../routes.dart';
 
 /// The thresholds offered for "not played for a while", in months.
 const staleAfterChoices = [1, 2, 3, 4, 6, 9, 12, 18, 24, 36];
@@ -252,10 +253,8 @@ class _None extends StatelessWidget {
   );
 }
 
-void _open(BuildContext context, String songId) => Navigator.push(
-  context,
-  MaterialPageRoute<void>(builder: (_) => SongScreen(songId: songId)),
-);
+void _open(BuildContext context, String songId) =>
+    context.push<void>(AppPaths.song(songId));
 
 /// A song with a bar for how often it was played.
 class _MostPlayedTile extends StatelessWidget {
