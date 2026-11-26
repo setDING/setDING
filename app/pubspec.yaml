@@ -25,6 +25,7 @@ dependencies:
   flutter_secure_storage: ^11.2.0
   flutter_soloud: ^5.4.0
   flutter_svg: ^2.5.1
+  flutter_zxing: ^4.0.0
   http: ^1.6.0
   http_parser: ^4.1.2
   intl: ^0.20.3
@@ -76,6 +77,10 @@ flutter:
     - assets/fonts/NotoSans-Regular.ttf
     - assets/fonts/NotoSans-Bold.ttf
     - assets/fonts/NotoSans-OFL.txt
+    # Compiled into flutter_zxing (QR scanner, ADR-0005): their notices for
+    # the licence page; the package's own LICENSE is listed by Flutter.
+    - assets/licenses/zxing-cpp-LICENSE.txt
+    - assets/licenses/stb-LICENSE.txt
     # "What's new" after an update (ADR-0041), written in the release PR.
     - assets/whats_new.json
   fonts:

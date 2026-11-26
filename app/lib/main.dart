@@ -37,6 +37,13 @@ Future<void> main() async {
     yield LicenseEntryWithLineBreaks([
       'Noto Sans',
     ], await rootBundle.loadString('assets/fonts/NotoSans-OFL.txt'));
+    // Compiled into flutter_zxing, the QR scanner (ADR-0005).
+    yield LicenseEntryWithLineBreaks([
+      'zxing-cpp',
+    ], await rootBundle.loadString('assets/licenses/zxing-cpp-LICENSE.txt'));
+    yield LicenseEntryWithLineBreaks([
+      'stb',
+    ], await rootBundle.loadString('assets/licenses/stb-LICENSE.txt'));
   });
 
   final (:db, :storage, :sessionStore) = await openPlatformServices();

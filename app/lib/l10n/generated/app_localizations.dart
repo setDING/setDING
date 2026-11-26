@@ -4030,6 +4030,114 @@ abstract class AppLocalizations {
   /// **'Das ist kein gültiger Einladungslink.'**
   String get joinInvalidLink;
 
+  /// No description provided for @joinScan.
+  ///
+  /// In de, this message translates to:
+  /// **'QR-Code scannen'**
+  String get joinScan;
+
+  /// No description provided for @joinScanHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Richte die Kamera auf den QR-Code der Einladung'**
+  String get joinScanHint;
+
+  /// No description provided for @scannerClose.
+  ///
+  /// In de, this message translates to:
+  /// **'Scanner schliessen'**
+  String get scannerClose;
+
+  /// No description provided for @scannerTorchOn.
+  ///
+  /// In de, this message translates to:
+  /// **'Licht einschalten'**
+  String get scannerTorchOn;
+
+  /// No description provided for @scannerTorchOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Licht ausschalten'**
+  String get scannerTorchOff;
+
+  /// No description provided for @scannerSwitchCamera.
+  ///
+  /// In de, this message translates to:
+  /// **'Kamera wechseln'**
+  String get scannerSwitchCamera;
+
+  /// No description provided for @scannerPickImage.
+  ///
+  /// In de, this message translates to:
+  /// **'Code aus einem Foto lesen'**
+  String get scannerPickImage;
+
+  /// No description provided for @scannerStarting.
+  ///
+  /// In de, this message translates to:
+  /// **'Kamera wird gestartet …'**
+  String get scannerStarting;
+
+  /// No description provided for @scannerPermissionTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Zugriff auf die Kamera'**
+  String get scannerPermissionTitle;
+
+  /// No description provided for @scannerPermissionMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Erlaube setDING in den Einstellungen den Zugriff auf die Kamera, um QR-Codes zu scannen.'**
+  String get scannerPermissionMessage;
+
+  /// No description provided for @scannerUnavailableTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Kamera ist nicht verfügbar'**
+  String get scannerUnavailableTitle;
+
+  /// No description provided for @scannerUnavailableMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Vielleicht verwendet sie eine andere App, oder das Gerät hat keine.'**
+  String get scannerUnavailableMessage;
+
+  /// No description provided for @scannerInUseMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Eine andere App verwendet die Kamera. Schliesse sie und versuche es erneut.'**
+  String get scannerInUseMessage;
+
+  /// No description provided for @scannerPhotoFallback.
+  ///
+  /// In de, this message translates to:
+  /// **'Du kannst den Code auch aus einem Foto lesen.'**
+  String get scannerPhotoFallback;
+
+  /// No description provided for @scannerOpenSettings.
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellungen öffnen'**
+  String get scannerOpenSettings;
+
+  /// No description provided for @scannerTryAgain.
+  ///
+  /// In de, this message translates to:
+  /// **'Erneut versuchen'**
+  String get scannerTryAgain;
+
+  /// No description provided for @scannerChoosePhoto.
+  ///
+  /// In de, this message translates to:
+  /// **'Foto auswählen'**
+  String get scannerChoosePhoto;
+
+  /// No description provided for @scannerNoCodeInPhoto.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf diesem Foto ist kein Code'**
+  String get scannerNoCodeInPhoto;
+
   /// No description provided for @joinQuestion.
   ///
   /// In de, this message translates to:
