@@ -13,7 +13,7 @@ typedef GridTextWidth = double Function(String text, {bool chord});
 ///
 /// The grid is laid out like a table (#484): the n-th element of every row
 /// (bar line or cell) is in column n, and each column is as wide as its
-/// widest element. Columns that are empty in every row stay narrow.
+/// widest element. Columns that only hold `.` in every row stay narrow.
 class GridGeometry {
   const GridGeometry({required this.columns, required this.left});
 
@@ -26,7 +26,8 @@ class GridGeometry {
   static const rowHeight = 1.25 + 0.3;
   static const barPadding = 0.3;
 
-  /// Width of a cell with chords or marks, and of an empty cell.
+  /// Width of a cell with chords or marks, and of a `.` cell (a held
+  /// beat, shown as a narrow dot, #1090).
   static const minCell = 1.2;
   static const emptyCell = 0.8;
 
@@ -116,9 +117,10 @@ List<ChordPart> gridChordParts(GridChords cell, ChordFormatter formatter) =>
       ],
     ]);
 
-/// Text of a grid mark.
+/// Text of a grid mark. A `.` (the chord is held on this beat) shows as a
+/// dot, so the beats of a bar can be counted (#1090).
 String gridMarkText(GridSymbol symbol) => switch (symbol) {
-  GridSymbol.empty => '',
+  GridSymbol.empty => '.',
   GridSymbol.slash => '/',
   GridSymbol.repeat1 => '%',
   GridSymbol.repeat2 => '%%',

@@ -8,6 +8,7 @@ sidebar:
 import { Image } from 'astro:assets';
 import drums from '../../../../../docs/screenshots/drums_de.png';
 import songSources from '../../../../../docs/screenshots/song_sources_de.png';
+import chordGrid from '../../../../../docs/screenshots/chord_grid_de.png';
 
 Songs sind in [ChordPro](https://www.chordpro.org/chordpro/) geschrieben, einem
 offenen Textformat für Akkordblätter. Eine ChordPro-Datei ist reiner Text: du kannst
@@ -82,6 +83,22 @@ Die Beschriftung bestimmt auch, welcher **Teil** des Songs ein Abschnitt ist:
 erkennt setDING auf Deutsch und Englisch. Abschnitte ohne Beschriftung zählen nach
 ihrer Art (Strophe, Refrain, Bridge). Darauf baut der [Songablauf](#songablauf-x_sequence)
 auf.
+
+### Akkord-Grids
+
+Ein Grid zeigt die Akkorde Takt für Takt, z. B. für ein Intro oder ein Solo. Jedes
+Wort zwischen den Taktstrichen `|` ist ein Schlag. Ein `.` heisst: Der Akkord klingt
+auf diesem Schlag weiter. setDING zeigt ihn als dezenten Punkt an, so kannst du die
+Schläge im Takt abzählen. `/` spielt den Akkord nochmals an, `%` wiederholt den
+letzten Takt. Text vor dem ersten und nach dem letzten Taktstrich steht am Rand.
+
+```
+{start_of_grid label="Intro"}
+A || B . B . | E F# B . | E . F# . | G#m . G#m . || x2
+{end_of_grid}
+```
+
+<Image src={chordGrid} alt="Ein Grid mit dem Intro: zwischen den Taktstrichen die Akkorde B, E, F# und G#m, auf den gehaltenen Schlägen je ein grauer Punkt, am Rand A und x2" />
 
 ## Nur für ein Instrument oder eine Stimme
 
