@@ -6,7 +6,19 @@
 ///     [--flutter-version 3.50.0] [--contents <archive>] [--gradle-bom bom.json] \
 ///     [--extra-components extra.json] [--build N] [--commit SHA] [--output F]
 ///
+///   dart run bin/sbom.dart generate-server --arch amd64 --app ../../app \
+///     --artifact setding-server-1.2.3-linux-amd64.tar.gz \
+///     --web-source-map main.dart.js.map --go-buildinfo buildinfo.txt \
+///     [--flutter-version …] [--pub-deps F] [--version …] [--build N] [--commit SHA]
+///
+///   dart run bin/sbom.dart generate-image --bundle-sbom A.cdx.json \
+///     --bundle-sbom B.cdx.json --repository ghcr.io/tafli/setding-server \
+///     --digest sha256:… --base gcr.io/distroless/static-debian13:nonroot@sha256:… \
+///     --version 1.2.3 --output image.cdx.json
+///
 ///   dart run bin/sbom.dart check --sbom F.cdx.json --artifact F --version 1.2.3
+///   dart run bin/sbom.dart check --sbom image.cdx.json --version 1.2.3 \
+///     --digest sha256:… --artifact-name ghcr.io/tafli/setding-server:1.2.3
 library;
 
 import 'dart:convert';
@@ -55,11 +67,48 @@ Future<void> main(List<String> args) async {
         ..addOption('output', help: 'default: <artifact>.cdx.json'),
     )
     ..addCommand(
+      'generate-server',
+      ArgParser()
+        ..addOption('arch', mandatory: true, allowed: ['amd64', 'arm64'])
+        ..addOption('app', mandatory: true, help: 'Flutter app directory')
+        ..addOption('artifact', mandatory: true, help: 'the server bundle')
+        ..addOption(
+          'web-source-map',
+          mandatory: true,
+          help: 'main.dart.js.map of the bundled web client',
+        )
+        ..addOption(
+          'go-buildinfo',
+          mandatory: true,
+          help: 'output of go version -m on the bundled pocketbase',
+        )
+        ..addOption('flutter-version')
+        ..addOption('pub-deps')
+        ..addOption('version')
+        ..addOption('build')
+        ..addOption('commit')
+        ..addOption('output', help: 'default: <artifact>.cdx.json'),
+    )
+    ..addCommand(
+      'generate-image',
+      ArgParser()
+        ..addMultiOption('bundle-sbom')
+        ..addOption('repository', mandatory: true)
+        ..addOption('digest', mandatory: true)
+        ..addOption('base', mandatory: true)
+        ..addOption('version', mandatory: true)
+        ..addOption('build')
+        ..addOption('commit')
+        ..addOption('output', mandatory: true),
+    )
+    ..addCommand(
       'check',
       ArgParser()
         ..addOption('sbom', mandatory: true)
-        ..addOption('artifact', mandatory: true)
-        ..addOption('version', mandatory: true),
+        ..addOption('artifact', help: 'the file described')
+        ..addOption('version', mandatory: true)
+        ..addOption('digest', help: 'instead of --artifact: an image digest')
+        ..addOption('artifact-name', help: 'with --digest: the image name'),
     );
 
   try {
@@ -67,6 +116,10 @@ Future<void> main(List<String> args) async {
     switch (results.command?.name) {
       case 'generate':
         await _generate(results.command!);
+      case 'generate-server':
+        await _generateServer(results.command!);
+      case 'generate-image':
+        _generateImage(results.command!);
       case 'check':
         _check(results.command!);
       default:
@@ -163,14 +216,130 @@ Future<void> _generate(ArgResults a) async {
   );
 }
 
-void _check(ArgResults a) {
+Future<void> _generateServer(ArgResults a) async {
+  final arch = a.option('arch')!;
+  final platform = Platform.parse('server-linux-$arch');
+  final app = a.option('app')!;
   final artifact = a.option('artifact')!;
+  final contents = readArchive(artifact);
+  final lock = parseLock(_read('$app/pubspec.lock'));
+  final version =
+      a.option('version') ?? pubspecVersion(_read('$app/pubspec.yaml'));
+  final compiled = compiledPackagesFromSourceMap(
+    _read(a.option('web-source-map')!),
+    lock,
+  );
+  final plugins = pluginsFor(
+    _read('$app/.flutter-plugins-dependencies'),
+    platform,
+  );
+  final shipped = shippedPackages(
+    lock: lock,
+    compiled: compiled,
+    plugins: plugins,
+    assetPackages: contents.assetPackages,
+    nativeAssets: const {},
+  );
+  final go = parseGoBuildInfo(_read(a.option('go-buildinfo')!));
+
+  final licenses = <String, List<String>>{};
+  final pub = PubDevLicenses();
+  final depsDev = DepsDevLicenses();
+  final goLicenses = <String, List<String>>{};
+  try {
+    for (final name in shipped) {
+      final p = lock[name]!;
+      if (p.source == 'hosted') {
+        licenses[name] = await pub.licenses(name, p.version);
+      }
+    }
+    for (final m in [go.main, ...go.deps]) {
+      goLicenses[m.path] = await depsDev.licenses(m.path, m.version);
+    }
+  } finally {
+    pub.close();
+    depsDev.close();
+  }
+
+  final parts = serverParts(
+    arch: arch,
+    go: go,
+    goLicenses: goLicenses,
+    fileHashes: contents.fileHashes,
+    lock: lock,
+  );
+  final bom = buildBom(
+    BomInput(
+      platform: platform,
+      version: version,
+      artifactName: _basename(artifact),
+      artifactSha256: sha256OfFile(artifact),
+      flutterVersion: a.option('flutter-version') ?? await _flutterVersion(),
+      lock: lock,
+      compiled: compiled,
+      plugins: plugins,
+      assetPackages: contents.assetPackages,
+      nativeAssets: const {},
+      nativeFileHashes: contents.fileHashes,
+      pubDependencies: pubDependencies(
+        a.option('pub-deps') != null
+            ? _read(a.option('pub-deps')!)
+            : await _pubDeps(app),
+      ),
+      licenses: licenses,
+      build: a.option('build'),
+      commit: a.option('commit'),
+      extraComponents: parts.components,
+      extraDependencies: parts.dependencies,
+    ),
+  );
+  _write(a.option('output') ?? '$artifact.cdx.json', bom);
+}
+
+void _generateImage(ArgResults a) {
+  final sboms = a.multiOption('bundle-sbom');
+  if (sboms.isEmpty) throw SbomException('no --bundle-sbom');
+  final bom = buildImageBom(
+    bundleBoms: [
+      for (final s in sboms) jsonDecode(_read(s)) as Map<String, Object?>,
+    ],
+    version: a.option('version')!,
+    repository: a.option('repository')!,
+    digest: a.option('digest')!,
+    baseImage: a.option('base')!,
+    build: a.option('build'),
+    commit: a.option('commit'),
+  );
+  _write(a.option('output')!, bom);
+}
+
+void _write(String output, Map<String, Object?> bom) {
+  File(
+    output,
+  ).writeAsStringSync('${const JsonEncoder.withIndent('  ').convert(bom)}\n');
+  stdout.writeln(
+    'sbom: $output (${(bom['components'] as List).length} components)',
+  );
+}
+
+void _check(ArgResults a) {
   final sbom = a.option('sbom')!;
+  final digest = a.option('digest');
+  final artifact = a.option('artifact');
+  if ((digest == null) == (artifact == null)) {
+    throw SbomException('check needs either --artifact or --digest');
+  }
   final problems = checkBom(
     jsonDecode(_read(sbom)) as Map<String, Object?>,
     version: a.option('version')!,
-    artifactName: _basename(artifact),
-    artifactSha256: sha256OfFile(artifact),
+    artifactName: digest != null
+        ? (a.option('artifact-name') ??
+              (throw SbomException('--digest needs --artifact-name')))
+        : _basename(artifact!),
+    artifactSha256: digest != null
+        ? digest.replaceFirst('sha256:', '')
+        : sha256OfFile(artifact!),
+    componentType: digest != null ? 'container' : 'application',
   );
   if (problems.isNotEmpty) {
     throw SbomException('$sbom:\n  ${problems.join('\n  ')}');

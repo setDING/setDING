@@ -32,6 +32,7 @@ class BomInput {
     this.commit,
     this.gradleBom,
     this.extraComponents = const [],
+    this.extraDependencies = const {},
     DateTime? timestamp,
     String? serialNumber,
   }) : timestamp = timestamp ?? DateTime.now().toUtc(),
@@ -79,6 +80,11 @@ class BomInput {
   /// Further CycloneDX components shipped in the asset (e.g. the Visual C++
   /// runtime), taken over as they are.
   final List<Map<String, Object?>> extraComponents;
+
+  /// Dependencies of and on [extraComponents] (bom-ref → bom-refs), e.g.
+  /// PocketBase → its Go modules. An extra component that another one depends
+  /// on is not attached to the root.
+  final Map<String, Set<String>> extraDependencies;
 
   final DateTime timestamp;
   final String serialNumber;
@@ -268,13 +274,20 @@ Map<String, Object?> buildBom(BomInput input) {
     );
   }
 
+  final dependedOn = {
+    for (final targets in input.extraDependencies.values) ...targets,
+  };
   for (final extra in input.extraComponents) {
     final ref = extra['bom-ref'];
     if (ref is! String || extra['name'] is! String) {
       throw SbomException('extra component without name or bom-ref: $extra');
     }
     components.add(extra);
-    edges[rootRef]!.add(ref);
+    if (!dependedOn.contains(ref)) edges[rootRef]!.add(ref);
+  }
+  for (final MapEntry(key: from, value: targets)
+      in input.extraDependencies.entries) {
+    (edges[from] ??= {}).addAll(targets);
   }
 
   final refs = {for (final c in components) c['bom-ref'] as String};

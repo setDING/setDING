@@ -8,6 +8,7 @@ List<String> checkBom(
   required String version,
   required String artifactName,
   required String artifactSha256,
+  String componentType = 'application',
 }) {
   final problems = <String>[];
   if (bom['bomFormat'] != 'CycloneDX') {
@@ -19,7 +20,7 @@ List<String> checkBom(
   final component = (bom['metadata'] as Map?)?['component'] as Map?;
   if (component == null) return [...problems, 'metadata.component is missing'];
 
-  if (component['type'] != 'application') {
+  if (component['type'] != componentType) {
     problems.add('metadata.component.type is ${component['type']}');
   }
   if (component['name'] != appName) {

@@ -215,10 +215,9 @@ GitHub on the same data, from the repository:
 - 2026-11-18: The Linux AppImage (ADR-0038, #504) is a release asset too and gets
   its own SBOM with the AppImage runtime.
 
+- 2026-11-26: Server SBOMs (#1062, ADR-0063): every server bundle gets `setding-server-<version>-linux-<arch>.tar.gz.cdx.json` (platform `server-linux-<arch>`): the web client's Dart packages from the source map of its `main.dart.js` (built with source maps, which are not shipped), its asset packages and `sqlite3.wasm`, PocketBase (`pkg:golang/…`, hash of the binary) with the Go modules of its build information and the Go runtime, licences of Go modules from deps.dev (unknown ids fail, like on pub.dev), and Flutter. The server image gets an SBOM of its own (`type: container`, the image digest as hash, both bundles' SBOMs and the distroless base) that is **attested to the image on ghcr.io** with `actions/attest-sbom` instead of a release asset (owner, 2026-11-26), since the image is pushed after the GitHub Release.
 ## Open points
 
-- Server SBOM (PocketBase, web client): later, once the server is released as an
-  artifact of its own.
 - Owner: switch on the dependency graph and Dependabot alerts in the repository
   settings; then submit the Android Gradle dependencies
   (`gradle/actions/dependency-submission`).
