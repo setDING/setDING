@@ -416,6 +416,39 @@ class RemoteSongReport {
   final bool purged;
 }
 
+/// A person of an organization without an account (ADR-0064) as stored on
+/// the server. [email] is only sent to the people who may edit sets.
+@immutable
+class RemoteContact {
+  const RemoteContact({
+    required this.id,
+    required this.organizationId,
+    required this.firstName,
+    this.lastName = '',
+    this.nickname = '',
+    this.email,
+    this.linkedUserId,
+    this.createdBy,
+    this.revision = 0,
+    this.deleted = false,
+  });
+
+  final String id;
+  final String organizationId;
+  final String firstName;
+  final String lastName;
+  final String nickname;
+  final String? email;
+
+  /// Set by the server when the contact's personal invitation is redeemed.
+  final String? linkedUserId;
+
+  /// Set by the server.
+  final String? createdBy;
+  final int revision;
+  final bool deleted;
+}
+
 /// A band arrangement as stored on the server (ADR-0025).
 @immutable
 class RemoteArrangement {
@@ -462,6 +495,7 @@ class RemoteSet {
     this.purged = false,
     this.updatedBy,
     this.lineup = const [],
+    this.lineupContacts = const [],
     this.lineupCustom = false,
   });
 
@@ -474,6 +508,10 @@ class RemoteSet {
   /// The people who play the set (user IDs) when [lineupCustom] is set;
   /// otherwise the whole band (ADR-0061).
   final List<String> lineup;
+
+  /// The people without an account in the lineup (contact IDs, ADR-0064)
+  /// when [lineupCustom] is set.
+  final List<String> lineupContacts;
   final bool lineupCustom;
 
   /// The set this one was imported from (ADR-0043 §1b).
@@ -1140,9 +1178,21 @@ abstract class SyncBackend {
   Future<RemoteLineup> fetchLineup();
 
   /// Names and mail addresses of the people in the lineup of [setId] (the
-  /// band's members for a set without one), to notify them (ADR-0061); only
-  /// for people who may edit the set. Throws a [BackendException].
+  /// band's members for a set without one), to notify them (ADR-0061), with
+  /// those of its contacts that have one (ADR-0064); only for people who may
+  /// edit the set. Throws a [BackendException].
   Future<List<({String name, String email})>> fetchLineupEmails(String setId);
+
+  /// People without an account of an organization changed after revision
+  /// [since] (ADR-0064), in revision order.
+  Future<List<RemoteContact>> pullContacts(String organizationId, int since);
+
+  /// Creates ([create]) or updates a contact (last writer wins) and returns
+  /// the server state.
+  Future<RemoteContact> pushContact(
+    RemoteContact contact, {
+    required bool create,
+  });
 
   /// PDF attachments of an organization changed after revision [since].
   Future<List<RemoteAttachment>> pullAttachments(

@@ -261,6 +261,7 @@ void main() {
           deleted: false,
           purged: false,
           lineup: lineup ?? const [],
+          lineupContacts: const [],
           lineupCustom: lineup != null,
         );
 

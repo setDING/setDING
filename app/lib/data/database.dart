@@ -269,6 +269,38 @@ class SongReports extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// People of an organization without a setDING account (ADR-0064,
+/// schema 42), put in the lineup of sets next to its people. Synced per
+/// organization; [email] is only sent to the people who may edit sets, so
+/// for everybody else it is null.
+@TableIndex(name: 'contacts_organization', columns: {#organizationId})
+@DataClassName('ContactEntry')
+class Contacts extends Table {
+  /// UUID created on the device.
+  TextColumn get id => text()();
+  TextColumn get organizationId => text()();
+  TextColumn get firstName => text()();
+  TextColumn get lastName => text().withDefault(const Constant(''))();
+  TextColumn get nickname => text().withDefault(const Constant(''))();
+  TextColumn get email => text().nullable()();
+
+  /// The account the contact became through its personal invitation; it is
+  /// deleted then.
+  TextColumn get linkedUserId => text().nullable()();
+
+  /// Server user ID of who created it, as the server reports it.
+  TextColumn get createdBy => text().nullable()();
+  IntColumn get revision => integer().withDefault(const Constant(0))();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  /// Deleted by an organization admin: no longer offered, but sets that
+  /// name it keep showing its name.
+  BoolColumn get deleted => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 @TableIndex(name: 'attachments_song', columns: {#songId})
 @DataClassName('AttachmentEntry')
 class Attachments extends Table {
@@ -337,6 +369,11 @@ class Setlists extends Table {
   /// The set has a lineup of its own instead of the whole band (ADR-0061,
   /// schema 38).
   BoolColumn get lineupCustom => boolean().withDefault(const Constant(false))();
+
+  /// The people without an account in the lineup when [lineupCustom] is
+  /// set (ADR-0064, schema 42): IDs of [Contacts].
+  TextColumn get lineupContacts =>
+      text().map(const UserIdsConverter()).withDefault(const Constant('[]'))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -776,13 +813,14 @@ class ChangeLog extends Table {
     ChangeLog,
     OrgPlays,
     SongReports,
+    Contacts,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 41;
+  int get schemaVersion => 42;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -878,7 +916,8 @@ class AppDatabase extends _$AppDatabase {
           // Tables of later schemas do not exist yet.
           if (index == annotationsOwnerSong ||
               index == changeLogScope ||
-              index == songReportsSong) {
+              index == songReportsSong ||
+              index == contactsOrganization) {
             continue;
           }
           await customStatement('DROP INDEX IF EXISTS ${index.entityName}');
@@ -1149,6 +1188,13 @@ class AppDatabase extends _$AppDatabase {
       // Schema 41: German section labels are a conversion (#1085). No new
       // column: afterUpgrade (refreshAllMetadata) counts the conversions of
       // every song again.
+      if (from < 42) {
+        // People without an account in the lineup (ADR-0064); filled by the
+        // next sync.
+        await m.createTable(contacts);
+        await m.createIndex(contactsOrganization);
+        await m.addColumn(setlists, setlists.lineupContacts);
+      }
     },
     beforeOpen: (details) async {
       if (details.hadUpgrade) await afterUpgrade?.call(this);

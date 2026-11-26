@@ -14,6 +14,7 @@ import '../data/song_repository.dart' show SongMeta;
 import 'band_service.dart';
 import 'engine/arrangement_sync.dart';
 import 'engine/change_recorder.dart';
+import 'engine/contact_sync.dart';
 import 'engine/attachment_sync.dart';
 import 'engine/annotation_sync.dart';
 import 'engine/overlay_sync.dart';
@@ -105,6 +106,7 @@ class SyncEngine {
     _overlays = OverlaySync(db, backend, store);
     _annotations = AnnotationSync(db, backend, store);
     _reports = ReportSync(db, backend, store, this.storage);
+    _contacts = ContactSync(db, backend, store);
     _arrangements = ArrangementSync(db, backend, store, changes: _changes);
     _substitutes = SubstituteSync(db, backend, store, _sets);
     if (settings case final settings?) {
@@ -140,6 +142,7 @@ class SyncEngine {
   late final OverlaySync _overlays;
   late final AnnotationSync _annotations;
   late final ReportSync _reports;
+  late final ContactSync _contacts;
   late final ArrangementSync _arrangements;
   late final SubstituteSync _substitutes;
 
@@ -191,6 +194,8 @@ class SyncEngine {
         pulled += await _attachments.pull(org, logChangesFor: log);
         // After the songs: a report belongs to its song (ADR-0060).
         pulled += await _reports.pull(org);
+        // Before the sets, whose lineups name them (ADR-0064).
+        pulled += await _contacts.pull(org);
       }
       // Sets of substitute bands come from the lineup route (ADR-0061).
       for (final band in visible.where((b) => !b.substitute)) {
@@ -318,6 +323,21 @@ class SyncEngine {
         ids,
       );
     }
+    // People without an account (ADR-0064), created by set editors of the
+    // organization's bands.
+    final contactOrgs = {
+      for (final b in bands)
+        if (b.canManageSets && !b.isLocal) ?b.organizationId,
+    };
+    if (contactOrgs.isNotEmpty) {
+      final ids = contactOrgs.toList();
+      await enqueue(
+        SyncCollection.contacts,
+        'SELECT id FROM contacts WHERE revision = 0 AND deleted = 0 '
+        'AND organization_id IN (${placeholders(ids.length)})',
+        ids,
+      );
+    }
     if (setBands.isNotEmpty) {
       // Band arrangements (ADR-0025), maintained by the same people as sets.
       final ids = setBands.toList();
@@ -379,6 +399,8 @@ class SyncEngine {
       SyncCollection.songLinks,
       SyncCollection.songReview,
       SyncCollection.songReports,
+      // Before the sets, whose lineups name them (ADR-0064).
+      SyncCollection.contacts,
       SyncCollection.setlists,
       SyncCollection.attachments,
       SyncCollection.overlays,
@@ -405,6 +427,8 @@ class SyncEngine {
           if (await _reports.push(entry, userId) == PushResult.done) {
             pushed++;
           }
+        case SyncCollection.contacts:
+          if (await _contacts.push(entry) == PushResult.done) pushed++;
         case SyncCollection.setlists:
           if (await _sets.push(entry) == PushResult.done) pushed++;
         case SyncCollection.attachments:

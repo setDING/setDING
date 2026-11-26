@@ -10,6 +10,7 @@ import 'data/auto_backup.dart';
 import 'data/backup.dart';
 import 'data/band_copy.dart';
 import 'data/band_view.dart';
+import 'data/contact_repository.dart';
 import 'data/database.dart';
 import 'data/lineup.dart';
 import 'data/person_name.dart';
@@ -328,6 +329,25 @@ final orgMembersProvider = StreamProvider.autoDispose
             ),
           );
     });
+
+final contactRepositoryProvider = Provider<ContactRepository>(
+  (ref) => ContactRepository(ref.watch(databaseProvider)),
+);
+
+/// The people of an organization without an account that can be put in a
+/// lineup (ADR-0064).
+final orgContactsProvider = StreamProvider.autoDispose
+    .family<List<ContactEntry>, String>(
+      (ref, orgId) => ref.watch(contactRepositoryProvider).watchContacts(orgId),
+    );
+
+/// Every contact of an organization, deleted ones too, for the names in
+/// lineups (ADR-0064).
+final allOrgContactsProvider = StreamProvider.autoDispose
+    .family<List<ContactEntry>, String>(
+      (ref, orgId) =>
+          ref.watch(contactRepositoryProvider).watchAllContacts(orgId),
+    );
 
 /// Members of a band, admins first, then by name as the user shows names
 /// (ADR-0062).
@@ -842,6 +862,9 @@ final setLineupProvider = Provider.autoDispose.family<SetLineup?, String>((
         ? const []
         : ref.watch(orgMembersProvider(orgId)).value ?? const [],
     userId: ref.watch(authProvider.select((u) => u?.id)),
+    contacts: orgId == null
+        ? const []
+        : ref.watch(allOrgContactsProvider(orgId)).value ?? const [],
     format: ref.watch(nameFormatProvider),
   );
 });

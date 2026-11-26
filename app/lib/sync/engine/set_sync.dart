@@ -107,6 +107,9 @@ class SetSync {
             purged: Value(remote.purged),
             updatedBy: Value(remote.updatedBy),
             lineup: Value(remote.lineupCustom ? remote.lineup : const []),
+            lineupContacts: Value(
+              remote.lineupCustom ? remote.lineupContacts : const [],
+            ),
             lineupCustom: Value(remote.lineupCustom),
           ),
         );
@@ -171,6 +174,7 @@ class SetSync {
       deletedAt: set.deletedAt,
       purged: set.purged,
       lineup: set.lineupCustom ? set.lineup : const [],
+      lineupContacts: set.lineupCustom ? set.lineupContacts : const [],
       lineupCustom: set.lineupCustom,
     );
     try {

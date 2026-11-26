@@ -762,9 +762,64 @@ class PocketBaseBackend implements SyncBackend {
       purged: r.getBoolValue('purged'),
       updatedBy: _nonEmpty(r.getStringValue('updated_by')),
       lineup: r.getListValue<String>('lineup'),
+      lineupContacts: r.getListValue<String>('lineup_contacts'),
       lineupCustom: r.getBoolValue('lineup_custom'),
     );
   }
+
+  static RemoteContact _contact(RecordModel r) => RemoteContact(
+    id: r.id,
+    organizationId: r.getStringValue('organization'),
+    firstName: r.getStringValue('first_name'),
+    lastName: r.getStringValue('last_name'),
+    nickname: r.getStringValue('nickname'),
+    // Absent for people who may not edit sets (ADR-0064).
+    email: _nonEmpty(r.getStringValue('email')),
+    linkedUserId: _nonEmpty(r.getStringValue('linked_user')),
+    createdBy: _nonEmpty(r.getStringValue('created_by')),
+    revision: r.getIntValue('revision'),
+    deleted: r.getBoolValue('deleted'),
+  );
+
+  @override
+  Future<List<RemoteContact>> pullContacts(
+    String organizationId,
+    int since,
+  ) async => [
+    for (final r in await _since(
+      'contacts',
+      'organization',
+      organizationId,
+      since,
+    ))
+      _contact(r),
+  ];
+
+  @override
+  Future<RemoteContact> pushContact(
+    RemoteContact contact, {
+    required bool create,
+  }) => _signedIn(() async {
+    final body = {
+      'first_name': contact.firstName,
+      'last_name': contact.lastName,
+      'nickname': contact.nickname,
+      'email': contact.email ?? '',
+      if (contact.deleted) 'deleted': true,
+    };
+    final r = create
+        ? await _pb
+              .collection('contacts')
+              .create(
+                body: {
+                  'id': contact.id,
+                  'organization': contact.organizationId,
+                  ...body,
+                },
+              )
+        : await _pb.collection('contacts').update(contact.id, body: body);
+    return _contact(r);
+  });
 
   @override
   Future<RemoteLineup> fetchLineup() => _signedIn(() async {
@@ -791,18 +846,33 @@ class PocketBaseBackend implements SyncBackend {
   });
 
   @override
-  Future<List<({String name, String email})>> fetchLineupEmails(String setId) =>
-      _signedIn(() async {
-        final result = await _pb.send<dynamic>(
-          '/api/setding/lineup/${Uri.encodeComponent(setId)}/emails',
-        );
-        return [
-          for (final p in (result as Map)['people'] as List? ?? const [])
-            if ((p as Map)['email'] case final String email
-                when email.isNotEmpty)
-              (name: p['name'] as String? ?? '', email: email),
-        ];
-      });
+  Future<List<({String name, String email})>> fetchLineupEmails(
+    String setId,
+  ) => _signedIn(() async {
+    final result = await _pb.send<dynamic>(
+      '/api/setding/lineup/${Uri.encodeComponent(setId)}/emails',
+    );
+    return [
+      for (final p in (result as Map)['people'] as List? ?? const [])
+        if ((p as Map)['email'] case final String email when email.isNotEmpty)
+          (name: p['name'] as String? ?? '', email: email),
+      // People without an account (ADR-0064).
+      for (final c in result['contacts'] as List? ?? const [])
+        if ((c as Map)['email'] case final String email when email.isNotEmpty)
+          (name: _contactName(c), email: email),
+    ];
+  });
+
+  /// The name of a contact in a server route's answer: nickname, otherwise
+  /// first and last name (the server's display name of people, ADR-0062).
+  static String _contactName(Map<dynamic, dynamic> c) {
+    final nickname = (c['nickname'] as String? ?? '').trim();
+    if (nickname.isNotEmpty) return nickname;
+    return [
+      c['first_name'] as String? ?? '',
+      c['last_name'] as String? ?? '',
+    ].map((s) => s.trim()).where((s) => s.isNotEmpty).join(' ');
+  }
 
   Future<List<RecordModel>> _since(
     String collection,
@@ -1037,6 +1107,7 @@ class PocketBaseBackend implements SyncBackend {
         'deleted_at': _dateValue(set.deletedAt),
         if (set.purged) 'purged': true, // deleted permanently (#866)
         'lineup': set.lineup,
+        'lineup_contacts': set.lineupContacts,
         'lineup_custom': set.lineupCustom,
       };
       final r = create
@@ -1340,6 +1411,7 @@ class PocketBaseBackend implements SyncBackend {
       'user_settings',
       'annotations',
       'song_reports',
+      'contacts',
       // Changes of who sees which band (SyncController.bandCollections).
       'organizations',
       'org_memberships',

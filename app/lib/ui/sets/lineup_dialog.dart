@@ -23,7 +23,7 @@ Future<void> showLineupDialog(
   final members = await ref.read(bandMembersProvider(set.bandId).future);
   final org = await ref.read(orgMembersProvider(orgId).future);
   if (!context.mounted) return;
-  final people = await showDialog<List<String>?>(
+  final result = await showDialog<({List<String> people, bool wholeBand})>(
     context: context,
     builder: (_) => _LineupDialog(
       set: set,
@@ -32,13 +32,19 @@ Future<void> showLineupDialog(
       format: ref.read(nameFormatProvider),
     ),
   );
-  if (people == null) return; // cancelled
+  if (result == null) return; // cancelled
+  final people = result.people;
+  // The people without an account stay as they are (ADR-0064); a lineup
+  // with them is never the whole band, unless *Whole band* was chosen.
+  final contacts = set.lineupCustom ? set.lineupContacts : const <String>[];
   final whole =
-      people.length == members.length &&
-      members.every((m) => people.contains(m.userId));
+      result.wholeBand ||
+      contacts.isEmpty &&
+          people.length == members.length &&
+          members.every((m) => people.contains(m.userId));
   await ref
       .read(setRepositoryProvider)
-      .setLineup(set.id, whole ? null : people);
+      .setLineup(set.id, whole ? null : people, contacts: contacts);
 }
 
 class _LineupDialog extends StatefulWidget {
@@ -161,9 +167,10 @@ class _LineupDialogState extends State<_LineupDialog> {
         if (widget.set.lineupCustom)
           TextButton(
             key: const Key('lineup-whole-band'),
-            onPressed: () => Navigator.pop(context, [
-              for (final m in widget.members) m.userId,
-            ]),
+            onPressed: () => Navigator.pop(context, (
+              people: [for (final m in widget.members) m.userId],
+              wholeBand: true,
+            )),
             child: Text(l10n.lineupWholeBand),
           ),
         TextButton(
@@ -172,10 +179,13 @@ class _LineupDialogState extends State<_LineupDialog> {
         ),
         FilledButton(
           key: const Key('lineup-save'),
-          onPressed: () => Navigator.pop(context, [
-            for (final id in [...band, ...substitutes])
-              if (_checked.contains(id)) id,
-          ]),
+          onPressed: () => Navigator.pop(context, (
+            people: [
+              for (final id in [...band, ...substitutes])
+                if (_checked.contains(id)) id,
+            ],
+            wholeBand: false,
+          )),
           child: Text(l10n.save),
         ),
       ],

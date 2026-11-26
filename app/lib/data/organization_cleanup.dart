@@ -6,7 +6,8 @@ import 'outbox.dart';
 
 /// Removes everything of the organization [orgId] from this device after it
 /// was closed (ADR-0044): its songs with their attachments, personal
-/// adjustments, annotations, mistake reports and conflicts, its bands with their sets,
+/// adjustments, annotations, mistake reports and conflicts, its people
+/// without an account (ADR-0064), its bands with their sets,
 /// arrangements and memberships, its people, pending changes and sync
 /// cursors, and the downloaded attachment files. Restoring the organization
 /// brings everything back from the server with the next sync.
@@ -54,9 +55,15 @@ Future<void> removeOrganizationData(
         )
         .get();
 
+    final contacts = await ids(
+      'SELECT id FROM contacts WHERE organization_id = ?',
+      [orgId],
+    );
+
     // Pending changes of all of it: they cannot reach the server anymore.
     final records = {
       ...songs,
+      ...contacts,
       ...sets,
       ...annotations,
       for (final a in attachments) a.read<String>('id'),
@@ -101,6 +108,7 @@ Future<void> removeOrganizationData(
     await run('DELETE FROM attachments WHERE song_id IN ($songsOf)');
     await run('DELETE FROM song_conflicts WHERE song_id IN ($songsOf)');
     await run('DELETE FROM org_plays WHERE organization_id = ?');
+    await run('DELETE FROM contacts WHERE organization_id = ?');
     await run('DELETE FROM songs WHERE library_id = ?');
     await run('DELETE FROM memberships WHERE band_id IN ($bandsOf)');
     for (final scope in [orgId, ...bands]) {

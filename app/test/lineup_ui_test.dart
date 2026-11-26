@@ -22,6 +22,7 @@ void main() {
     WidgetTester tester, {
     required AuthUser user,
     List<String>? lineup,
+    List<String> contacts = const [],
     bool openSet = true,
   }) async {
     useTabletSize(tester);
@@ -36,7 +37,9 @@ void main() {
       await BandService(app.db, app.backend).refresh();
       final sets = SetRepository(app.db, app.storage, bandId: 'b1');
       final id = await sets.createSet(name: 'Gig');
-      if (lineup != null) await sets.setLineup(id, lineup);
+      if (lineup != null) {
+        await sets.setLineup(id, lineup, contacts: contacts);
+      }
       return id;
     }))!;
     await tester.pumpWidget(
@@ -117,6 +120,36 @@ void main() {
     await app.dispose(tester);
   });
 
+  // Regression (#1098): the dialog does not show people without an account
+  // yet (#1099); saving it must keep them, and *Whole band* drop them.
+  testWidgets('saving the lineup keeps its people without an account', (
+    tester,
+  ) async {
+    final (app, id) = await start(
+      tester,
+      user: _ann,
+      lineup: ['ann', 'bob'],
+      contacts: ['c1'],
+    );
+    await tester.tap(find.byKey(const Key('set-lineup')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('lineup-save')));
+    await tester.pumpAndSettle();
+    var set = await stored(tester, app, id);
+    expect(set.lineupCustom, isTrue);
+    expect(set.lineup, ['ann', 'bob']);
+    expect(set.lineupContacts, ['c1']);
+
+    await tester.tap(find.byKey(const Key('set-lineup')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('lineup-whole-band')));
+    await tester.pumpAndSettle();
+    set = await stored(tester, app, id);
+    expect(set.lineupCustom, isFalse);
+    expect(set.lineupContacts, isEmpty);
+    await app.dispose(tester);
+  });
+
   testWidgets('a member sees the lineup and that they are not planned, '
       'without choosing it', (tester) async {
     final (app, _) = await start(tester, user: _bob, lineup: ['ann']);
@@ -155,6 +188,7 @@ void main() {
       deleted: false,
       purged: false,
       lineup: lineup ?? const [],
+      lineupContacts: const [],
       lineupCustom: lineup != null,
     );
     MembershipEntry member(String id, String name) => MembershipEntry(

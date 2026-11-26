@@ -67,6 +67,7 @@ class BandCopyService {
               updatedAt: DateTime.now(),
               // The copy is played by the whole target band (ADR-0061).
               lineup: const [],
+              lineupContacts: const [],
               lineupCustom: false,
             ),
           );

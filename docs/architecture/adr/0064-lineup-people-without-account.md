@@ -229,6 +229,16 @@ be in the lineup of old sets:
   the sign-up, redeeming links the contact in one transaction); deleting a
   contact clears its mail address and revokes its open invitations; closing
   and purging an organization purges its contacts.
+- 2026-11-26: Data and sync implemented (#1098): schema 42 stores the
+  contacts per organization (`contacts`, delta pull, pushed before the sets
+  that name them, last writer wins; a refused change is replaced by the
+  server state at the next pull) and `lineup_contacts` with the set. Every
+  member, substitutes too, pulls the contacts of their organizations, so the
+  names of a lineup come from the device as for people (ADR-0061); the
+  lineup route's `contacts` is not needed. Deleted contacts keep their name
+  in lineups, only the others are offered. Until the lineup dialog shows
+  contacts (#1099), saving it keeps them and *Whole band* drops them. A set
+  copied into another band and a closed organization drop them as well.
 
 ## Open points
 

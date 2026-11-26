@@ -1200,10 +1200,103 @@ class FakeSyncBackend implements SyncBackend {
       purged: set.purged,
       updatedBy: by ?? set.updatedBy,
       lineup: set.lineupCustom ? set.lineup : const [],
+      lineupContacts: set.lineupCustom ? set.lineupContacts : const [],
       lineupCustom: set.lineupCustom,
     );
     sets[set.id] = stored;
     return stored;
+  }
+
+  /// Server state: people without an account by ID (ADR-0064).
+  final contacts = <String, RemoteContact>{};
+
+  /// Simulates a change of a contact by someone else; a deleted contact
+  /// loses its mail address, as on the server.
+  RemoteContact putContact(RemoteContact c, {String? by}) {
+    final existing = contacts[c.id];
+    final stored = RemoteContact(
+      id: c.id,
+      organizationId: c.organizationId,
+      firstName: c.firstName,
+      lastName: c.lastName,
+      nickname: c.nickname,
+      email: c.deleted ? null : c.email,
+      linkedUserId: c.linkedUserId ?? existing?.linkedUserId,
+      createdBy: existing?.createdBy ?? by ?? c.createdBy,
+      revision: ++_serverRevision,
+      deleted: c.deleted,
+    );
+    contacts[c.id] = stored;
+    return stored;
+  }
+
+  /// Whether the user may edit sets in some band of [orgId] (ADR-0064).
+  bool _editsContacts(String orgId) =>
+      _isOrgAdmin(orgId) ||
+      members.any(
+        (m) =>
+            m.user.id == user?.id &&
+            (m.role == BandRole.admin || m.role == BandRole.planner) &&
+            bands[m.scopeId]?.organizationId == orgId,
+      );
+
+  /// Contacts pushed with [pushContact]: (contact, create).
+  final contactPushes = <(RemoteContact, bool)>[];
+
+  /// Set to answer [pullContacts] like a server without contacts.
+  bool contactsFail = false;
+
+  /// Like the server: the contacts of an organization the user is in, the
+  /// mail addresses only for set editors.
+  @override
+  Future<List<RemoteContact>> pullContacts(
+    String organizationId,
+    int since,
+  ) async {
+    _requireUser();
+    if (contactsFail) throw const BackendException(BackendErrorKind.notAllowed);
+    final inOrg = orgMembers.any(
+      (m) => m.scopeId == organizationId && m.user.id == user!.id,
+    );
+    if (!inOrg) return const [];
+    final mail = _editsContacts(organizationId);
+    return contacts.values
+        .where((c) => c.organizationId == organizationId && c.revision > since)
+        .map(
+          (c) => RemoteContact(
+            id: c.id,
+            organizationId: c.organizationId,
+            firstName: c.firstName,
+            lastName: c.lastName,
+            nickname: c.nickname,
+            email: mail ? c.email : null,
+            linkedUserId: c.linkedUserId,
+            createdBy: c.createdBy,
+            revision: c.revision,
+            deleted: c.deleted,
+          ),
+        )
+        .toList()
+      ..sort((a, b) => a.revision.compareTo(b.revision));
+  }
+
+  /// Like the server: set editors create and edit, organization admins
+  /// delete; a deleted contact is not changed any more.
+  @override
+  Future<RemoteContact> pushContact(
+    RemoteContact contact, {
+    required bool create,
+  }) async {
+    _requireUser();
+    _check();
+    contactPushes.add((contact, create));
+    final existing = contacts[contact.id];
+    if (!_editsContacts(contact.organizationId) ||
+        (!create && (existing == null || existing.deleted)) ||
+        (contact.deleted && !_isOrgAdmin(contact.organizationId))) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
+    return putContact(contact, by: user!.id);
   }
 
   /// Like the server (ADR-0061): the lineup's addresses for who may edit
@@ -1235,6 +1328,10 @@ class FakeSyncBackend implements SyncBackend {
     return [
       for (final id in ids)
         if (people[id] case final user?) (name: user.name, email: user.email),
+      if (set.lineupCustom)
+        for (final id in set.lineupContacts)
+          if (contacts[id] case final c? when c.email != null && !c.deleted)
+            (name: c.firstName, email: c.email!),
     ];
   }
 

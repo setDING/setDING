@@ -18,6 +18,10 @@ abstract final class SyncCollection {
 
   /// Mistake reports (ADR-0060); the outbox record ID is the report ID.
   static const songReports = 'song_reports';
+
+  /// People without an account (ADR-0064); the outbox record ID is the
+  /// contact ID.
+  static const contacts = 'contacts';
   static const setlists = 'setlists';
   static const attachments = 'attachments';
 

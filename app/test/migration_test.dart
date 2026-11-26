@@ -66,6 +66,7 @@ void downgradeToSchema36(Database raw) {
 /// Turns a current database back into schema 39: people without first
 /// name, last name and nickname (ADR-0062).
 void downgradeToSchema39(Database raw) {
+  downgradeToSchema41(raw);
   for (final table in ['org_memberships', 'memberships']) {
     for (final column in [
       'user_first_name',
@@ -75,6 +76,13 @@ void downgradeToSchema39(Database raw) {
       raw.execute('ALTER TABLE $table DROP COLUMN $column');
     }
   }
+}
+
+/// Turns a current database back into schema 41: no people without an
+/// account (ADR-0064).
+void downgradeToSchema41(Database raw) {
+  raw.execute('DROP TABLE contacts');
+  raw.execute('ALTER TABLE setlists DROP COLUMN lineup_contacts');
 }
 
 /// Turns a current database back into schema 37: sets without a lineup,
@@ -1481,6 +1489,7 @@ void main() {
 
     final raw = sqlite3.open(file.path);
     raw.execute('UPDATE songs SET chordpro_conversions = 0');
+    downgradeToSchema41(raw);
     raw.execute('PRAGMA user_version = 40');
     raw.close();
 
@@ -1488,6 +1497,28 @@ void main() {
     final repo = SongRepository(upgraded, storage);
     upgraded.afterUpgrade = (db) => repo.refreshAllMetadata();
     expect((await repo.watchSongList().first).single.conversions, 1);
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 41 database: sets keep their lineup and have no '
+      'people without an account (ADR-0064)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final sets = SetRepository(current, FileAttachmentStorage(dir));
+    final id = await sets.createSet(name: 'Gig');
+    await sets.setLineup(id, ['ann']);
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema41(raw);
+    raw.execute('PRAGMA user_version = 41');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final set = await upgraded.select(upgraded.setlists).getSingle();
+    expect(set.lineup, ['ann']);
+    expect(set.lineupCustom, isTrue);
+    expect(set.lineupContacts, isEmpty);
+    expect(await upgraded.select(upgraded.contacts).get(), isEmpty);
     await upgraded.close();
   });
 }

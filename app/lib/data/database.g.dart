@@ -4828,6 +4828,16 @@ class $SetlistsTable extends Setlists
     defaultValue: const Constant(false),
   );
   @override
+  late final GeneratedColumnWithTypeConverter<List<String>, String>
+  lineupContacts = GeneratedColumn<String>(
+    'lineup_contacts',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  ).withConverter<List<String>>($SetlistsTable.$converterlineupContacts);
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     bandId,
@@ -4843,6 +4853,7 @@ class $SetlistsTable extends Setlists
     purged,
     lineup,
     lineupCustom,
+    lineupContacts,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -5009,6 +5020,12 @@ class $SetlistsTable extends Setlists
         DriftSqlType.bool,
         data['${effectivePrefix}lineup_custom'],
       )!,
+      lineupContacts: $SetlistsTable.$converterlineupContacts.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}lineup_contacts'],
+        )!,
+      ),
     );
   }
 
@@ -5018,6 +5035,8 @@ class $SetlistsTable extends Setlists
   }
 
   static TypeConverter<List<String>, String> $converterlineup =
+      const UserIdsConverter();
+  static TypeConverter<List<String>, String> $converterlineupContacts =
       const UserIdsConverter();
 }
 
@@ -5056,6 +5075,10 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
   /// The set has a lineup of its own instead of the whole band (ADR-0061,
   /// schema 38).
   final bool lineupCustom;
+
+  /// The people without an account in the lineup when [lineupCustom] is
+  /// set (ADR-0064, schema 42): IDs of [Contacts].
+  final List<String> lineupContacts;
   const SetlistEntry({
     required this.id,
     required this.bandId,
@@ -5071,6 +5094,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     required this.purged,
     required this.lineup,
     required this.lineupCustom,
+    required this.lineupContacts,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -5103,6 +5127,11 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       );
     }
     map['lineup_custom'] = Variable<bool>(lineupCustom);
+    {
+      map['lineup_contacts'] = Variable<String>(
+        $SetlistsTable.$converterlineupContacts.toSql(lineupContacts),
+      );
+    }
     return map;
   }
 
@@ -5132,6 +5161,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       purged: Value(purged),
       lineup: Value(lineup),
       lineupCustom: Value(lineupCustom),
+      lineupContacts: Value(lineupContacts),
     );
   }
 
@@ -5155,6 +5185,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       purged: serializer.fromJson<bool>(json['purged']),
       lineup: serializer.fromJson<List<String>>(json['lineup']),
       lineupCustom: serializer.fromJson<bool>(json['lineupCustom']),
+      lineupContacts: serializer.fromJson<List<String>>(json['lineupContacts']),
     );
   }
   @override
@@ -5175,6 +5206,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       'purged': serializer.toJson<bool>(purged),
       'lineup': serializer.toJson<List<String>>(lineup),
       'lineupCustom': serializer.toJson<bool>(lineupCustom),
+      'lineupContacts': serializer.toJson<List<String>>(lineupContacts),
     };
   }
 
@@ -5193,6 +5225,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     bool? purged,
     List<String>? lineup,
     bool? lineupCustom,
+    List<String>? lineupContacts,
   }) => SetlistEntry(
     id: id ?? this.id,
     bandId: bandId ?? this.bandId,
@@ -5208,6 +5241,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     purged: purged ?? this.purged,
     lineup: lineup ?? this.lineup,
     lineupCustom: lineupCustom ?? this.lineupCustom,
+    lineupContacts: lineupContacts ?? this.lineupContacts,
   );
   SetlistEntry copyWithCompanion(SetlistsCompanion data) {
     return SetlistEntry(
@@ -5227,6 +5261,9 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
       lineupCustom: data.lineupCustom.present
           ? data.lineupCustom.value
           : this.lineupCustom,
+      lineupContacts: data.lineupContacts.present
+          ? data.lineupContacts.value
+          : this.lineupContacts,
     );
   }
 
@@ -5246,7 +5283,8 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
           ..write('deletedAt: $deletedAt, ')
           ..write('purged: $purged, ')
           ..write('lineup: $lineup, ')
-          ..write('lineupCustom: $lineupCustom')
+          ..write('lineupCustom: $lineupCustom, ')
+          ..write('lineupContacts: $lineupContacts')
           ..write(')'))
         .toString();
   }
@@ -5267,6 +5305,7 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
     purged,
     lineup,
     lineupCustom,
+    lineupContacts,
   );
   @override
   bool operator ==(Object other) =>
@@ -5285,7 +5324,8 @@ class SetlistEntry extends DataClass implements Insertable<SetlistEntry> {
           other.deletedAt == this.deletedAt &&
           other.purged == this.purged &&
           other.lineup == this.lineup &&
-          other.lineupCustom == this.lineupCustom);
+          other.lineupCustom == this.lineupCustom &&
+          other.lineupContacts == this.lineupContacts);
 }
 
 class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
@@ -5303,6 +5343,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
   final Value<bool> purged;
   final Value<List<String>> lineup;
   final Value<bool> lineupCustom;
+  final Value<List<String>> lineupContacts;
   final Value<int> rowid;
   const SetlistsCompanion({
     this.id = const Value.absent(),
@@ -5319,6 +5360,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     this.purged = const Value.absent(),
     this.lineup = const Value.absent(),
     this.lineupCustom = const Value.absent(),
+    this.lineupContacts = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SetlistsCompanion.insert({
@@ -5336,6 +5378,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     this.purged = const Value.absent(),
     this.lineup = const Value.absent(),
     this.lineupCustom = const Value.absent(),
+    this.lineupContacts = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        bandId = Value(bandId),
@@ -5356,6 +5399,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     Expression<bool>? purged,
     Expression<String>? lineup,
     Expression<bool>? lineupCustom,
+    Expression<String>? lineupContacts,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -5373,6 +5417,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
       if (purged != null) 'purged': purged,
       if (lineup != null) 'lineup': lineup,
       if (lineupCustom != null) 'lineup_custom': lineupCustom,
+      if (lineupContacts != null) 'lineup_contacts': lineupContacts,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -5392,6 +5437,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     Value<bool>? purged,
     Value<List<String>>? lineup,
     Value<bool>? lineupCustom,
+    Value<List<String>>? lineupContacts,
     Value<int>? rowid,
   }) {
     return SetlistsCompanion(
@@ -5409,6 +5455,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
       purged: purged ?? this.purged,
       lineup: lineup ?? this.lineup,
       lineupCustom: lineupCustom ?? this.lineupCustom,
+      lineupContacts: lineupContacts ?? this.lineupContacts,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -5460,6 +5507,11 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
     if (lineupCustom.present) {
       map['lineup_custom'] = Variable<bool>(lineupCustom.value);
     }
+    if (lineupContacts.present) {
+      map['lineup_contacts'] = Variable<String>(
+        $SetlistsTable.$converterlineupContacts.toSql(lineupContacts.value),
+      );
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -5483,6 +5535,7 @@ class SetlistsCompanion extends UpdateCompanion<SetlistEntry> {
           ..write('purged: $purged, ')
           ..write('lineup: $lineup, ')
           ..write('lineupCustom: $lineupCustom, ')
+          ..write('lineupContacts: $lineupContacts, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -11474,6 +11527,677 @@ class SongReportsCompanion extends UpdateCompanion<SongReportRow> {
   }
 }
 
+class $ContactsTable extends Contacts
+    with TableInfo<$ContactsTable, ContactEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ContactsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _firstNameMeta = const VerificationMeta(
+    'firstName',
+  );
+  @override
+  late final GeneratedColumn<String> firstName = GeneratedColumn<String>(
+    'first_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lastNameMeta = const VerificationMeta(
+    'lastName',
+  );
+  @override
+  late final GeneratedColumn<String> lastName = GeneratedColumn<String>(
+    'last_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _nicknameMeta = const VerificationMeta(
+    'nickname',
+  );
+  @override
+  late final GeneratedColumn<String> nickname = GeneratedColumn<String>(
+    'nickname',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _emailMeta = const VerificationMeta('email');
+  @override
+  late final GeneratedColumn<String> email = GeneratedColumn<String>(
+    'email',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _linkedUserIdMeta = const VerificationMeta(
+    'linkedUserId',
+  );
+  @override
+  late final GeneratedColumn<String> linkedUserId = GeneratedColumn<String>(
+    'linked_user_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdByMeta = const VerificationMeta(
+    'createdBy',
+  );
+  @override
+  late final GeneratedColumn<String> createdBy = GeneratedColumn<String>(
+    'created_by',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _revisionMeta = const VerificationMeta(
+    'revision',
+  );
+  @override
+  late final GeneratedColumn<int> revision = GeneratedColumn<int>(
+    'revision',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedMeta = const VerificationMeta(
+    'deleted',
+  );
+  @override
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+    'deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    organizationId,
+    firstName,
+    lastName,
+    nickname,
+    email,
+    linkedUserId,
+    createdBy,
+    revision,
+    updatedAt,
+    deleted,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'contacts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ContactEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('first_name')) {
+      context.handle(
+        _firstNameMeta,
+        firstName.isAcceptableOrUnknown(data['first_name']!, _firstNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_firstNameMeta);
+    }
+    if (data.containsKey('last_name')) {
+      context.handle(
+        _lastNameMeta,
+        lastName.isAcceptableOrUnknown(data['last_name']!, _lastNameMeta),
+      );
+    }
+    if (data.containsKey('nickname')) {
+      context.handle(
+        _nicknameMeta,
+        nickname.isAcceptableOrUnknown(data['nickname']!, _nicknameMeta),
+      );
+    }
+    if (data.containsKey('email')) {
+      context.handle(
+        _emailMeta,
+        email.isAcceptableOrUnknown(data['email']!, _emailMeta),
+      );
+    }
+    if (data.containsKey('linked_user_id')) {
+      context.handle(
+        _linkedUserIdMeta,
+        linkedUserId.isAcceptableOrUnknown(
+          data['linked_user_id']!,
+          _linkedUserIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_by')) {
+      context.handle(
+        _createdByMeta,
+        createdBy.isAcceptableOrUnknown(data['created_by']!, _createdByMeta),
+      );
+    }
+    if (data.containsKey('revision')) {
+      context.handle(
+        _revisionMeta,
+        revision.isAcceptableOrUnknown(data['revision']!, _revisionMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted')) {
+      context.handle(
+        _deletedMeta,
+        deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ContactEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ContactEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      firstName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}first_name'],
+      )!,
+      lastName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_name'],
+      )!,
+      nickname: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nickname'],
+      )!,
+      email: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}email'],
+      ),
+      linkedUserId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}linked_user_id'],
+      ),
+      createdBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_by'],
+      ),
+      revision: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}revision'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}deleted'],
+      )!,
+    );
+  }
+
+  @override
+  $ContactsTable createAlias(String alias) {
+    return $ContactsTable(attachedDatabase, alias);
+  }
+}
+
+class ContactEntry extends DataClass implements Insertable<ContactEntry> {
+  /// UUID created on the device.
+  final String id;
+  final String organizationId;
+  final String firstName;
+  final String lastName;
+  final String nickname;
+  final String? email;
+
+  /// The account the contact became through its personal invitation; it is
+  /// deleted then.
+  final String? linkedUserId;
+
+  /// Server user ID of who created it, as the server reports it.
+  final String? createdBy;
+  final int revision;
+  final DateTime updatedAt;
+
+  /// Deleted by an organization admin: no longer offered, but sets that
+  /// name it keep showing its name.
+  final bool deleted;
+  const ContactEntry({
+    required this.id,
+    required this.organizationId,
+    required this.firstName,
+    required this.lastName,
+    required this.nickname,
+    this.email,
+    this.linkedUserId,
+    this.createdBy,
+    required this.revision,
+    required this.updatedAt,
+    required this.deleted,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['organization_id'] = Variable<String>(organizationId);
+    map['first_name'] = Variable<String>(firstName);
+    map['last_name'] = Variable<String>(lastName);
+    map['nickname'] = Variable<String>(nickname);
+    if (!nullToAbsent || email != null) {
+      map['email'] = Variable<String>(email);
+    }
+    if (!nullToAbsent || linkedUserId != null) {
+      map['linked_user_id'] = Variable<String>(linkedUserId);
+    }
+    if (!nullToAbsent || createdBy != null) {
+      map['created_by'] = Variable<String>(createdBy);
+    }
+    map['revision'] = Variable<int>(revision);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['deleted'] = Variable<bool>(deleted);
+    return map;
+  }
+
+  ContactsCompanion toCompanion(bool nullToAbsent) {
+    return ContactsCompanion(
+      id: Value(id),
+      organizationId: Value(organizationId),
+      firstName: Value(firstName),
+      lastName: Value(lastName),
+      nickname: Value(nickname),
+      email: email == null && nullToAbsent
+          ? const Value.absent()
+          : Value(email),
+      linkedUserId: linkedUserId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(linkedUserId),
+      createdBy: createdBy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdBy),
+      revision: Value(revision),
+      updatedAt: Value(updatedAt),
+      deleted: Value(deleted),
+    );
+  }
+
+  factory ContactEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ContactEntry(
+      id: serializer.fromJson<String>(json['id']),
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      firstName: serializer.fromJson<String>(json['firstName']),
+      lastName: serializer.fromJson<String>(json['lastName']),
+      nickname: serializer.fromJson<String>(json['nickname']),
+      email: serializer.fromJson<String?>(json['email']),
+      linkedUserId: serializer.fromJson<String?>(json['linkedUserId']),
+      createdBy: serializer.fromJson<String?>(json['createdBy']),
+      revision: serializer.fromJson<int>(json['revision']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deleted: serializer.fromJson<bool>(json['deleted']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'organizationId': serializer.toJson<String>(organizationId),
+      'firstName': serializer.toJson<String>(firstName),
+      'lastName': serializer.toJson<String>(lastName),
+      'nickname': serializer.toJson<String>(nickname),
+      'email': serializer.toJson<String?>(email),
+      'linkedUserId': serializer.toJson<String?>(linkedUserId),
+      'createdBy': serializer.toJson<String?>(createdBy),
+      'revision': serializer.toJson<int>(revision),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deleted': serializer.toJson<bool>(deleted),
+    };
+  }
+
+  ContactEntry copyWith({
+    String? id,
+    String? organizationId,
+    String? firstName,
+    String? lastName,
+    String? nickname,
+    Value<String?> email = const Value.absent(),
+    Value<String?> linkedUserId = const Value.absent(),
+    Value<String?> createdBy = const Value.absent(),
+    int? revision,
+    DateTime? updatedAt,
+    bool? deleted,
+  }) => ContactEntry(
+    id: id ?? this.id,
+    organizationId: organizationId ?? this.organizationId,
+    firstName: firstName ?? this.firstName,
+    lastName: lastName ?? this.lastName,
+    nickname: nickname ?? this.nickname,
+    email: email.present ? email.value : this.email,
+    linkedUserId: linkedUserId.present ? linkedUserId.value : this.linkedUserId,
+    createdBy: createdBy.present ? createdBy.value : this.createdBy,
+    revision: revision ?? this.revision,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deleted: deleted ?? this.deleted,
+  );
+  ContactEntry copyWithCompanion(ContactsCompanion data) {
+    return ContactEntry(
+      id: data.id.present ? data.id.value : this.id,
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      firstName: data.firstName.present ? data.firstName.value : this.firstName,
+      lastName: data.lastName.present ? data.lastName.value : this.lastName,
+      nickname: data.nickname.present ? data.nickname.value : this.nickname,
+      email: data.email.present ? data.email.value : this.email,
+      linkedUserId: data.linkedUserId.present
+          ? data.linkedUserId.value
+          : this.linkedUserId,
+      createdBy: data.createdBy.present ? data.createdBy.value : this.createdBy,
+      revision: data.revision.present ? data.revision.value : this.revision,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContactEntry(')
+          ..write('id: $id, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('firstName: $firstName, ')
+          ..write('lastName: $lastName, ')
+          ..write('nickname: $nickname, ')
+          ..write('email: $email, ')
+          ..write('linkedUserId: $linkedUserId, ')
+          ..write('createdBy: $createdBy, ')
+          ..write('revision: $revision, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deleted: $deleted')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    organizationId,
+    firstName,
+    lastName,
+    nickname,
+    email,
+    linkedUserId,
+    createdBy,
+    revision,
+    updatedAt,
+    deleted,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ContactEntry &&
+          other.id == this.id &&
+          other.organizationId == this.organizationId &&
+          other.firstName == this.firstName &&
+          other.lastName == this.lastName &&
+          other.nickname == this.nickname &&
+          other.email == this.email &&
+          other.linkedUserId == this.linkedUserId &&
+          other.createdBy == this.createdBy &&
+          other.revision == this.revision &&
+          other.updatedAt == this.updatedAt &&
+          other.deleted == this.deleted);
+}
+
+class ContactsCompanion extends UpdateCompanion<ContactEntry> {
+  final Value<String> id;
+  final Value<String> organizationId;
+  final Value<String> firstName;
+  final Value<String> lastName;
+  final Value<String> nickname;
+  final Value<String?> email;
+  final Value<String?> linkedUserId;
+  final Value<String?> createdBy;
+  final Value<int> revision;
+  final Value<DateTime> updatedAt;
+  final Value<bool> deleted;
+  final Value<int> rowid;
+  const ContactsCompanion({
+    this.id = const Value.absent(),
+    this.organizationId = const Value.absent(),
+    this.firstName = const Value.absent(),
+    this.lastName = const Value.absent(),
+    this.nickname = const Value.absent(),
+    this.email = const Value.absent(),
+    this.linkedUserId = const Value.absent(),
+    this.createdBy = const Value.absent(),
+    this.revision = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ContactsCompanion.insert({
+    required String id,
+    required String organizationId,
+    required String firstName,
+    this.lastName = const Value.absent(),
+    this.nickname = const Value.absent(),
+    this.email = const Value.absent(),
+    this.linkedUserId = const Value.absent(),
+    this.createdBy = const Value.absent(),
+    this.revision = const Value.absent(),
+    required DateTime updatedAt,
+    this.deleted = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       organizationId = Value(organizationId),
+       firstName = Value(firstName),
+       updatedAt = Value(updatedAt);
+  static Insertable<ContactEntry> custom({
+    Expression<String>? id,
+    Expression<String>? organizationId,
+    Expression<String>? firstName,
+    Expression<String>? lastName,
+    Expression<String>? nickname,
+    Expression<String>? email,
+    Expression<String>? linkedUserId,
+    Expression<String>? createdBy,
+    Expression<int>? revision,
+    Expression<DateTime>? updatedAt,
+    Expression<bool>? deleted,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (organizationId != null) 'organization_id': organizationId,
+      if (firstName != null) 'first_name': firstName,
+      if (lastName != null) 'last_name': lastName,
+      if (nickname != null) 'nickname': nickname,
+      if (email != null) 'email': email,
+      if (linkedUserId != null) 'linked_user_id': linkedUserId,
+      if (createdBy != null) 'created_by': createdBy,
+      if (revision != null) 'revision': revision,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deleted != null) 'deleted': deleted,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ContactsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? organizationId,
+    Value<String>? firstName,
+    Value<String>? lastName,
+    Value<String>? nickname,
+    Value<String?>? email,
+    Value<String?>? linkedUserId,
+    Value<String?>? createdBy,
+    Value<int>? revision,
+    Value<DateTime>? updatedAt,
+    Value<bool>? deleted,
+    Value<int>? rowid,
+  }) {
+    return ContactsCompanion(
+      id: id ?? this.id,
+      organizationId: organizationId ?? this.organizationId,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      nickname: nickname ?? this.nickname,
+      email: email ?? this.email,
+      linkedUserId: linkedUserId ?? this.linkedUserId,
+      createdBy: createdBy ?? this.createdBy,
+      revision: revision ?? this.revision,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deleted: deleted ?? this.deleted,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (firstName.present) {
+      map['first_name'] = Variable<String>(firstName.value);
+    }
+    if (lastName.present) {
+      map['last_name'] = Variable<String>(lastName.value);
+    }
+    if (nickname.present) {
+      map['nickname'] = Variable<String>(nickname.value);
+    }
+    if (email.present) {
+      map['email'] = Variable<String>(email.value);
+    }
+    if (linkedUserId.present) {
+      map['linked_user_id'] = Variable<String>(linkedUserId.value);
+    }
+    if (createdBy.present) {
+      map['created_by'] = Variable<String>(createdBy.value);
+    }
+    if (revision.present) {
+      map['revision'] = Variable<int>(revision.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deleted.present) {
+      map['deleted'] = Variable<bool>(deleted.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContactsCompanion(')
+          ..write('id: $id, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('firstName: $firstName, ')
+          ..write('lastName: $lastName, ')
+          ..write('nickname: $nickname, ')
+          ..write('email: $email, ')
+          ..write('linkedUserId: $linkedUserId, ')
+          ..write('createdBy: $createdBy, ')
+          ..write('revision: $revision, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deleted: $deleted, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -11512,6 +12236,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ChangeLogTable changeLog = $ChangeLogTable(this);
   late final $OrgPlaysTable orgPlays = $OrgPlaysTable(this);
   late final $SongReportsTable songReports = $SongReportsTable(this);
+  late final $ContactsTable contacts = $ContactsTable(this);
   late final Index orgMembershipsUser = Index(
     'org_memberships_user',
     'CREATE INDEX org_memberships_user ON org_memberships (user_id)',
@@ -11531,6 +12256,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final Index songReportsSong = Index(
     'song_reports_song',
     'CREATE INDEX song_reports_song ON song_reports (song_id)',
+  );
+  late final Index contactsOrganization = Index(
+    'contacts_organization',
+    'CREATE INDEX contacts_organization ON contacts (organization_id)',
   );
   late final Index attachmentsSong = Index(
     'attachments_song',
@@ -11583,11 +12312,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     changeLog,
     orgPlays,
     songReports,
+    contacts,
     orgMembershipsUser,
     membershipsBand,
     membershipsUser,
     songsLibrary,
     songReportsSong,
+    contactsOrganization,
     attachmentsSong,
     setlistsBand,
     setItemsSet,
@@ -15178,6 +15909,7 @@ typedef $$SetlistsTableCreateCompanionBuilder = SetlistsCompanion Function({
   Value<bool> purged,
   Value<List<String>> lineup,
   Value<bool> lineupCustom,
+  Value<List<String>> lineupContacts,
   Value<int> rowid,
 });
 typedef $$SetlistsTableUpdateCompanionBuilder = SetlistsCompanion Function({
@@ -15195,6 +15927,7 @@ typedef $$SetlistsTableUpdateCompanionBuilder = SetlistsCompanion Function({
   Value<bool> purged,
   Value<List<String>> lineup,
   Value<bool> lineupCustom,
+  Value<List<String>> lineupContacts,
   Value<int> rowid,
 });
 
@@ -15311,6 +16044,12 @@ class $$SetlistsTableFilterComposer
   ColumnFilters<bool> get lineupCustom => $composableBuilder(
     column: $table.lineupCustom,
     builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<List<String>, List<String>, String>
+  get lineupContacts => $composableBuilder(
+    column: $table.lineupContacts,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
   $$BandsTableFilterComposer get bandId {
@@ -15436,6 +16175,11 @@ class $$SetlistsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get lineupContacts => $composableBuilder(
+    column: $table.lineupContacts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$BandsTableOrderingComposer get bandId {
     final $$BandsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -15509,6 +16253,12 @@ class $$SetlistsTableAnnotationComposer
     column: $table.lineupCustom,
     builder: (column) => column,
   );
+
+  GeneratedColumnWithTypeConverter<List<String>, String> get lineupContacts =>
+      $composableBuilder(
+        column: $table.lineupContacts,
+        builder: (column) => column,
+      );
 
   $$BandsTableAnnotationComposer get bandId {
     final $$BandsTableAnnotationComposer composer = $composerBuilder(
@@ -15601,6 +16351,7 @@ class $$SetlistsTableTableManager
                 Value<bool> purged = const Value.absent(),
                 Value<List<String>> lineup = const Value.absent(),
                 Value<bool> lineupCustom = const Value.absent(),
+                Value<List<String>> lineupContacts = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SetlistsCompanion(
                 id: id,
@@ -15617,6 +16368,7 @@ class $$SetlistsTableTableManager
                 purged: purged,
                 lineup: lineup,
                 lineupCustom: lineupCustom,
+                lineupContacts: lineupContacts,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -15635,6 +16387,7 @@ class $$SetlistsTableTableManager
                 Value<bool> purged = const Value.absent(),
                 Value<List<String>> lineup = const Value.absent(),
                 Value<bool> lineupCustom = const Value.absent(),
+                Value<List<String>> lineupContacts = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SetlistsCompanion.insert(
                 id: id,
@@ -15651,6 +16404,7 @@ class $$SetlistsTableTableManager
                 purged: purged,
                 lineup: lineup,
                 lineupCustom: lineupCustom,
+                lineupContacts: lineupContacts,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -19286,6 +20040,331 @@ typedef $$SongReportsTableProcessedTableManager =
       SongReportRow,
       PrefetchHooks Function()
     >;
+typedef $$ContactsTableCreateCompanionBuilder = ContactsCompanion Function({
+  required String id,
+  required String organizationId,
+  required String firstName,
+  Value<String> lastName,
+  Value<String> nickname,
+  Value<String?> email,
+  Value<String?> linkedUserId,
+  Value<String?> createdBy,
+  Value<int> revision,
+  required DateTime updatedAt,
+  Value<bool> deleted,
+  Value<int> rowid,
+});
+typedef $$ContactsTableUpdateCompanionBuilder = ContactsCompanion Function({
+  Value<String> id,
+  Value<String> organizationId,
+  Value<String> firstName,
+  Value<String> lastName,
+  Value<String> nickname,
+  Value<String?> email,
+  Value<String?> linkedUserId,
+  Value<String?> createdBy,
+  Value<int> revision,
+  Value<DateTime> updatedAt,
+  Value<bool> deleted,
+  Value<int> rowid,
+});
+
+class $$ContactsTableFilterComposer
+    extends Composer<_$AppDatabase, $ContactsTable> {
+  $$ContactsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get firstName => $composableBuilder(
+    column: $table.firstName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastName => $composableBuilder(
+    column: $table.lastName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nickname => $composableBuilder(
+    column: $table.nickname,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get email => $composableBuilder(
+    column: $table.email,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get linkedUserId => $composableBuilder(
+    column: $table.linkedUserId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdBy => $composableBuilder(
+    column: $table.createdBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ContactsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ContactsTable> {
+  $$ContactsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get firstName => $composableBuilder(
+    column: $table.firstName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastName => $composableBuilder(
+    column: $table.lastName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nickname => $composableBuilder(
+    column: $table.nickname,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get email => $composableBuilder(
+    column: $table.email,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get linkedUserId => $composableBuilder(
+    column: $table.linkedUserId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdBy => $composableBuilder(
+    column: $table.createdBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ContactsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ContactsTable> {
+  $$ContactsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get firstName =>
+      $composableBuilder(column: $table.firstName, builder: (column) => column);
+
+  GeneratedColumn<String> get lastName =>
+      $composableBuilder(column: $table.lastName, builder: (column) => column);
+
+  GeneratedColumn<String> get nickname =>
+      $composableBuilder(column: $table.nickname, builder: (column) => column);
+
+  GeneratedColumn<String> get email =>
+      $composableBuilder(column: $table.email, builder: (column) => column);
+
+  GeneratedColumn<String> get linkedUserId => $composableBuilder(
+    column: $table.linkedUserId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdBy =>
+      $composableBuilder(column: $table.createdBy, builder: (column) => column);
+
+  GeneratedColumn<int> get revision =>
+      $composableBuilder(column: $table.revision, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get deleted =>
+      $composableBuilder(column: $table.deleted, builder: (column) => column);
+}
+
+class $$ContactsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ContactsTable,
+          ContactEntry,
+          $$ContactsTableFilterComposer,
+          $$ContactsTableOrderingComposer,
+          $$ContactsTableAnnotationComposer,
+          $$ContactsTableCreateCompanionBuilder,
+          $$ContactsTableUpdateCompanionBuilder,
+          (
+            ContactEntry,
+            BaseReferences<_$AppDatabase, $ContactsTable, ContactEntry>,
+          ),
+          ContactEntry,
+          PrefetchHooks Function()
+        > {
+  $$ContactsTableTableManager(_$AppDatabase db, $ContactsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ContactsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ContactsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ContactsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> organizationId = const Value.absent(),
+                Value<String> firstName = const Value.absent(),
+                Value<String> lastName = const Value.absent(),
+                Value<String> nickname = const Value.absent(),
+                Value<String?> email = const Value.absent(),
+                Value<String?> linkedUserId = const Value.absent(),
+                Value<String?> createdBy = const Value.absent(),
+                Value<int> revision = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ContactsCompanion(
+                id: id,
+                organizationId: organizationId,
+                firstName: firstName,
+                lastName: lastName,
+                nickname: nickname,
+                email: email,
+                linkedUserId: linkedUserId,
+                createdBy: createdBy,
+                revision: revision,
+                updatedAt: updatedAt,
+                deleted: deleted,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String organizationId,
+                required String firstName,
+                Value<String> lastName = const Value.absent(),
+                Value<String> nickname = const Value.absent(),
+                Value<String?> email = const Value.absent(),
+                Value<String?> linkedUserId = const Value.absent(),
+                Value<String?> createdBy = const Value.absent(),
+                Value<int> revision = const Value.absent(),
+                required DateTime updatedAt,
+                Value<bool> deleted = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ContactsCompanion.insert(
+                id: id,
+                organizationId: organizationId,
+                firstName: firstName,
+                lastName: lastName,
+                nickname: nickname,
+                email: email,
+                linkedUserId: linkedUserId,
+                createdBy: createdBy,
+                revision: revision,
+                updatedAt: updatedAt,
+                deleted: deleted,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ContactsTable, ContactEntry>(table),
+                  BaseReferences<_$AppDatabase, $ContactsTable, ContactEntry>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ContactsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ContactsTable,
+      ContactEntry,
+      $$ContactsTableFilterComposer,
+      $$ContactsTableOrderingComposer,
+      $$ContactsTableAnnotationComposer,
+      $$ContactsTableCreateCompanionBuilder,
+      $$ContactsTableUpdateCompanionBuilder,
+      (
+        ContactEntry,
+        BaseReferences<_$AppDatabase, $ContactsTable, ContactEntry>,
+      ),
+      ContactEntry,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -19328,4 +20407,6 @@ class $AppDatabaseManager {
       $$OrgPlaysTableTableManager(_db, _db.orgPlays);
   $$SongReportsTableTableManager get songReports =>
       $$SongReportsTableTableManager(_db, _db.songReports);
+  $$ContactsTableTableManager get contacts =>
+      $$ContactsTableTableManager(_db, _db.contacts);
 }
