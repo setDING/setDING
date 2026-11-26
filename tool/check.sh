@@ -49,6 +49,7 @@ job_tools() {
   python3 -m unittest -q test_server_targets
   cd "$ROOT/tool/server-dist"
   python3 -m unittest -q test_doc_example
+  python3 -m unittest -q test_previous_bundle
 }
 
 # A pure Dart package: format, analysis, tests.

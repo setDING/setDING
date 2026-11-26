@@ -12,7 +12,9 @@
 # Environment:
 #   PREVIOUS  the tag to use instead (e.g. v0.20.0)
 #   ARCH      amd64 or arm64 (default: this machine)
-#   OUT       output directory (default: build/server-dist/previous)
+#   PREVIOUS_OUT  output directory (default: build/server-dist/previous); its
+#             own name, so a caller's OUT (the release's bundles) is never
+#             used for it (#1073)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -25,7 +27,7 @@ if [ -z "${ARCH:-}" ]; then
     *) fail "unsupported architecture: $(uname -m); set ARCH" ;;
   esac
 fi
-OUT="${OUT:-$ROOT/build/server-dist/previous}"
+OUT="${PREVIOUS_OUT:-$ROOT/build/server-dist/previous}"
 # Absolute, so the printed path works from any directory (#1064).
 mkdir -p "$OUT"
 OUT="$(cd "$OUT" && pwd)"

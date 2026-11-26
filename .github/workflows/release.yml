@@ -351,7 +351,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: server
-          path: dist-server/setding-server-*-linux-*.tar.gz
+          path: dist-server/setding-server-${{ needs.version.outputs.version }}*-linux-*.tar.gz
           if-no-files-found: error
 
   # Validates every SBOM against the CycloneDX specification (ADR-0037), also
@@ -449,6 +449,6 @@ jobs:
           if [[ "$VERSION" != *-* ]]; then
             images="$images $repo:${VERSION%.*} $repo:latest"
           fi
-          BUNDLES="$(ls dist-server/setding-server-*-linux-*.tar.gz | tr '\n' ' ')" \
+          BUNDLES="$(ls dist-server/setding-server-"$VERSION"-linux-*.tar.gz | tr '\n' ' ')" \
             PLATFORMS=linux/amd64,linux/arm64 PUSH=1 IMAGE="$images" \
             tool/server-dist/build-image.sh
