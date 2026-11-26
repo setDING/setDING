@@ -55,7 +55,8 @@ abstract class BackupFolder {
   Future<List<String>> list(String location);
 
   /// Writes [bytes] as [name] into the folder: under a temporary name first,
-  /// renamed when complete, so a sync client never uploads half a file. An
+  /// renamed when complete, so a sync client never uploads half a file
+  /// (directly under [name] where the folder rejects the temporary name). An
   /// existing file [name] is replaced.
   Future<void> write(String location, String name, Uint8List bytes);
 

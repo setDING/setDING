@@ -48,7 +48,7 @@ class BackupFolderChannel(
                 write(
                     tree(call),
                     call.argument<String>("name")!!,
-                    call.argument<String>("part")!!,
+                    call.argument<String>("part"),
                     call.argument<ByteArray>("bytes")!!,
                 )
                 null
@@ -222,22 +222,19 @@ class BackupFolderChannel(
 
     /**
      * Writes [bytes] as [part], then renames it to [name], replacing an
-     * existing [name]. Providers that cannot rename get [name] written
-     * directly.
+     * existing [name]. Without [part] (the folder rejected it, #1106) and
+     * for providers that cannot rename, [name] is written directly.
      */
-    private fun write(tree: Uri, name: String, part: String, bytes: ByteArray) {
+    private fun write(tree: Uri, name: String, part: String?, bytes: ByteArray) {
         val resolver = activity.contentResolver
         val existing = list(tree)
+        if (part == null) {
+            existing[name]?.let { DocumentsContract.deleteDocument(resolver, it) }
+            writeNew(tree, name, "application/zip", bytes)
+            return
+        }
         existing[part]?.let { DocumentsContract.deleteDocument(resolver, it) }
-        val folder = folderDocument(tree)
-        val temp = DocumentsContract.createDocument(
-            resolver,
-            folder,
-            "application/octet-stream",
-            part,
-        ) ?: throw FolderException("unavailable", "Cannot create $part")
-        resolver.openOutputStream(temp, "wt")?.use { it.write(bytes) }
-            ?: throw FolderException("failed", "Cannot write $part")
+        val temp = writeNew(tree, part, "application/octet-stream", bytes)
         existing[name]?.let { DocumentsContract.deleteDocument(resolver, it) }
         val renamed = try {
             DocumentsContract.renameDocument(resolver, temp, name)
@@ -246,16 +243,23 @@ class BackupFolderChannel(
         }
         if (renamed == null) {
             // No rename: write the file itself, then remove the temporary one.
-            val target = DocumentsContract.createDocument(
-                resolver,
-                folder,
-                "application/zip",
-                name,
-            ) ?: throw FolderException("failed", "Cannot create $name")
-            resolver.openOutputStream(target, "wt")?.use { it.write(bytes) }
-                ?: throw FolderException("failed", "Cannot write $name")
+            writeNew(tree, name, "application/zip", bytes)
             DocumentsContract.deleteDocument(resolver, temp)
         }
+    }
+
+    /** Creates the document [name] in the folder with [bytes]. */
+    private fun writeNew(tree: Uri, name: String, mime: String, bytes: ByteArray): Uri {
+        val resolver = activity.contentResolver
+        val document = DocumentsContract.createDocument(
+            resolver,
+            folderDocument(tree),
+            mime,
+            name,
+        ) ?: throw FolderException("unavailable", "Cannot create $name")
+        resolver.openOutputStream(document, "wt")?.use { it.write(bytes) }
+            ?: throw FolderException("failed", "Cannot write $name")
+        return document
     }
 
     companion object {
