@@ -265,7 +265,7 @@ Notes:
 | **MVP** ✅ | ChordPro parser & renderer (notation B/H, Nashville), local song library, PDF attachments, creating sets, live mode, import/export, German/English UI – initially **without** a backend (single device) |
 | **Phase 1** | Backend, login, bands & roles (several admins, several bands per user), sync of songs, sets and PDF files incl. conflict handling |
 | **Phase 2** ✅ | Web client for management at `app.setding.app` (ADR-0018; done in #27), synced personal overlays (per user, ADR-0020; done in #81, #82) |
-| **Website** | Landing page and user documentation at `setding.app` (ADR-0030, #388): skeleton with first steps and installation; remaining chapters, privacy policy and legal notice follow |
+| **Website** | Landing page and user documentation at `setding.app` (ADR-0030, #388): skeleton with first steps and installation; remaining chapters follow; privacy policy and legal notice drafted with placeholders (#1118) |
 | **Towards version 1** | Re-enable CI as a required check on every PR and push to `main` (manual-only during early development, ADR-0010), branch protection; release builds for Linux, Android and Windows exist (ADR-0021), Windows installer with in-app updates (ADR-0035), CycloneDX SBOM per release asset (ADR-0037), iOS open; then release **1.0.0** (ADR-0028) |
 | **Freehand annotations** ✅ | Personal freehand notes on songs and PDF pages, synced and editable (ADR-0032, implemented in #428) |
 | **Song display styles** ✅ | Personal styles per section type for live mode and the song view (ADR-0033, implemented in #473–#476, #471); monospace font option (#526); Black/White preset (#536) |

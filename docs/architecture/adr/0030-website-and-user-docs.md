@@ -116,6 +116,6 @@ Constraints:
 
 - Remaining documentation chapters (sets, live mode, songs and the editor, bands and
   roles, settings, self-hosting) in follow-up PRs.
-- Privacy policy and legal notice (needed for the app stores).
+- Privacy policy and legal notice (needed for the app stores): draft pages `/privacy/` and `/legal-notice/`, linked in the footer of every page (#1118); the owner fills in the placeholders (name, address, contact email, mail provider, log retention) before they go live.
 - Whether feature PRs must update the user documentation (a rule in the git
   workflow, which only the owner may change).
