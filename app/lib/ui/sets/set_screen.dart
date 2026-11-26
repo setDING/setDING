@@ -98,7 +98,9 @@ class _SetScreenState extends ConsumerState<SetScreen> {
       songMissing: l10n.songMissing,
       markerName: (icon) => markerIconName(l10n, icon),
       lineup: switch (ref.read(setLineupProvider(set.id))) {
-        final lineup? => '${l10n.lineup}: ${lineupNames(l10n, lineup)}',
+        // People without an account are not marked on paper (ADR-0064).
+        final lineup? =>
+          '${l10n.lineup}: ${lineupNames(l10n, lineup, markContacts: false)}',
         null => null,
       },
     );

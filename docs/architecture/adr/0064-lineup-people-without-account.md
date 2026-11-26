@@ -239,6 +239,15 @@ be in the lineup of old sets:
   in lineups, only the others are offered. Until the lineup dialog shows
   contacts (#1099), saving it keeps them and *Whole band* drops them. A set
   copied into another band and a closed organization drop them as well.
+- 2026-11-26: Lineup dialog, set view and set list implemented (#1099):
+  the dialog has a section *People without an account* with check boxes;
+  *Add people* offers the organization's people and its contacts (marked
+  *No account*, deleted ones left out) with one search, and *New person
+  without an account* (first name required; last name, nickname and an
+  optional mail address checked on the device) creates one offline and puts
+  it in the lineup. The set view, the set card and the message of *Notify
+  lineup* mark contacts *No account*, the printed set list does not;
+  contacts of a lineup this device does not know yet are kept when saving.
 
 ## Open points
 

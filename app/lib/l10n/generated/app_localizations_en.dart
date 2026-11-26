@@ -6400,6 +6400,25 @@ class AppLocalizationsEn extends AppLocalizations {
       'Everyone in the organization is in the lineup already.';
 
   @override
+  String get lineupNoAccount => 'No account';
+
+  @override
+  String get lineupPeopleWithoutAccount => 'People without an account';
+
+  @override
+  String get lineupNewContact => 'New person without an account';
+
+  @override
+  String get contactEmail => 'Mail address (optional)';
+
+  @override
+  String get contactEmailHint =>
+      'Only people who plan sets see it. “Notify lineup” writes to this address.';
+
+  @override
+  String get contactNameHint => 'Only the first name is needed.';
+
+  @override
   String get lineupNobody => 'Nobody planned';
 
   @override

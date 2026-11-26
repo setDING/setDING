@@ -6450,6 +6450,25 @@ class AppLocalizationsDe extends AppLocalizations {
       'Alle Personen der Organisation sind schon in der Besetzung.';
 
   @override
+  String get lineupNoAccount => 'Ohne Konto';
+
+  @override
+  String get lineupPeopleWithoutAccount => 'Personen ohne Konto';
+
+  @override
+  String get lineupNewContact => 'Neue Person ohne Konto';
+
+  @override
+  String get contactEmail => 'Mailadresse (optional)';
+
+  @override
+  String get contactEmailHint =>
+      'Sehen nur Personen, die Sets planen. «Besetzung benachrichtigen» schreibt an diese Adresse.';
+
+  @override
+  String get contactNameHint => 'Nur der Vorname ist nötig.';
+
+  @override
   String get lineupNobody => 'Niemand eingeplant';
 
   @override

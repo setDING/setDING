@@ -7,12 +7,22 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import 'lineup_dialog.dart';
 
-/// The names of a lineup in one line, substitutes marked (ADR-0061).
-String lineupNames(AppLocalizations l10n, SetLineup lineup) {
-  if (lineup.people.isEmpty) return l10n.lineupNobody;
+/// The names of a lineup in one line, substitutes (ADR-0061) and people
+/// without an account (ADR-0064) marked; without [markContacts] (the
+/// printed set list), people without an account are not marked.
+String lineupNames(
+  AppLocalizations l10n,
+  SetLineup lineup, {
+  bool markContacts = true,
+}) {
+  if (lineup.people.isEmpty && lineup.contacts.isEmpty) {
+    return l10n.lineupNobody;
+  }
   return [
     for (final p in lineup.people)
       p.substitute ? '${p.name} (${l10n.lineupSubstitute})' : p.name,
+    for (final c in lineup.contacts)
+      markContacts ? '${c.name} (${l10n.lineupNoAccount})' : c.name,
   ].join(', ');
 }
 
