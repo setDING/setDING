@@ -1,10 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../widgets/dialogs.dart';
-import 'bands_screen.dart';
+import '../routes.dart';
 
 /// Shown on the sets tab and the overview while the chosen song library is
 /// an organization without a band of the user (#856): sets belong to a
@@ -22,10 +23,7 @@ class NoBandHint extends ConsumerWidget {
       message: l10n.noBandInLibrary(library.name),
       action: FilledButton.tonalIcon(
         key: const Key('no-band-manage'),
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute<void>(builder: (_) => const BandsScreen()),
-        ),
+        onPressed: () => context.push<void>(AppPaths.bands),
         icon: const Icon(Icons.settings_outlined),
         label: Text(l10n.bandManage),
       ),

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:drift/drift.dart' show Variable;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../data/auto_backup.dart';
 import '../../data/backup.dart';
@@ -16,10 +17,10 @@ import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../../sync/sync_controller.dart';
 import '../sets/sets_screen.dart' show formatGigDate;
-import '../songs/song_screen.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
 import 'backup_actions.dart';
+import '../routes.dart';
 import 'replace_local.dart' show confirmLocalReplace;
 
 export '../../data/auto_backup.dart' show lastBackupKey;
@@ -561,12 +562,7 @@ class _FullRestoreDialogState extends ConsumerState<_FullRestoreDialog> {
                     leading: const Icon(Icons.library_music_outlined),
                     title: Text(song.title),
                     trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute<void>(
-                        builder: (_) => SongScreen(songId: song.id),
-                      ),
-                    ),
+                    onTap: () => context.push<void>(AppPaths.song(song.id)),
                   ),
               ],
             ],

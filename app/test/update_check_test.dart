@@ -5,7 +5,6 @@ import 'package:setding/app.dart';
 import 'package:setding/sync/auth_providers.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/sync/update_check.dart';
-import 'package:setding/ui/home_screen.dart';
 import 'package:setding/ui/settings_screen.dart';
 import 'package:setding/util/semver.dart';
 
@@ -48,7 +47,7 @@ void main() {
           clientVersionProvider.overrideWithValue('0.6.0'),
           updateCheckEnabledProvider.overrideWithValue(enabled),
         ],
-        child: SetdingApp(home: home ?? const HomeScreen()),
+        child: SetdingApp(home: home),
       );
 
   Future<TestApp> create(
@@ -172,7 +171,10 @@ void main() {
     final app = await create(tester);
     await tester.pumpWidget(build(app));
     await tester.pumpAndSettle();
-    final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+    // The root navigator, above the tabs' own (ADR-0065).
+    final navigator = tester.state<NavigatorState>(
+      find.byType(Navigator).first,
+    );
     navigator.push(
       MaterialPageRoute<void>(
         builder: (_) => const Scaffold(body: Text('Live')),

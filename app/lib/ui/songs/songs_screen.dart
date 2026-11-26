@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:chordpro/chordpro.dart' as cp;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../data/database.dart';
 import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
-import '../trash/trash_screen.dart';
 import '../../settings/settings.dart';
 import '../account/sync_refresh.dart';
 import '../backup/backup_actions.dart';
@@ -18,15 +18,13 @@ import '../sets/sets_screen.dart' show formatGigDate;
 import '../widgets/app_shortcuts.dart';
 import '../widgets/dialogs.dart';
 import 'import_dialog.dart';
-import 'library_usage_screen.dart';
 import 'song_archive_dialogs.dart';
 import 'song_attention.dart';
-import 'song_editor_screen.dart';
 import 'song_language.dart';
-import 'song_screen.dart';
 import '../widgets/menu_action.dart';
 
 import 'song_list.dart';
+import '../routes.dart';
 
 /// Songs of the list in the order [sort], with the hits of the search that
 /// found them.
@@ -115,11 +113,9 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
     if (title == null || !mounted) return;
     final id = await ref.read(songRepositoryProvider).createSong(title: title);
     if (!mounted) return;
-    await Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (_) => SongScreen(songId: id, pickPdfOnOpen: true),
-      ),
+    await context.push(
+      AppPaths.song(id),
+      extra: songExtra(pickPdfOnOpen: true),
     );
   }
 
@@ -303,19 +299,12 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                   PopupMenuButton<String>(
                     key: const Key('songs-menu'),
                     onSelected: (value) => switch (value) {
-                      'trash' => Navigator.push(
-                        context,
-                        MaterialPageRoute<void>(
-                          builder: (_) =>
-                              TrashScreen.songs(libraryId: library.id),
-                        ),
+                      'trash' => context.push<void>(
+                        AppPaths.songsTrash(library.id),
                       ),
                       'backup' => exportBackup(context, ref, library),
-                      'usage' => Navigator.push(
-                        context,
-                        MaterialPageRoute<void>(
-                          builder: (_) => LibraryUsageScreen(library: library),
-                        ),
+                      'usage' => context.push<void>(
+                        AppPaths.libraryUsage(library.id),
                       ),
                       _ => setState(() => _selected = {}),
                     },
@@ -358,12 +347,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
             ? null
             : FloatingActionButton.extended(
                 heroTag: null,
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (_) => const SongEditorScreen(),
-                  ),
-                ),
+                onPressed: () => context.push<void>(AppPaths.songNew),
                 icon: const Icon(Icons.add),
                 label: Text(l10n.newSong),
               ),
@@ -438,12 +422,7 @@ class _SongsScreenState extends ConsumerState<SongsScreen> {
                     onLongPress: () => _toggle(list[i].id),
                     onTap: selected != null
                         ? () => _toggle(list[i].id)
-                        : () => Navigator.push(
-                            context,
-                            MaterialPageRoute<void>(
-                              builder: (_) => SongScreen(songId: list[i].id),
-                            ),
-                          ),
+                        : () => context.push<void>(AppPaths.song(list[i].id)),
                   );
                   return SyncRefresh(
                     child: SongListView(sections: sections, tile: tile),

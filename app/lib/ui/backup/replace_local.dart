@@ -93,7 +93,8 @@ Future<BackupImportResult?> replaceLocalLibrary(
   if (!context.mounted) return null;
   final l10n = AppLocalizations.of(context);
   final messenger = ScaffoldMessenger.of(context);
-  final navigator = Navigator.of(context);
+  // The dialog is on the root navigator, above the tabs' own (ADR-0065).
+  final navigator = Navigator.of(context, rootNavigator: true);
   unawaited(
     showDialog<void>(
       context: context,

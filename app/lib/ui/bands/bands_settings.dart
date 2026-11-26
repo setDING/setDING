@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import 'bands_screen.dart';
-import 'join_screen.dart';
+import '../routes.dart';
 
 /// The "Organization & bands" category of the settings (ADR-0005, ADR-0017):
 /// the organizations and bands of the signed-in user, joining with an
@@ -58,10 +59,7 @@ class _BandsSettingsState extends ConsumerState<BandsSettings> {
           title: Text(l10n.joinTitle),
           subtitle: Text(l10n.settingsBandsJoinHint),
           trailing: const Icon(Icons.chevron_right),
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute<bool>(builder: (_) => const JoinScreen()),
-          ),
+          onTap: () => context.push<bool>(AppPaths.join),
         ),
       ],
     );

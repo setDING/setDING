@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,6 +27,9 @@ import 'util/log.dart';
 const _log = Log('app');
 
 Future<void> main() async {
+  // Path URLs on the web (`/sets/<id>`, not `/#/sets/<id>`), so a link
+  // works in the browser and as an App Link (ADR-0065). No-op elsewhere.
+  usePathUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
   // Logo while the local services start. On Android, iOS and the web it
   // replaces the identical native / HTML splash; on Windows and Linux it is

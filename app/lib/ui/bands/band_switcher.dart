@@ -1,12 +1,13 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../data/band_view.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../sync/auth_providers.dart';
 import 'band_labels.dart';
-import 'bands_screen.dart';
+import '../routes.dart';
 
 /// App bar button showing the current band; opens a menu to switch bands
 /// (ADR-0005). Hidden while there is only the local library and nobody is
@@ -33,10 +34,7 @@ class BandSwitcher extends ConsumerWidget {
       tooltip: l10n.bandSwitch,
       onSelected: (id) {
         if (id == _manage) {
-          Navigator.push(
-            context,
-            MaterialPageRoute<void>(builder: (_) => const BandsScreen()),
-          );
+          context.push<void>(AppPaths.bands);
         } else {
           ref.read(selectedBandIdProvider.notifier).select(id);
         }

@@ -20,6 +20,26 @@ void main() {
           if (pattern.hasMatch(line)) '${f.path}:${i + 1}: ${line.trim()}',
   ];
 
+  test('screens open through the router, with a path (ADR-0065)', () {
+    // `context.push(AppPaths.…)`; only full-screen dialogs that return a
+    // value (pickers) keep a page route of their own.
+    final offenders = <String>[];
+    for (final f in files) {
+      final lines = f.readAsLinesSync();
+      for (final (i, line) in lines.indexed) {
+        if (!RegExp(r'\b(MaterialPageRoute|PageRouteBuilder)\b')
+            .hasMatch(line)) {
+          continue;
+        }
+        final block = lines.skip(i).take(4).join(' ');
+        if (!block.contains('fullscreenDialog: true')) {
+          offenders.add('${f.path}:${i + 1}: ${line.trim()}');
+        }
+      }
+    }
+    expect(offenders, isEmpty);
+  });
+
   test('messages use showMessage, showMessageOn or showUndo', () {
     expect(
       offending(RegExp(r'\bSnackBar\('), allowed: ['widgets/dialogs.dart']),

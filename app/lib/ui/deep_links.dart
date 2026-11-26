@@ -3,9 +3,10 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../sync/sync_backend.dart';
-import 'bands/join_screen.dart';
+import 'routes.dart';
 import '../util/log.dart';
 
 const _log = Log('links');
@@ -22,15 +23,10 @@ final incomingLinksProvider = Provider<Stream<Uri>>((ref) {
   }
 });
 
-/// Opens the join screen for invitation links.
+/// Opens the join screen for invitation links, through the router.
 class DeepLinkListener extends ConsumerStatefulWidget {
-  const DeepLinkListener({
-    super.key,
-    required this.navigatorKey,
-    required this.child,
-  });
+  const DeepLinkListener({super.key, required this.child});
 
-  final GlobalKey<NavigatorState> navigatorKey;
   final Widget child;
 
   @override
@@ -54,9 +50,12 @@ class _DeepLinkListenerState extends ConsumerState<DeepLinkListener> {
   void _open(Uri uri) {
     final token = inviteTokenFrom(uri.toString());
     if (token == null) return;
-    widget.navigatorKey.currentState?.push(
-      MaterialPageRoute<bool>(builder: (_) => JoinScreen(initialLink: token)),
-    );
+    if (!mounted) return;
+    // On the web the router already opened the link of the page (ADR-0065).
+    final router = GoRouter.of(context);
+    final location = AppPaths.invite(token);
+    if (router.state.uri.path == location) return;
+    router.push(location);
   }
 
   @override

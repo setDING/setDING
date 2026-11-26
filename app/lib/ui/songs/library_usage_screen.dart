@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../data/band_view.dart';
 import '../../data/database.dart';
@@ -7,8 +8,8 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../sets/sets_screen.dart' show formatGigDate;
 import '../widgets/dialogs.dart';
-import 'song_screen.dart';
 import '../widgets/page_width.dart';
+import '../routes.dart';
 
 /// The songs of an organization's library that no band played (ADR-0046),
 /// from the summary of the last sync, for organization admins and
@@ -102,12 +103,7 @@ class LibraryUsageScreen extends ConsumerWidget {
                         song.title.isEmpty ? l10n.untitled : song.title,
                       ),
                       subtitle: song.artist == null ? null : Text(song.artist!),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute<void>(
-                          builder: (_) => SongScreen(songId: song.id),
-                        ),
-                      ),
+                      onTap: () => context.push<void>(AppPaths.song(song.id)),
                       trailing: IconButton(
                         key: ValueKey('library-usage-delete-${song.id}'),
                         tooltip: l10n.delete,

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../data/change_log.dart';
 import '../../data/database.dart';
@@ -9,7 +10,7 @@ import '../../providers.dart';
 import '../../settings/settings.dart'
     show nameFormatProvider, sharedPreferencesProvider;
 import '../sets/sets_screen.dart' show openSet;
-import '../songs/song_screen.dart';
+import '../routes.dart';
 
 /// When this device last showed the overview (ADR-0045): a device
 /// setting, never synced. Null on a new installation. The overview marks
@@ -148,12 +149,7 @@ class RecentChangeTile extends ConsumerWidget {
       subtitle: Text(subtitle),
       onTap: () => isSet
           ? openSet(context, ref, change.recordId, wide: false)
-          : Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                builder: (_) => SongScreen(songId: change.recordId),
-              ),
-            ),
+          : context.push<void>(AppPaths.song(change.recordId)),
     );
   }
 }

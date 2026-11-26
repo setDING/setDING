@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../l10n/generated/app_localizations.dart';
 import '../../data/person_name.dart';
@@ -11,6 +12,7 @@ import '../account/sign_in_screen.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/page_width.dart';
 import 'qr_scanner.dart';
+import '../routes.dart';
 
 /// Joins an organization with an invitation link (ADR-0005, ADR-0017):
 /// opened by a deep link, by pasting the link or, on phones and tablets, by
@@ -186,15 +188,13 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
                 const SizedBox(height: 16),
                 FilledButton(
                   key: const Key('join-sign-up'),
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute<bool>(
-                      builder: (_) => SignInScreen(
-                        signUp: true,
-                        invite: _token,
-                        // A personal invitation prefills it (ADR-0064).
-                        prefill: preview.contact,
-                      ),
+                  onPressed: () => context.push<bool>(
+                    AppPaths.signIn,
+                    extra: signInExtra(
+                      signUp: true,
+                      invite: _token,
+                      // A personal invitation prefills it (ADR-0064).
+                      prefill: preview.contact,
                     ),
                   ),
                   child: Text(l10n.accountSignUp),
@@ -202,11 +202,9 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
                 const SizedBox(height: 8),
                 OutlinedButton(
                   key: const Key('join-sign-in'),
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute<bool>(
-                      builder: (_) => SignInScreen(invite: _token),
-                    ),
+                  onPressed: () => context.push<bool>(
+                    AppPaths.signIn,
+                    extra: signInExtra(invite: _token),
                   ),
                   child: Text(l10n.joinHaveAccount),
                 ),

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../data/backup.dart';
 import '../../data/band_view.dart';
@@ -10,12 +11,12 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart' show sharedPreferencesProvider;
 import '../../sync/sync_controller.dart';
-import '../songs/song_screen.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/export_file.dart';
 import 'full_backup.dart' show lastBackupKey;
 import 'replace_local.dart';
 import '../widgets/loading_indicator.dart';
+import '../routes.dart';
 
 /// Exports [library] as a backup archive (ADR-0043). An organization is
 /// synced first; the export stops if anything is not on this device yet.
@@ -64,7 +65,8 @@ Future<void> runBackupExport(
   final step = ValueNotifier<String>(
     sync ? l10n.backupSyncing : l10n.backupCollecting,
   );
-  final navigator = Navigator.of(context);
+  // The dialog is on the root navigator, above the tabs' own (ADR-0065).
+  final navigator = Navigator.of(context, rootNavigator: true);
   var open = true;
   unawaited(
     showDialog<void>(
@@ -479,12 +481,7 @@ class _BackupImportDialogState extends ConsumerState<_BackupImportDialog> {
                     leading: const Icon(Icons.library_music_outlined),
                     title: Text(song.title),
                     trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute<void>(
-                        builder: (_) => SongScreen(songId: song.id),
-                      ),
-                    ),
+                    onTap: () => context.push<void>(AppPaths.song(song.id)),
                   ),
               ],
             ],

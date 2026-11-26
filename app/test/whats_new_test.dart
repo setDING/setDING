@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/app.dart';
 import 'package:setding/sync/auth_providers.dart';
-import 'package:setding/ui/home_screen.dart';
 import 'package:setding/update/whats_new.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -137,7 +136,7 @@ void main() {
         clientVersionProvider.overrideWithValue(version),
         whatsNewProvider.overrideWith((ref) async => all),
       ],
-      child: const SetdingApp(home: HomeScreen()),
+      child: const SetdingApp(),
     );
 
     Future<TestApp> create(

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -15,12 +16,8 @@ import 'backup/auto_backup_tiles.dart';
 import 'backup/full_backup.dart';
 import '../providers.dart' show autoBackupProvider, webClientProvider;
 import 'home_tab.dart';
-import 'overview/overview_screen.dart';
-import 'sets/sets_screen.dart';
-import 'settings_screen.dart';
 import 'sync_hints.dart';
 import 'songs/song_reports.dart' show listenForReportAnswers;
-import 'songs/songs_screen.dart';
 import 'widgets/app_update.dart';
 import 'widgets/dialogs.dart';
 import 'widgets/logo.dart';
@@ -31,20 +28,17 @@ import 'widgets/whats_new_dialog.dart';
 /// settings ([HomeTab]). On wide screens the rail shows the logo mark at its
 /// top.
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, required this.navigation});
+
+  /// The tabs with their own navigation history (ADR-0065): the tab shown is
+  /// part of the URL (`/`, `/sets`, `/songs`, `/settings`).
+  final StatefulNavigationShell navigation;
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  static const _pages = {
-    HomeTab.overview: OverviewScreen(),
-    HomeTab.sets: SetsScreen(),
-    HomeTab.songs: SongsScreen(),
-    HomeTab.settings: SettingsScreen(),
-  };
-
   /// Key of the navigation entry of the tab [i], e.g. `nav-sets`.
   static Key _navKey(int i) => Key('nav-${HomeTab.values[i].name}');
 
@@ -60,6 +54,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    // Another screen switched tabs (e.g. the overview's *To do* card): the
+    // main navigation goes there, which changes the URL (ADR-0065).
+    ref.listenManual(homeTabProvider, (_, tab) {
+      if (tab.index != widget.navigation.currentIndex) {
+        widget.navigation.goBranch(tab.index);
+      }
+    });
     // The automatic backup of the local library (ADR-0054): at the start
     // and when the app goes to the background, then a hint if it failed.
     _lifecycle = AppLifecycleListener(onHide: _autoBackup);
@@ -113,6 +114,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onPressed: () => showWhatsNew(context, notes),
       ),
     );
+  }
+
+  /// Makes [homeTabProvider] follow the tab of the URL, e.g. after the
+  /// browser's back button.
+  void _syncTab() {
+    final tab = HomeTab.values[widget.navigation.currentIndex];
+    if (ref.read(homeTabProvider) != tab) {
+      ref.read(homeTabProvider.notifier).select(tab);
+    }
   }
 
   @override
@@ -256,13 +266,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       isLabelVisible: dot,
       child: Icon(data),
     );
-    final tab = ref.watch(homeTabProvider).index;
+    // The URL decides the tab; [homeTabProvider] follows it, and other
+    // screens switch tabs through it (see initState).
+    final tab = widget.navigation.currentIndex;
+    if (ref.read(homeTabProvider).index != tab) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _syncTab();
+      });
+    }
     void select(int i) =>
         ref.read(homeTabProvider.notifier).select(HomeTab.values[i]);
-    final pages = IndexedStack(
-      index: tab,
-      children: [for (final t in HomeTab.values) _pages[t]!],
-    );
+    final pages = widget.navigation;
     // Above all tabs when the server refused this version (ADR-0029); the
     // banner takes the top inset, so the app bars below do not add it again.
     final body = ref.watch(updateRequiredProvider)

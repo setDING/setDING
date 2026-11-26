@@ -6,7 +6,6 @@ import 'package:setding/app.dart';
 import 'package:setding/sync/auth_providers.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/ui/account/sign_in_screen.dart';
-import 'package:setding/ui/home_screen.dart';
 import 'package:setding/ui/settings_screen.dart';
 import 'package:setding/ui/widgets/update_required_banner.dart';
 import 'package:setding/util/semver.dart';
@@ -54,7 +53,7 @@ void main() {
     });
   });
 
-  Widget build(TestApp app, Widget home, {String version = '0.6.0'}) =>
+  Widget build(TestApp app, Widget? home, {String version = '0.6.0'}) =>
       ProviderScope(
         overrides: [
           ...app.overrides,
@@ -75,7 +74,7 @@ void main() {
 
   testWidgets('a refused sync shows the banner above all tabs', (tester) async {
     final app = await signedIn(tester);
-    await tester.pumpWidget(build(app, const HomeScreen()));
+    await tester.pumpWidget(build(app, null));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('update-required-banner')), findsNothing);
 

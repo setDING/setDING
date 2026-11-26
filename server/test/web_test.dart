@@ -99,4 +99,16 @@ void main() {
     expect(r.raw.body, isNot(contains('setding://')));
     expectIsolated(r);
   });
+
+  // ADR-0065 (#1113): screens have path URLs, so a reload or a shared link
+  // on the web hostname loads the web client (PocketBase's index fallback),
+  // not a 404.
+  test('app paths on the web hostname serve the web client', () async {
+    for (final path in ['/sets/abc', '/songs/abc/edit', '/settings/live']) {
+      final r = await pb.guest.send('GET', path, headers: {'host': 'web.test'});
+      r.expectStatus(200);
+      expect(r.raw.body, contains(marker), reason: path);
+      expectIsolated(r);
+    }
+  });
 }

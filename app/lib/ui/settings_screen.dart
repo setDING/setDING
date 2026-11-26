@@ -4,6 +4,7 @@ import 'package:chordpro/chordpro.dart' hide Key;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../l10n/generated/app_localizations.dart';
 import '../providers.dart';
@@ -22,7 +23,6 @@ import 'bands/bands_settings.dart';
 import 'settings/app_menu_entry_tile.dart';
 import 'settings/latency_calibration.dart';
 import 'settings/midi_settings.dart';
-import 'settings/midi_test_screen.dart';
 import 'live/page_turner.dart' show pageTurnerInUseProvider;
 import 'settings/page_turner_settings.dart';
 import 'settings/settings_layout.dart';
@@ -36,6 +36,7 @@ import 'widgets/click_pickers.dart' show subdivisionLabel;
 import 'widgets/dialogs.dart';
 import 'widgets/docs_link.dart';
 import 'widgets/section_header.dart';
+import 'routes.dart';
 
 /// The categories of the settings screen, in order.
 /// The most used ones come first; the account and the organizations and
@@ -90,6 +91,10 @@ class SettingsScreen extends ConsumerStatefulWidget {
   /// Minimum width for showing the categories and their content side by side.
   static const wideLayoutWidth = 640.0;
 
+  /// The page of [category] by itself, at `/settings/<category>`.
+  static Widget categoryPage(SettingsCategory category) =>
+      _CategoryPage(category: category);
+
   @override
   ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
@@ -118,11 +123,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (_wide) {
       setState(() => _selected = category);
     } else {
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => _CategoryPage(category: category),
-        ),
-      );
+      context.push(AppPaths.settingsCategory(category));
     }
   }
 
@@ -151,11 +152,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _wide = wide;
           if (!wide) {
             return _CategoryList(
-              onSelected: (c) => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => _CategoryPage(category: c),
-                ),
-              ),
+              onSelected: (c) => context.push(AppPaths.settingsCategory(c)),
             );
           }
           return Row(
@@ -795,11 +792,7 @@ class _CategoryContent extends ConsumerWidget {
                 title: Text(l10n.midiTestTitle),
                 subtitle: Text(l10n.midiTestTileHint),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const MidiTestScreen(),
-                  ),
-                ),
+                onTap: () => context.push(AppPaths.midiTest),
               ),
             ],
           ),

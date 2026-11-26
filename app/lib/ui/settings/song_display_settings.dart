@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:chordpro/chordpro.dart' hide Key;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../l10n/generated/app_localizations.dart';
 import '../../settings/settings.dart';
@@ -17,6 +18,7 @@ import '../widgets/dialogs.dart';
 import 'settings_layout.dart';
 import '../widgets/section_header.dart';
 import '../widgets/menu_action.dart';
+import '../routes.dart';
 
 /// Song shown in the preview: every section type once. Original text
 /// written for setDING, like the demo song.
@@ -250,11 +252,7 @@ class SongDisplaySettings extends ConsumerWidget {
             title: Text(l10n.songDisplayCustomise),
             subtitle: Text(l10n.songDisplayCustomiseHint),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const SongDisplayEditorScreen(),
-              ),
-            ),
+            onTap: () => context.push<void>(AppPaths.songDisplayEditor),
           ),
         ],
       ),

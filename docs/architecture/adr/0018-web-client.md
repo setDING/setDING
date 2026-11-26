@@ -204,6 +204,12 @@ Tracked in issue #27, each step a separate PR:
 - 2026-11-26: Sets are exported on web as well (#1081): the set's ⋮ menu offers
   **Export …** with the set archive and the printable set list as a download,
   like the song archive before; the guard from #115 hid it.
+- 2026-11-27: **Path URLs** (ADR-0065, #1113): every screen has a path
+  (`/sets/<id>`, …, `usePathUrlStrategy`, no `#`); the browser's back and
+  forward buttons follow the app's screens and a reload keeps the screen.
+  PocketBase's index fallback serves `index.html` for these paths. A
+  signed-out visitor of a path sees the sign-in gate and is taken to the path
+  after signing in.
 
 ## Open points
 
