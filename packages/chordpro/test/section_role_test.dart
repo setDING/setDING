@@ -28,6 +28,20 @@ void main() {
         'Coda': SectionRole.outro,
         'Tag': SectionRole.outro,
         'Post-Chorus': SectionRole.standard,
+        // German and Swiss names (#1085).
+        'Vorspiel': SectionRole.intro,
+        'Einleitung': SectionRole.intro,
+        'Ref. 2': SectionRole.chorus,
+        'Kehrvers': SectionRole.chorus,
+        'Vorrefrain': SectionRole.preChorus,
+        'Brücke': SectionRole.bridge,
+        'BRÜCKE': SectionRole.bridge,
+        'Zwischenteil': SectionRole.bridge,
+        'Überleitung': SectionRole.interlude,
+        'Nachspiel': SectionRole.outro,
+        'Abschluss': SectionRole.outro,
+        'Ende': SectionRole.outro,
+        'Nachrefrain': SectionRole.standard,
       };
       for (final MapEntry(:key, :value) in cases.entries) {
         expect(sectionRoleOfName(key), value, reason: key);

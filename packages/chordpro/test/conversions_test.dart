@@ -44,4 +44,20 @@ void main() {
       contains('{start_of_grid shape="1x4" label="Turnaround"}'),
     );
   });
+
+  // #1085: converting kept German labels; section names are English.
+  test('translates German section labels, also of converted headings', () {
+    const source =
+        '{title: T}\n{start_of_verse: label="Vers 1"}\n[G]La\n{end_of_verse}\n'
+        '{comment: Schluss}\n[C]Ja\n';
+    // One label, one heading that is also a German label.
+    expect(countChordProConversions(source), 3);
+    final converted = applyChordProConversions(source);
+    expect(
+      converted,
+      '{title: T}\n{start_of_verse: label="Verse 1"}\n[G]La\n{end_of_verse}\n'
+      '{start_of_outro: label="Outro"}\n[C]Ja\n{end_of_outro}\n',
+    );
+    expect(countChordProConversions(converted), 0);
+  });
 }

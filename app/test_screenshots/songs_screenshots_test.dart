@@ -33,7 +33,8 @@ void main() {
   setUpScreenshots();
 
   // Songs with possible conversions (#798): the song list filtered from the
-  // overview's To do card, with the icon and Convert all.
+  // overview's To do card, with the icon and Convert all. The second song
+  // only has German section labels, which are a conversion too (#1085).
   for (final (lang, dark) in [('de', false), ('en', true)]) {
     screenshotTest('songs conversions $lang', (tester) async {
       useTabletSize(tester);
@@ -51,9 +52,9 @@ void main() {
         );
         await app.songs.createSong(
           source:
-              '{title: Train to Nowhere}\n{artist: House Band}\n{key: E}\n'
-              '{start_of_verse: $verse}\n[E]Waiting at the station\n'
-              '{end_of_verse}\n',
+              '{title: Abendlied}\n{artist: Hausband}\n{key: E}\n'
+              '{start_of_verse: label="Vers 1"}\n[E]Der Tag geht still\n'
+              '{end_of_verse}\n{comment: Schluss}\n[A]Gute [E]Nacht\n',
         );
         await app.songs.createSong(source: demoSongSource);
       });

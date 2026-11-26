@@ -3,7 +3,7 @@
 /// list and on the overview, and can be converted all at once.
 ///
 /// Unlike the problems of `validateChordPro`, these places show as
-/// intended; converting them only makes the source standard-conforming or
+/// intended; converting them makes the source standard-conforming or
 /// tidier:
 ///
 /// - `{ccli}` and `{ccli_license}` of songs saved before #777
@@ -13,12 +13,16 @@
 /// - CCLI bar lines that become grid sections (`convertCcliGrids`, #481);
 /// - section labels in the short form (`convertLegacySectionLabels`, #672);
 /// - section headings written as comments, such as `{comment: Verse 1}`,
-///   that become section environments (`convertCommentHeadings`, #963).
+///   that become section environments (`convertCommentHeadings`, #963);
+/// - German section labels such as `Vers 1` or `Schluss`, which become
+///   English (`translateSectionLabels`, #1085), since section names are
+///   English (ADR-0008). This one also changes what is shown.
 library;
 
 import 'ccli_footer.dart';
-import 'comment_headings.dart';
 import 'ccli_grid.dart';
+import 'comment_headings.dart';
+import 'english_labels.dart';
 import 'section_labels.dart';
 import 'songselect.dart';
 
@@ -29,16 +33,19 @@ int countChordProConversions(String source) =>
     findCcliFooters(source).length +
     findCcliGrids(source).length +
     findLegacySectionLabels(source).length +
-    findCommentHeadings(source).length;
+    findCommentHeadings(source).length +
+    findGermanSectionLabels(source).length;
 
 /// [source] with every conversion applied. The SongSelect directives come
 /// first, so the footer sees `{x_ccli}` and does not add a second one; the
 /// grids come before the comment headings, so a heading over bar lines
-/// becomes the grid label.
+/// becomes the grid label; the labels are translated last, so the labels
+/// of the new environments are English too.
 String applyChordProConversions(String source) {
   var text = normalizeSongSelectDirectives(source);
   text = removeCcliFooters(text);
   text = convertCcliGrids(text);
   text = convertLegacySectionLabels(text);
-  return convertCommentHeadings(text);
+  text = convertCommentHeadings(text);
+  return translateSectionLabels(text);
 }

@@ -1469,4 +1469,25 @@ void main() {
     expect(m.person.format(NameFormat.nickname), 'Ann');
     await upgraded.close();
   });
+
+  test('upgrades a schema 40 database: German section labels count as '
+      'conversions (#1085)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final storage = FileAttachmentStorage(dir);
+    await SongRepository(current, storage).createSong(
+      source: '{title: Old}\n{start_of_verse: label="Vers 1"}\nLa\n{end_of_verse}\n',
+    );
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    raw.execute('UPDATE songs SET chordpro_conversions = 0');
+    raw.execute('PRAGMA user_version = 40');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final repo = SongRepository(upgraded, storage);
+    upgraded.afterUpgrade = (db) => repo.refreshAllMetadata();
+    expect((await repo.watchSongList().first).single.conversions, 1);
+    await upgraded.close();
+  });
 }
