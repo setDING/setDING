@@ -105,4 +105,13 @@ for arch in "${archs[@]}"; do
       dart test --concurrency=1 test/bundle_test.dart test/image_test.dart test/upgrade_test.dart >&2)
 done
 
+# Only this release's bundles may be in OUT: the release workflow uploads
+# and packages everything there (#1073).
+for f in "$OUT"/setding-server-*.tar.gz; do
+  case " ${bundles[*]} " in
+    *" $f "*) ;;
+    *) fail "$f is not one of this release's bundles" ;;
+  esac
+done
+
 printf '%s\n' "${bundles[@]}"
