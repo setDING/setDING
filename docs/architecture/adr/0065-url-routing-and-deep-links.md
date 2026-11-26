@@ -198,6 +198,17 @@ title.
     dialogs are closed on the root navigator.
   - The server needed no change: PocketBase's index fallback already serves
     `index.html` for app paths (server test in `web_test.dart`).
+- 2026-11-27: Band context and *Not available* implemented (#1114,
+  `app/lib/ui/linked_record.dart`): `/sets/<id>` and `/songs/<id>` switch to
+  the record's band (the song's library, whose last or first band follows)
+  with the hint *Switched to …*, before the screen shows, so it never shows
+  the record with another band's rights. A record on the device in no band
+  or library of the person (a substitute's set, ADR-0061) is shown as it is.
+  A record not on the device, or deleted, shows *Not available on this
+  device*: with *Sync now* when signed in (after the sync, or for a deleted
+  record, *it was deleted, or you have no access to it*), with *Sign in*
+  when signed out; never with the title. A record that arrives later opens
+  by itself.
 
 ## Open points
 

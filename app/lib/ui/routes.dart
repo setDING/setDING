@@ -13,6 +13,7 @@ import 'bands/close_organization.dart' show ClosedOrganizationsScreen;
 import 'bands/delete_band.dart' show DeletedBandsScreen;
 import 'bands/join_screen.dart';
 import 'bands/organization_screen.dart';
+import 'linked_record.dart';
 import 'live/live_screen.dart';
 import 'overview/overview_screen.dart';
 import 'overview/recent_changes.dart' show RecentChangesScreen;
@@ -377,7 +378,10 @@ class _Routes {
   late final List<RouteBase> sets = [
     _page(
       ':setId',
-      (_, s) => SetScreen(setId: s.pathParameters['setId']!),
+      (_, s) => LinkedRecord.set(
+        id: s.pathParameters['setId']!,
+        child: SetScreen(setId: s.pathParameters['setId']!),
+      ),
       routes: [
         _page('live', (_, s) {
           final query = s.uri.queryParameters;
@@ -402,11 +406,14 @@ class _Routes {
       ':songId',
       (_, s) {
         final extra = _extra(s);
-        return SongScreen(
-          songId: s.pathParameters['songId']!,
-          pickPdfOnOpen: extra['pickPdf'] == true,
-          setSongs: (extra['setSongs'] as List?)?.cast<String>(),
-          setIndex: extra['setIndex'] as int? ?? 0,
+        return LinkedRecord.song(
+          id: s.pathParameters['songId']!,
+          child: SongScreen(
+            songId: s.pathParameters['songId']!,
+            pickPdfOnOpen: extra['pickPdf'] == true,
+            setSongs: (extra['setSongs'] as List?)?.cast<String>(),
+            setIndex: extra['setIndex'] as int? ?? 0,
+          ),
         );
       },
       routes: [

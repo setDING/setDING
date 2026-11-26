@@ -1638,5 +1638,10 @@
   "lineupMessageIntro": "Siete in programma per «{set}».",
   "lineupMessageFooter": "Trovate i brani in setDING.",
   "overviewPlanned": "Sei in programma",
-  "overviewPlannedSeen": "Ho capito"
+  "overviewPlannedSeen": "Ho capito",
+  "linkSwitchedTo": "Passato a {name}",
+  "linkNotAvailableTitle": "Non disponibile su questo dispositivo",
+  "linkNotAvailableMessage": "Non è ancora sincronizzato su questo dispositivo, oppure non hai accesso.",
+  "linkNoAccessMessage": "Non disponibile: è stato eliminato, oppure non hai accesso.",
+  "linkSignInMessage": "Accedi per vederlo."
 }

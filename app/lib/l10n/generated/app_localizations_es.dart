@@ -6555,4 +6555,23 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get overviewPlannedSeen => 'Entendido';
+
+  @override
+  String linkSwitchedTo(String name) {
+    return 'Cambiado a $name';
+  }
+
+  @override
+  String get linkNotAvailableTitle => 'No disponible en este dispositivo';
+
+  @override
+  String get linkNotAvailableMessage =>
+      'Aún no está sincronizado en este dispositivo, o no tienes acceso.';
+
+  @override
+  String get linkNoAccessMessage =>
+      'No disponible: se eliminó, o no tienes acceso.';
+
+  @override
+  String get linkSignInMessage => 'Inicia sesión para verlo.';
 }
