@@ -74,18 +74,35 @@ BUILD_NUMBER  ?=
 # Android release key (make android-keystore, ADR-0021); never inside the repository.
 ANDROID_KEYSTORE ?= $(HOME)/.local/share/setding/android-release.jks
 
-# PocketBase server (ADR-0014, docs/operations/server.md). SERVER is the SSH target
-# and has no default: set it in the git-ignored local.mk (`SERVER = root@<host>`),
-# in the environment or on the command line, e.g. `make server-install SERVER=root@<host>`.
-# PB_VERSION is the pinned PocketBase version; updates are deliberate (ADR-0004).
+# The owner's servers (ADR-0014, ADR-0063 §7, docs/operations/server.md), SSH
+# targets without defaults, set in the git-ignored local.mk:
+#   SERVER_PROD     production (api.setding.app)
+#   SERVER_STAGING  test server (setding.dev)
+#   SERVER_SITE     the website (setding.app)
+# The make server-* targets pick one with TARGET=prod|staging (server-install
+# defaults to staging, the others to prod). Non-root users need sudo without a
+# password there. PB_VERSION is the pinned PocketBase version; updates are
+# deliberate (ADR-0004).
 -include $(ROOT)/local.mk
-SERVER          ?=
-# SSH target of the website server (ADR-0063 §8), e.g. in local.mk.
-SITE_SERVER     ?=
+SERVER_PROD     ?=
+SERVER_STAGING  ?=
+SERVER_SITE     ?=
 PB_VERSION      ?= 0.42.3
-SSH             ?= ssh
-SERVER_BACKUPS  := /var/lib/pocketbase/backups
+# One SSH connection per server, reused for 60 s: deploys and targets open
+# several sessions, and the VPS's provider throttles many new connections in
+# a row (#1055).
+SSH             ?= ssh -o ControlMaster=auto -o ControlPath=$(HOME)/.ssh/setding-%C -o ControlPersist=60
+SERVER_BACKUPS  := /var/lib/setding/pb_data/backups
 BACKUP_DIR      ?= $(ROOT)/.server-backups
+# Overridable for the tests of these targets (tool/test_server_targets.py).
+SERVER_DEPLOY   ?= $(ROOT)/tool/server/deploy.sh
+SERVER_RELEASE_DEPLOY ?= $(ROOT)/tool/release/deploy-server.sh
+SITE_DEPLOY     ?= $(ROOT)/tool/site/deploy-site.sh
+# The server a server-* target works on, and a remote prefix that runs a
+# command as root: directly as root, else with sudo -n (`$$s command`).
+T   = $(or $(TARGET),prod)
+SRV = $(if $(filter staging,$(T)),$(SERVER_STAGING),$(if $(filter prod,$(T)),$(SERVER_PROD)))
+AS_ROOT := s=$$([ "$$(id -u)" -eq 0 ] || echo "sudo -n");
 # Local PocketBase (make backend); its data lives in DATA_DIR like the test instance.
 BACKEND_PORT    ?= 8090
 # Sign-up mode of the local backend (ADR-0024); open, so the app can create accounts.
@@ -278,13 +295,17 @@ ci-image: ## Build the Flutter base image of the release build (tool/ci/Dockerfi
 	$(DOCKER) build --build-arg FLUTTER_VERSION=$(FLUTTER_VERSION) -t $(CI_IMAGE) $(ROOT)/tool/ci
 
 server-target:
-	@test -n "$(SERVER)" || { echo "Set SERVER to the SSH target, e.g. make $(MAKECMDGOALS) SERVER=root@<host>, or in local.mk"; exit 1; }
+	@test -z "$(SERVER)$(SITE_SERVER)" || { echo "SERVER and SITE_SERVER were renamed: set SERVER_PROD, SERVER_STAGING and SERVER_SITE in local.mk (docs/operations/server.md)"; exit 1; }
+	@case "$(T)" in prod | staging) ;; *) echo "TARGET must be prod or staging, not '$(T)'"; exit 1 ;; esac
+	@test -n "$(SRV)" || { echo "Set SERVER_$(if $(filter staging,$(T)),STAGING,PROD) to the SSH target in local.mk (docs/operations/server.md)"; exit 1; }
 
-server-install: server-target ## Install or update the server from the working tree (PocketBase, hooks, migrations, web client; test instances)
-	@SERVER=$(SERVER) SSH="$(SSH)" PB_VERSION=$(PB_VERSION) $(ROOT)/tool/server/deploy.sh
+server-install: T = $(or $(TARGET),staging)
+server-install: server-target ## Install the server built from the working tree on the test server (TARGET=staging, default; TARGET=prod FORCE=1 only in an emergency)
+	@test "$(T)" != prod || test "$(FORCE)" = 1 || { echo "Production gets releases only (make server-release); TARGET=prod FORCE=1 only in an emergency"; exit 1; }
+	@SERVER=$(SRV) SSH="$(SSH)" $(SERVER_DEPLOY)
 
-server-release: server-target ## After a release: wait for its green build, then deploy the server from the tag (VERSION=x.y.z, default newest)
-	@SERVER=$(SERVER) SSH="$(SSH)" PB_VERSION=$(PB_VERSION) $(ROOT)/tool/release/deploy-server.sh $(VERSION)
+server-release: server-target ## After a release: wait for its green build, then install its published bundle (VERSION=x.y.z, default newest; TARGET=prod, default, or staging)
+	@SERVER=$(SRV) SSH="$(SSH)" $(SERVER_RELEASE_DEPLOY) $(VERSION)
 
 server-bundle: ## Build the server bundle setding-server-<version>-linux-<arch>.tar.gz and SHA256SUMS into build/server-dist (ARCH=amd64|arm64, WEB_DIR=<web build>; ADR-0063)
 	@ARCH=$(ARCH) WEB_DIR=$(WEB_DIR) PB_VERSION=$(PB_VERSION) $(ROOT)/tool/server-dist/build-bundle.sh
@@ -292,33 +313,33 @@ server-bundle: ## Build the server bundle setding-server-<version>-linux-<arch>.
 server-image: ## Build the Docker image of the server from a bundle (BUNDLE=<.tar.gz>, default built now; IMAGE=<name:tag>; ADR-0063)
 	@BUNDLE=$(BUNDLE) IMAGE=$(IMAGE) ARCH=$(ARCH) WEB_DIR=$(WEB_DIR) PB_VERSION=$(PB_VERSION) $(ROOT)/tool/server-dist/build-image.sh
 
-server-site: ## Build and deploy the website to SITE_SERVER, from the working tree or the release tag (VERSION=x.y.z; ADR-0030)
-	@test -n "$(SITE_SERVER)" || { echo "Set SITE_SERVER to the website server's SSH target, e.g. in local.mk"; exit 1; }
-	@SITE_SERVER=$(SITE_SERVER) SSH="$(SSH)" $(ROOT)/tool/site/deploy-site.sh $(VERSION)
+server-site: ## Build and deploy the website to SERVER_SITE, from the working tree or the release tag (VERSION=x.y.z; ADR-0030)
+	@test -z "$(SERVER)$(SITE_SERVER)" || { echo "SERVER and SITE_SERVER were renamed: set SERVER_PROD, SERVER_STAGING and SERVER_SITE in local.mk (docs/operations/server.md)"; exit 1; }
+	@test -n "$(SERVER_SITE)" || { echo "Set SERVER_SITE to the website server's SSH target in local.mk"; exit 1; }
+	@SERVER_SITE=$(SERVER_SITE) SSH="$(SSH)" $(SITE_DEPLOY) $(VERSION)
 
-server-status: server-target ## Show services, PocketBase version and backups of the server
-	@$(SSH) $(SERVER) 'systemctl --no-pager --lines=0 status pocketbase cloudflared setding-backup.timer; \
-		echo; /opt/pocketbase/pocketbase --version; curl -fsS http://127.0.0.1:8090/api/health; echo; \
-		echo; echo "Backups:"; ls -lh $(SERVER_BACKUPS) | tail -n 5; echo; df -h /'
+server-status: server-target ## Show the services, version, health, latest backups and disk of the server (TARGET=prod|staging)
+	@$(SSH) $(SRV) '$(AS_ROOT) $$s systemctl --no-pager --lines=0 status setding cloudflared || true; \
+		echo; echo "setDING $$(cat /opt/setding/current/VERSION)"; curl -fsS http://127.0.0.1:8090/api/health; echo; \
+		echo; echo "Backups:"; $$s ls -lht $(SERVER_BACKUPS) 2>/dev/null | head -n 6 | grep . || echo "  none yet"; echo; df -h /'
 
-server-logs: server-target ## Follow the PocketBase and tunnel logs of the server (Ctrl+C to stop)
-	$(SSH) -t $(SERVER) 'journalctl -u pocketbase -u cloudflared -n 100 -f'
+server-logs: server-target ## Follow the setDING and tunnel logs of the server (Ctrl+C to stop; TARGET=prod|staging)
+	$(SSH) -t $(SRV) '$(AS_ROOT) $$s journalctl -u setding -u cloudflared -n 100 -f'
 
-server-backup: server-target ## Run a backup on the server now
-	$(SSH) $(SERVER) 'systemctl start setding-backup.service && journalctl -u setding-backup -n 3 -o cat'
+server-backup: server-target ## Create a backup on the server now (TARGET=prod|staging)
+	$(SSH) $(SRV) '$(AS_ROOT) $$s /usr/local/bin/setding-backup-now'
 
-server-fetch-backup: server-target ## Copy the latest server backup to BACKUP_DIR (off-host copy)
+server-fetch-backup: server-target ## Copy the latest backup of the server to BACKUP_DIR (off-host copy; TARGET=prod|staging)
 	@mkdir -p "$(BACKUP_DIR)"
-	@latest=$$($(SSH) $(SERVER) 'ls -1t $(SERVER_BACKUPS)/setding-*.tar.gz 2>/dev/null | head -n 1'); \
+	@latest=$$($(SSH) $(SRV) '$(AS_ROOT) $$s sh -c "ls -1t $(SERVER_BACKUPS)/*.zip 2>/dev/null | head -n 1"'); \
 		test -n "$$latest" || { echo "No backup on the server yet"; exit 1; }; \
-		$(SSH) $(SERVER) "cat '$$latest'" >"$(BACKUP_DIR)/$$(basename $$latest)"; \
-		echo "Saved $(BACKUP_DIR)/$$(basename $$latest)"
+		printf '%s' "$$latest" | $(SSH) $(SRV) '$(AS_ROOT) p=$$(cat); $$s cat "$$p"' >"$(BACKUP_DIR)/$(T)-$$(basename $$latest)"; \
+		echo "Saved $(BACKUP_DIR)/$(T)-$$(basename $$latest)"
 
-server-founder-invite: server-target ## Create a one-time link that founds an organization (NAME="…", ADR-0024)
+server-founder-invite: server-target ## Create a one-time link that founds an organization (NAME="…", ADR-0024; TARGET=prod|staging)
 	@test -n "$(NAME)" || { echo 'Set NAME, e.g. make server-founder-invite NAME="Music school"'; exit 1; }
-	@printf '%s' "$(NAME)" | $(SSH) $(SERVER) 'n=$$(cat); runuser -u pocketbase -- /opt/pocketbase/pocketbase founder-invite "$$n" \
-		--dir=/var/lib/pocketbase/pb_data --hooksDir=/opt/pocketbase/pb_hooks --migrationsDir=/opt/pocketbase/pb_migrations 2>&1' | \
+	@printf '%s' "$(NAME)" | $(SSH) $(SRV) '$(AS_ROOT) n=$$(cat); $$s /usr/local/bin/setding founder-invite "$$n" 2>&1' | \
 		grep -o '{"id".*}' || { echo "Creating the founder invitation failed"; exit 1; }
 
-server-ssh: server-target ## Open a shell on the server
-	$(SSH) $(SERVER)
+server-ssh: server-target ## Open a shell on the server (TARGET=prod|staging)
+	$(SSH) $(SRV)

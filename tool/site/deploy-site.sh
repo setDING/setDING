@@ -8,12 +8,13 @@
 #   deploy-site.sh X.Y.Z      the release tag vX.Y.Z (after a release)
 #
 # Environment:
-#   SITE_SERVER   SSH target of the website server (required)
+#   SERVER_SITE   SSH target of the website server (required); a non-root
+#                 user needs sudo without a password
 #   SSH           ssh command (default: ssh)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-SITE_SERVER="${SITE_SERVER:?SITE_SERVER is not set}"
+SERVER_SITE="${SERVER_SITE:?SERVER_SITE is not set}"
 SSH="${SSH:-ssh}"
 fail() { echo "deploy-site: $*" >&2; exit 1; }
 
@@ -33,9 +34,14 @@ if [ -n "${1:-}" ]; then
 fi
 
 "$ROOT/tool/build-site.sh" "$src"
+# Runs install-site.sh as root: directly, or with sudo -n.
+# shellcheck disable=SC2016 # expanded on the server
+remote='d=$(mktemp -d /tmp/setding-site.XXXXXX) && tar -C "$d" -xzf - &&
+  if [ "$(id -u)" -eq 0 ]; then bash "$d/tool/site/install-site.sh" "$d"; else sudo -n bash "$d/tool/site/install-site.sh" "$d"; fi;
+  s=$?; rm -rf "$d"; exit $s'
 # The web server configuration and installer of this checkout (not the tag's),
 # so an older tag gets today's setup.
 tar -czf - --transform 's,^website/dist,site,' \
   -C "$ROOT" tool/site/install-site.sh tool/site/Caddyfile \
   -C "$src" website/dist |
-  $SSH "$SITE_SERVER" "d=\$(mktemp -d /tmp/setding-site.XXXXXX) && tar -C \$d -xzf - && bash \$d/tool/site/install-site.sh \$d; s=\$?; rm -rf \$d; exit \$s"
+  $SSH "$SERVER_SITE" "$remote"

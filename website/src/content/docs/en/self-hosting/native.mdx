@@ -109,7 +109,7 @@ command for them:
 ```bash
 cat >/usr/local/bin/setding <<'EOF'
 #!/bin/sh
-exec runuser -u setding -- /opt/setding/current/pocketbase "$@" \
+cd / && exec runuser -u setding -- /opt/setding/current/pocketbase "$@" \
   --dir=/var/lib/setding/pb_data \
   --hooksDir=/opt/setding/current/pb_hooks \
   --migrationsDir=/opt/setding/current/pb_migrations

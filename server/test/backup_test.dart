@@ -1,6 +1,8 @@
-// The server backup (tool/server/setding-backup.sh, ADR-0014) and its restore
-// as docs/operations/server.md describes it, against a real PocketBase
-// (issue #644). Needs sqlite3 and tar, as the server does.
+// The backup of a running server on the owner's hosts
+// (tool/server/backup-now.sh, installed as setding-backup-now; ADR-0014,
+// ADR-0063) and its restore as docs/operations/server.md and the
+// self-hosting docs describe it, against a real PocketBase (issue #644,
+// #1055). Needs sqlite3, zip and unzip, as the servers have.
 import 'dart:convert';
 import 'dart:io';
 
@@ -10,46 +12,23 @@ import 'package:test/test.dart';
 import 'support/fixtures.dart';
 
 final _script = File(
-  '${Directory.current.parent.path}/tool/server/setding-backup.sh',
+  '${Directory.current.parent.path}/tool/server/backup-now.sh',
 ).absolute.path;
 
 final _pdf = utf8.encode(
   '%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n',
 );
 
-/// Runs the backup script on [pbData], writing to [backupDir].
-Future<ProcessResult> _backup(
-  String pbData,
-  String backupDir, {
-  String keepDays = '14',
-}) => Process.run(
+/// Runs the backup script on [pbData].
+Future<ProcessResult> _backup(String pbData, [String? name]) => Process.run(
   _script,
-  [],
-  environment: {
-    'PB_DATA': pbData,
-    'BACKUP_DIR': backupDir,
-    'KEEP_DAYS': keepDays,
-  },
+  [?name],
+  environment: {'PB_DATA': pbData, 'OWNER': 'nobody-setding-test'},
 );
 
-List<String> _archives(Directory dir) =>
-    dir
-        .listSync()
-        .map((e) => e.uri.pathSegments.last)
-        .where((n) => n.startsWith('setding-') && n.endsWith('.tar.gz'))
-        .toList()
-      ..sort();
-
 void main() {
-  late Directory backups;
-
-  setUp(() async {
-    backups = await Directory.systemTemp.createTemp('setding-backups-');
-  });
-  tearDown(() => backups.delete(recursive: true));
-
   test('a backup of the running server restores records, users and files '
-      'as documented', () async {
+      'as documented, and PocketBase lists it', () async {
     var pb = await PocketBase.start();
     addTearDown(() => pb.stop());
     final f = await BandFixture.create(pb);
@@ -75,16 +54,30 @@ void main() {
     final filePath =
         '/api/files/attachments/$attachmentId/${upload.json['file']}';
 
-    // Online backup while PocketBase runs (SQLite backup API).
-    final run = await _backup(pb.dataDir, backups.path);
+    // Online backup while PocketBase runs (SQLite backup API), named like
+    // the one before an update.
+    final run = await _backup(pb.dataDir, 'pre-update-0.21.0');
     expect(run.exitCode, 0, reason: '${run.stdout}${run.stderr}');
-    expect(run.stdout, contains('backup written: '));
-    final archives = _archives(backups);
-    expect(archives, hasLength(1));
-    final archive = '${backups.path}/${archives.single}';
-    final listing = await Process.run('tar', ['-tzf', archive]);
+    final archive = File('${pb.dataDir}/backups/pre-update-0_21_0.zip');
+    expect(archive.existsSync(), isTrue, reason: '${run.stdout}');
+    final listing = await Process.run('unzip', ['-Z1', archive.path]);
     expect(listing.stdout, contains('data.db'));
     expect(listing.stdout, contains('storage/'));
+    // No half-written archive is left behind.
+    expect(
+      Directory(
+        '${pb.dataDir}/backups',
+      ).listSync().where((e) => e.path.endsWith('.part')),
+      isEmpty,
+    );
+
+    // PocketBase lists it like its own backups (admin UI, restore there).
+    final listed = await pb.superuser.send('GET', '/api/backups');
+    listed.expectStatus(200);
+    expect(
+      (jsonDecode(listed.raw.body) as List).map((b) => (b as Map)['key']),
+      contains('pre-update-0_21_0.zip'),
+    );
 
     // Changes after the backup must be gone after the restore.
     (await f.admin.patch('songs', songId, {
@@ -93,21 +86,20 @@ void main() {
     })).expectStatus(200);
     final later = await f.createSong(f.admin, title: 'Created later');
 
-    // Restore as in docs/operations/server.md: stop, remove the WAL files,
-    // unpack into pb_data, start.
+    // Restore as documented: stop, empty pb_data except backups/, unzip.
     pb = await pb.restart(
       whileStopped: () async {
-        for (final name in ['data.db-wal', 'data.db-shm']) {
-          final file = File('${pb.dataDir}/$name');
-          if (file.existsSync()) file.deleteSync();
+        for (final entry in Directory(pb.dataDir).listSync()) {
+          if (entry.path.endsWith('/backups')) continue;
+          entry.deleteSync(recursive: true);
         }
-        final untar = await Process.run('tar', [
-          '-xzf',
-          archive,
-          '-C',
+        final unzip = await Process.run('unzip', [
+          '-q',
+          archive.path,
+          '-d',
           pb.dataDir,
         ]);
-        expect(untar.exitCode, 0, reason: '${untar.stderr}');
+        expect(unzip.exitCode, 0, reason: '${unzip.stderr}');
       },
     );
 
@@ -141,7 +133,7 @@ void main() {
     expect(download.raw.bodyBytes, _pdf);
   });
 
-  test('backups older than KEEP_DAYS are deleted, others are kept', () async {
+  test('a backup without a name is a dated manual backup', () async {
     final pbData = await Directory.systemTemp.createTemp('setding-pbdata-');
     addTearDown(() => pbData.delete(recursive: true));
     final db = await Process.run('sqlite3', [
@@ -150,35 +142,21 @@ void main() {
     ]);
     expect(db.exitCode, 0, reason: '${db.stderr}');
 
-    final now = DateTime.now();
-    File('${backups.path}/setding-20200101-033000.tar.gz')
-      ..writeAsStringSync('old')
-      ..setLastModifiedSync(now.subtract(const Duration(days: 20)));
-    File('${backups.path}/setding-20200102-033000.tar.gz')
-      ..writeAsStringSync('recent')
-      ..setLastModifiedSync(now.subtract(const Duration(days: 5)));
-    File('${backups.path}/manual-copy.tar.gz')
-      ..writeAsStringSync('other')
-      ..setLastModifiedSync(now.subtract(const Duration(days: 20)));
-
-    final run = await _backup(pbData.path, backups.path, keepDays: '14');
+    final run = await _backup(pbData.path);
     expect(run.exitCode, 0, reason: '${run.stdout}${run.stderr}');
-
-    final names = _archives(backups);
-    expect(names, hasLength(2));
-    expect(names, contains('setding-20200102-033000.tar.gz'));
-    expect(names, isNot(contains('setding-20200101-033000.tar.gz')));
-    expect(File('${backups.path}/manual-copy.tar.gz').existsSync(), isTrue);
-    // No half-written archive is left behind.
-    expect(backups.listSync().where((e) => e.path.endsWith('.part')), isEmpty);
+    final names = Directory(
+      '${pbData.path}/backups',
+    ).listSync().map((e) => e.uri.pathSegments.last).toList();
+    expect(names, hasLength(1));
+    expect(names.single, matches(RegExp(r'^manual-\d{8}-\d{6}\.zip$')));
   });
 
   test('without a database there is nothing to back up', () async {
     final pbData = await Directory.systemTemp.createTemp('setding-pbdata-');
     addTearDown(() => pbData.delete(recursive: true));
-    final run = await _backup(pbData.path, backups.path);
+    final run = await _backup(pbData.path);
     expect(run.exitCode, 0, reason: '${run.stderr}');
     expect(run.stdout, contains('nothing to back up'));
-    expect(backups.listSync(), isEmpty);
+    expect(Directory('${pbData.path}/backups').existsSync(), isFalse);
   });
 }

@@ -8,11 +8,10 @@
 # 2. Waits for the tag's run of the Release workflow; refuses to deploy unless it
 #    succeeded and the GitHub Release exists, so the apps for this version can be
 #    downloaded before the server may refuse older ones (ADR-0029).
-# 3. Deploys hooks, migrations and the web client from a clean checkout of the
-#    tag (tool/server/deploy.sh, like make server-install), stamped with the
-#    version, and checks it.
+# 3. Installs the server bundle published with the release (checked against
+#    its SHA256SUMS, tool/server/deploy.sh --release) and checks the version.
 #
-# Environment: SERVER, SSH and PB_VERSION as in the Makefile.
+# Environment: SERVER (the production server) and SSH, as in the Makefile.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -57,16 +56,11 @@ gh release view "$tag" --json tagName >/dev/null 2>&1 ||
 echo "run $id passed, GitHub Release $tag published"
 
 step "Deploy $tag to $SERVER"
-# A clean checkout of the tag OUTSIDE the repository: inside it (e.g. under
-# app/build) Flutter would resolve the outer app's package config and fail
-# (#348). git removes it again afterwards.
-dir="$(mktemp -d "${TMPDIR:-/tmp}/setding-release-$version.XXXXXX")"
-git -C "$ROOT" worktree add -q --detach "$dir" "$tag"
-trap 'git -C "$ROOT" worktree remove --force "$dir"' EXIT
-SRC="$dir" SERVER_VERSION="$version" SERVER="$SERVER" SSH="$SSH" \
-  PB_VERSION="${PB_VERSION:?PB_VERSION is not set}" "$ROOT/tool/server/deploy.sh"
+# The bundle published with the release, as self-hosters get it (ADR-0063 §7).
+SERVER="$SERVER" SSH="$SSH" "$ROOT/tool/server/deploy.sh" --release "$version"
 
 step "Check"
-deployed="$($SSH "$SERVER" cat /opt/pocketbase/pb_hooks/setding-version.txt)"
+# shellcheck disable=SC2086 # SSH may carry options
+deployed="$($SSH "$SERVER" cat /opt/setding/current/VERSION)"
 [ "$deployed" = "$version" ] || fail "the server reports '$deployed', expected $version"
 echo "Server runs setDING $version."

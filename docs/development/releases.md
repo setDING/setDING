@@ -59,9 +59,9 @@ Android tests start is stopped at the end.
    ```
 
    It waits for the tag's release build and refuses to deploy unless it passed and
-   the GitHub Release exists. Then it deploys hooks, migrations and the web client
-   from a clean checkout of the tag, stamps the version on the server and checks
-   it (`curl -s https://api.setding.app/api/setding/config` shows
+   the GitHub Release exists. Then it installs the server bundle published with the
+   release on production (checked against `SHA256SUMS`, a backup of the data before)
+   and checks the version (`curl -s https://api.setding.app/api/setding/config` shows
    `"serverVersion":"X.Y.Z"`). From then on the server also reports
    `"latestClientVersion":"X.Y.Z"`, and the installed apps show that a new version
    is available (ADR-0036).

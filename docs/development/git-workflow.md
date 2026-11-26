@@ -302,16 +302,16 @@ Agents may create **proposals** for all of these (an ADR, a draft PR), just not 
      is published: fix the cause in a normal PR and release the **next patch version**;
      a pushed tag is never moved or reused.
   4. **Update the server:** `make server-release` waits for the tag's build, refuses
-     unless it passed and the GitHub Release exists, then deploys hooks, migrations and
-     the web client from a clean checkout of the tag and stamps the version on the
-     server (`/api/setding/config` → `serverVersion`).
+     unless it passed and the GitHub Release exists, then installs the server bundle
+     published with it on production (`SERVER_PROD`, ADR-0063) and checks the version
+     (`/api/setding/config` → `serverVersion`).
   5. **Update the website:** `make server-site VERSION=X.Y.Z` builds the website from
      the tag and deploys it to its own server (ADR-0063 §8). Only after this step is
      the release done.
   6. Report the release (version, build number, server version) on the release PR.
 - The production server only runs released versions. `make server-install` deploys the
-  working tree and stamps it `X.Y.Z-dev+<commit>`; it is meant for test instances and
-  emergencies, never for routine production updates.
+  working tree, stamped `X.Y.Z-dev+<commit>`, to the test server (`setding.dev`); on
+  production only with `TARGET=prod FORCE=1` in an emergency.
 - iOS is not built yet. **Publishing to the stores requires human approval** (protected
   CI environment). `make release` still builds the Linux package locally (in a
   container; ADR-0019).

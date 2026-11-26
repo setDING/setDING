@@ -1,5 +1,5 @@
 // Registration mode and email verification set by the server operator in
-// the environment (/etc/setding/pocketbase.env, ADR-0024).
+// the environment (/etc/setding/setding.env or the container's, ADR-0024).
 
 /// "invite_only" (default) or "open" (SETDING_REGISTRATION).
 function mode() {

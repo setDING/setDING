@@ -1,48 +1,60 @@
 #!/usr/bin/env bash
-# Sets up or updates the setDING server (PocketBase backend, ADR-0004/ADR-0014).
+# Installs or updates the setDING server from a server bundle on one of the
+# owner's hosts (production or staging; ADR-0014, ADR-0063 §7). Same layout as
+# the self-hosting documentation ("Without Docker"):
 #
-# Runs as root ON the server (a Debian LXC container). Idempotent: the same script
-# installs a fresh container and updates an existing one. Normally started from the
-# development machine with `make server-install`, which copies this directory,
-# server/pb_hooks + server/pb_migrations and the web build (as web/) first. The
-# website is not part of it (make server-site, ADR-0063 §8).
+#   /opt/setding/setding-server-<version>/   unpacked bundles
+#   /opt/setding/current                     symlink to the one in use
+#   /var/lib/setding/pb_data                 data (database, files, backups)
+#   /etc/setding/setding.env                 settings (SETDING_*)
+#   /etc/systemd/system/setding.service      the docs' example unit
+#   /usr/local/bin/setding                   admin commands (as in the docs)
 #
-#   install.sh <pocketbase-version>     e.g. install.sh 0.40.6
+# Plus what only the owner's hosts get: cloudflared (the tunnel itself is
+# connected by the owner), unattended security updates, SSH with keys only,
+# the time zone, a backup before every update (setding-backup-now).
+#
+# Runs as root ON the server (directly or with sudo), started by
+# tool/server/deploy.sh, which copies a setup directory with:
+#   install.sh  backup-now.sh  setding.service  bundle.tar.gz
+#
+#   install.sh <setup-dir>
 set -euo pipefail
 
-PB_VERSION="${1:?usage: install.sh <pocketbase-version>}"
-PB_VERSION="${PB_VERSION#v}"
-
-SETUP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-HERE="$SETUP_DIR/tool/server"
-
-PB_USER=pocketbase
-PB_HOME=/opt/pocketbase
-PB_DATA=/var/lib/pocketbase/pb_data
-BACKUP_DIR=/var/lib/pocketbase/backups
+SETUP="${1:?usage: install.sh <setup-dir>}"
+OPT=/opt/setding
+DATA=/var/lib/setding/pb_data
+ENV_FILE=/etc/setding/setding.env
+KEEP_BUNDLES=3
 
 step() { printf '\n==> %s\n' "$*"; }
+fail() { echo "install.sh: $*" >&2; exit 1; }
 
-[ "$(id -u)" -eq 0 ] || { echo "install.sh must run as root" >&2; exit 1; }
+[ "$(id -u)" -eq 0 ] || fail "must run as root (or with sudo)"
 # shellcheck source=/dev/null # the server's, not in the repository
 . /etc/os-release
 [ "${ID:-}" = debian ] || echo "warning: tested on Debian only (found: ${PRETTY_NAME:-unknown})" >&2
 
-restart_pb=0
+# The installation from before the bundles (/opt/pocketbase, pocketbase.service)
+# must not run next to this one: both listen on 127.0.0.1:8090. It is stopped
+# by hand when a host is migrated (#1055).
+if systemctl is-active --quiet pocketbase.service 2>/dev/null; then
+  fail "the old installation (pocketbase.service) still runs on this host; stop and disable it first (docs/operations/server.md, migration)"
+fi
+
+restart=0
 
 # --- System packages and automatic security updates -------------------------
 step "System packages"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -q
-apt-get install -y -q ca-certificates curl unzip sqlite3 unattended-upgrades >/dev/null
+apt-get install -y -q ca-certificates curl sqlite3 zip unzip unattended-upgrades >/dev/null
 cat >/etc/apt/apt.conf.d/20auto-upgrades <<'EOF'
 APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Unattended-Upgrade "1";
 EOF
 
 # --- Time zone ----------------------------------------------------------------
-# The clock comes from the Proxmox host (LXC); only the zone is set here, so logs,
-# backup names and the backup timer use Swiss time. PocketBase stores UTC anyway.
 TIMEZONE="${TIMEZONE:-Europe/Zurich}"
 if [ "$(timedatectl show -p Timezone --value 2>/dev/null)" != "$TIMEZONE" ]; then
   step "Time zone $TIMEZONE"
@@ -50,119 +62,91 @@ if [ "$(timedatectl show -p Timezone --value 2>/dev/null)" != "$TIMEZONE" ]; the
 fi
 
 # --- SSH: keys only ----------------------------------------------------------
-# Only when root has an authorized key, so the script never locks anyone out.
-if [ -s /root/.ssh/authorized_keys ] && [ -d /etc/ssh/sshd_config.d ]; then
+# Only when the account we came in with (root, or the user behind sudo) has an
+# authorized key, so the script never locks anyone out.
+login_home="$(getent passwd "${SUDO_USER:-root}" | cut -d: -f6)"
+if [ -s "$login_home/.ssh/authorized_keys" ] && [ -d /etc/ssh/sshd_config.d ]; then
   step "SSH hardening"
   conf=/etc/ssh/sshd_config.d/10-setding.conf
-  rm -f /etc/ssh/sshd_config.d/10-realchord.conf # before the rename (#318)
   new=$'PasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin prohibit-password\n'
   if [ "$(cat "$conf" 2>/dev/null)" != "${new%$'\n'}" ]; then
     printf '%s' "$new" >"$conf"
-    # Debian starts sshd through ssh.socket: a plain reload fails while no
+    # Debian may start sshd through ssh.socket: a plain reload fails while no
     # sshd runs; new connections read the config anyway.
     sshd -t && systemctl try-reload-or-restart ssh
   fi
 fi
 
-# --- PocketBase user and directories -----------------------------------------
-step "PocketBase user and directories"
-id "$PB_USER" >/dev/null 2>&1 ||
-  useradd --system --home-dir /var/lib/pocketbase --shell /usr/sbin/nologin "$PB_USER"
-install -d -o "$PB_USER" -g "$PB_USER" -m 750 /var/lib/pocketbase "$PB_DATA" "$BACKUP_DIR"
-install -d -m 755 "$PB_HOME"
-
-# --- Invitation key (ADR-0005) -------------------------------------------------
-# Encrypts the stored invitation tokens, so admins can show an active link
-# again. Generated once; kept outside pb_data, so backups do not contain it.
-# Everything else in this file is the owner's.
-ENV_FILE=/etc/setding/pocketbase.env
-if ! grep -q '^SETDING_INVITE_KEY=' "$ENV_FILE" 2>/dev/null; then
-  step "Invitation key"
-  install -d -m 755 /etc/setding
-  [ -f "$ENV_FILE" ] || install -m 640 -o root -g "$PB_USER" /dev/null "$ENV_FILE"
-  printf '\n# Encrypts stored invitation tokens (generated by install.sh).\nSETDING_INVITE_KEY=%s\n' \
+# --- User, directories, settings ---------------------------------------------
+step "User and directories"
+id setding >/dev/null 2>&1 ||
+  useradd --system --home-dir /var/lib/setding --shell /usr/sbin/nologin setding
+install -d -o setding -g setding -m 750 /var/lib/setding "$DATA"
+install -d -m 755 "$OPT" /etc/setding
+if ! grep -q '^SETDING_INVITE_KEY=.' "$ENV_FILE" 2>/dev/null; then
+  # Generated once; outside pb_data, so backups do not contain it. When a
+  # host takes over existing data, its key is copied here instead (#1055).
+  [ -f "$ENV_FILE" ] || install -m 640 -o root -g setding /dev/null "$ENV_FILE"
+  printf '# Encrypts stored invitation tokens (generated by install.sh).\nSETDING_INVITE_KEY=%s\n' \
     "$(head -c 32 /dev/urandom | base64 | tr -d '/+=')" >>"$ENV_FILE"
-  echo "added to $ENV_FILE"
-  restart_pb=1
+  echo "SETDING_INVITE_KEY added to $ENV_FILE"
+  restart=1
 fi
 
-# --- PocketBase binary (pinned version, verified checksum) --------------------
-step "PocketBase $PB_VERSION"
-current="$("$PB_HOME/pocketbase" --version 2>/dev/null | awk '{print $NF}' || true)"
-if [ "$current" != "$PB_VERSION" ]; then
-  case "$(dpkg --print-architecture)" in
-    amd64) arch=amd64 ;;
-    arm64) arch=arm64 ;;
-    *) echo "unsupported architecture: $(dpkg --print-architecture)" >&2; exit 1 ;;
-  esac
-  zip="pocketbase_${PB_VERSION}_linux_${arch}.zip"
-  # PocketBase releases live on ganigeorgiev.com since v0.41 (GitHub is archived at
-  # v0.40.6). This documented URL redirects to the release file.
-  base="https://ganigeorgiev.com/meta/pocketbase/pocketbase/download/v${PB_VERSION}"
-  tmp="$(mktemp -d)"
-  trap 'rm -rf "$tmp"' EXIT
-  curl -fsSL -o "$tmp/$zip" "$base/$zip"
-  curl -fsSL -o "$tmp/checksums.txt" "$base/checksums.txt"
-  (cd "$tmp" && grep " $zip\$" checksums.txt | sha256sum -c -)
-  unzip -q -o "$tmp/$zip" pocketbase -d "$tmp"
-  install -m 755 "$tmp/pocketbase" "$PB_HOME/pocketbase"
-  echo "PocketBase ${current:-not installed} -> $PB_VERSION"
-  restart_pb=1
+# --- Admin commands ------------------------------------------------------------
+install -m 755 "$SETUP/backup-now.sh" /usr/local/bin/setding-backup-now
+cat >/usr/local/bin/setding.new <<'EOF'
+#!/bin/sh
+# setDING admin commands (pocketbase … on the installed data), as in the
+# self-hosting documentation; installed by tool/server/install.sh.
+cd / && exec runuser -u setding -- /opt/setding/current/pocketbase "$@" \
+  --dir=/var/lib/setding/pb_data \
+  --hooksDir=/opt/setding/current/pb_hooks \
+  --migrationsDir=/opt/setding/current/pb_migrations
+EOF
+chmod 755 /usr/local/bin/setding.new
+mv /usr/local/bin/setding.new /usr/local/bin/setding
+
+# --- Bundle --------------------------------------------------------------------
+step "Bundle"
+bundle="$SETUP/bundle.tar.gz"
+version="$(tar -xzOf "$bundle" --wildcards '*/VERSION')"
+dir="$OPT/setding-server-$version"
+current="$(readlink -f "$OPT/current" 2>/dev/null || true)"
+unpacked="$(mktemp -d "$OPT/.unpack.XXXXXX")"
+tar -xzf "$bundle" -C "$unpacked"
+if [ -d "$dir" ] && diff -r -q "$unpacked/setding-server-$version" "$dir" >/dev/null 2>&1; then
+  echo "setDING $version is already unpacked"
+  rm -rf "$unpacked"
 else
-  echo "already installed"
+  rm -rf "$dir"
+  mv "$unpacked/setding-server-$version" "$dir"
+  rm -rf "$unpacked"
+  echo "unpacked setDING $version"
+  [ "$current" != "$dir" ] || restart=1
+fi
+if [ "$current" != "$dir" ]; then
+  if [ -n "$current" ] && [ -f "$DATA/data.db" ]; then
+    # A consistent backup before every update, restorable from the admin UI.
+    old="$(cat "$current/VERSION" 2>/dev/null || echo unknown)"
+    /usr/local/bin/setding-backup-now "pre-update-$old"
+  fi
+  ln -sfn "$dir" "$OPT/current"
+  echo "current -> setding-server-$version"
+  restart=1
 fi
 
-# --- Hooks and migrations from the repository ---------------------------------
-step "Hooks and migrations"
-for dir in pb_hooks pb_migrations; do
-  src="$SETUP_DIR/server/$dir"
-  dst="$PB_HOME/$dir"
-  mkdir -p "$src"
-  if ! diff -r -q --exclude=.gitkeep "$src" "$dst" >/dev/null 2>&1; then
-    rm -rf "$dst"
-    cp -r "$src" "$dst"
-    rm -f "$dst/.gitkeep"
-    echo "$dir updated"
-    restart_pb=1
-  fi
-done
-
-# --- Web client (ADR-0018) ------------------------------------------------------
-# The Flutter web build, served by PocketBase from pb_public; read on every
-# request, so no restart is needed.
-step "Web client"
-if [ -f "$SETUP_DIR/web/index.html" ]; then
-  if ! diff -r -q "$SETUP_DIR/web" "$PB_HOME/pb_public" >/dev/null 2>&1; then
-    rm -rf "$PB_HOME/pb_public.new"
-    cp -r "$SETUP_DIR/web" "$PB_HOME/pb_public.new"
-    rm -rf "$PB_HOME/pb_public"
-    mv "$PB_HOME/pb_public.new" "$PB_HOME/pb_public"
-    echo "pb_public updated"
-  else
-    echo "unchanged"
-  fi
-else
-  echo "no web build in this setup, pb_public left as it is"
+# --- systemd unit (the docs' example) -----------------------------------------
+step "systemd unit"
+if ! cmp -s "$SETUP/setding.service" /etc/systemd/system/setding.service; then
+  install -m 644 "$SETUP/setding.service" /etc/systemd/system/setding.service
+  echo "setding.service updated"
+  restart=1
 fi
-
-# --- systemd units -------------------------------------------------------------
-step "systemd units"
-install_unit() {
-  if ! cmp -s "$HERE/$1" "/etc/systemd/system/$1"; then
-    install -m 644 "$HERE/$1" "/etc/systemd/system/$1"
-    echo "$1 updated"
-    return 0
-  fi
-  return 1
-}
-install_unit pocketbase.service && restart_pb=1
-install_unit setding-backup.service || true
-install_unit setding-backup.timer || true
-install -m 755 "$HERE/setding-backup.sh" /usr/local/bin/setding-backup
 systemctl daemon-reload
-systemctl enable --now pocketbase.service setding-backup.timer >/dev/null
-if [ "$restart_pb" -eq 1 ]; then
-  systemctl restart pocketbase.service
+systemctl enable setding.service >/dev/null
+if [ "$restart" -eq 1 ] || ! systemctl is-active --quiet setding.service; then
+  systemctl restart setding.service
 fi
 
 # --- cloudflared (the tunnel itself is connected by the owner, see docs) ------
@@ -178,23 +162,23 @@ fi
 apt-get install -y -q cloudflared >/dev/null
 cloudflared --version
 
+# --- Old bundles -----------------------------------------------------------------
+# Keep the newest few next to the current one, for a quick rollback.
+mapfile -t old < <(find "$OPT" -mindepth 1 -maxdepth 1 -type d -name 'setding-server-*' \
+  ! -path "$dir" -printf '%T@ %p\n' | sort -rn | tail -n +"$KEEP_BUNDLES" | cut -d' ' -f2-)
+for d in "${old[@]}"; do rm -rf "$d" && echo "removed $(basename "$d")"; done
+
 # --- Health check --------------------------------------------------------------
 step "Health check"
-for _ in $(seq 1 20); do
-  if curl -fsS http://127.0.0.1:8090/api/health >/dev/null 2>&1; then
-    echo "PocketBase is up on 127.0.0.1:8090"
-    break
-  fi
-  sleep 0.5
+for _ in $(seq 1 30); do
+  /usr/local/bin/setding healthcheck >/dev/null 2>&1 && break
+  sleep 1
 done
-curl -fsS http://127.0.0.1:8090/api/health >/dev/null || {
-  echo "PocketBase does not answer; see: journalctl -u pocketbase" >&2
-  exit 1
-}
+/usr/local/bin/setding healthcheck >/dev/null 2>&1 ||
+  fail "setDING does not answer; see: journalctl -u setding"
+echo "setDING $version is up on 127.0.0.1:8090"
 if systemctl is-active --quiet cloudflared; then
   echo "Cloudflare tunnel: running"
 else
   echo "Cloudflare tunnel: not connected yet (run 'cloudflared service install <TOKEN>', see docs/operations/server.md)"
 fi
-
-# The website is deployed on its own (make server-site, ADR-0063 §8).
