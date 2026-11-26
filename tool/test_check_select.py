@@ -59,7 +59,15 @@ class SelectTest(unittest.TestCase):
         self.assertEqual(
             jobs('tool/server-dist/build-bundle.sh'), ['server', 'ops'])
         self.assertEqual(
-            jobs('tool/server-dist/setding.service'), ['server', 'ops'])
+            jobs('tool/server-dist/doc-example.py'), ['server', 'ops', 'tools'])
+
+    def test_self_hosting_docs_run_their_examples(self):
+        self.assertEqual(
+            jobs('website/src/content/docs/self-hosting/docker.mdx'),
+            ['server', 'ops', 'website'])
+        self.assertEqual(
+            jobs('website/src/content/docs/en/self-hosting/native.mdx'),
+            ['server', 'ops', 'website'])
 
     def test_server_image_pins_its_base_image(self):
         self.assertEqual(select(['tool/server-dist/Dockerfile'])[1], True)

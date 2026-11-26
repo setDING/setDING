@@ -1,0 +1,145 @@
+---
+title: Without Docker
+description: Install the setDING server from the server bundle, run it as a systemd service and update it.
+sidebar:
+  order: 3
+---
+
+The server bundle is a directory that runs without further dependencies. For a
+first try this is enough:
+
+```bash
+cd setding-server-0.22.0
+SETDING_INVITE_KEY="$(openssl rand -base64 32)" ./pocketbase serve --http=127.0.0.1:8090
+```
+
+The data then lands in `pb_data/` next to the program. To run it for real, set up
+setDING as a systemd service as described here. The commands run as `root`.
+
+## Install
+
+1. Download the bundle for your processor (`amd64` or `arm64`) and the checksums
+   from the [GitHub releases](https://github.com/tafli/setDING/releases/latest) and
+   check it:
+
+   ```bash
+   v=0.22.0; a=amd64
+   curl -fLO "https://github.com/tafli/setDING/releases/download/v$v/setding-server-$v-linux-$a.tar.gz"
+   curl -fLO "https://github.com/tafli/setDING/releases/download/v$v/SHA256SUMS"
+   sha256sum --ignore-missing -c SHA256SUMS
+   ```
+
+2. Create an own user and the directories, unpack the bundle and point `current` to
+   it:
+
+   ```bash
+   useradd --system --home-dir /var/lib/setding --shell /usr/sbin/nologin setding
+   install -d -o setding -g setding -m 750 /var/lib/setding /var/lib/setding/pb_data
+   install -d -m 755 /opt/setding
+   tar -xzf "setding-server-$v-linux-$a.tar.gz" -C /opt/setding
+   ln -sfn "/opt/setding/setding-server-$v" /opt/setding/current
+   ```
+
+3. Put the settings into `/etc/setding/setding.env`:
+
+   ```bash
+   install -d -m 755 /etc/setding
+   install -m 640 -o root -g setding /dev/null /etc/setding/setding.env
+   cat >/etc/setding/setding.env <<EOF
+   # Required: encrypts stored invitation links.
+   SETDING_INVITE_KEY=$(openssl rand -base64 32)
+   SETDING_REGISTRATION=invite_only
+   SETDING_BACKUP_CRON="0 3 * * *"
+   SETDING_BACKUP_KEEP=14
+   EOF
+   ```
+
+4. Create the file `/etc/systemd/system/setding.service`:
+
+   ```ini title="setding.service"
+   [Unit]
+   Description=setDING server
+   After=network-online.target
+   Wants=network-online.target
+
+   [Service]
+   Type=simple
+   User=setding
+   Group=setding
+   EnvironmentFile=/etc/setding/setding.env
+   ExecStart=/opt/setding/current/pocketbase serve \
+     --http=127.0.0.1:8090 \
+     --dir=/var/lib/setding/pb_data \
+     --hooksDir=/opt/setding/current/pb_hooks \
+     --hooksWatch=false \
+     --migrationsDir=/opt/setding/current/pb_migrations \
+     --publicDir=/opt/setding/current/pb_public
+   Restart=always
+   RestartSec=5
+   LimitNOFILE=4096
+   NoNewPrivileges=true
+   PrivateTmp=true
+   ProtectSystem=strict
+   ReadWritePaths=/var/lib/setding
+   ProtectHome=true
+
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
+5. Start the service and check it:
+
+   ```bash
+   systemctl daemon-reload
+   systemctl enable --now setding
+   systemctl status setding
+   ```
+
+   Without the key the server does not start and says in its log
+   (`journalctl -u setding`) what is missing.
+
+6. Put a [reverse proxy](/en/self-hosting/reverse-proxy/) with HTTPS in front of
+   `127.0.0.1:8090` and [set up](/en/self-hosting/operation/) the server.
+
+## Admin commands
+
+The commands need the same directories as the service. The easiest way is a short
+command for them:
+
+```bash
+cat >/usr/local/bin/setding <<'EOF'
+#!/bin/sh
+exec runuser -u setding -- /opt/setding/current/pocketbase "$@" \
+  --dir=/var/lib/setding/pb_data \
+  --hooksDir=/opt/setding/current/pb_hooks \
+  --migrationsDir=/opt/setding/current/pb_migrations
+EOF
+chmod 755 /usr/local/bin/setding
+```
+
+Then, for example:
+
+```bash
+setding superuser upsert admin@example.org 'a-long-password'
+setding founder-invite "Example Music School"
+setding healthcheck
+```
+
+## Update
+
+Update your band's apps first, then the server
+([why](/en/self-hosting/overview/#which-version-goes-with-which-app)). The new version
+goes next to the old one, and `current` switches to it:
+
+```bash
+v=0.23.0; a=amd64
+# download and check as in step 1, then:
+tar -xzf "setding-server-$v-linux-$a.tar.gz" -C /opt/setding
+ln -sfn "/opt/setding/setding-server-$v" /opt/setding/current
+systemctl restart setding
+```
+
+The server updates the database itself when it starts; the data in
+`/var/lib/setding/pb_data` stays. Make a [backup](/en/self-hosting/operation/#backups)
+first. If something goes wrong, point `current` back to the old version and restore
+the backup. Delete old versions once you no longer need them.

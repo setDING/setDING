@@ -288,6 +288,35 @@ void main() {
     });
   }
 
+  // Connecting the app to an own server (self-hosting docs, ADR-0063):
+  // the Server dialog under Account & sync with another address.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('self-hosted server $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: const SettingsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await openSettingsCategory(tester, SettingsCategory.account);
+      await tester.tap(find.byIcon(Icons.dns_outlined));
+      await tester.pumpAndSettle();
+      final field = find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byType(TextField),
+      );
+      expect(field, findsOneWidget);
+      await tester.enterText(field, 'https://setding.example.org');
+      await shot(tester, '${lang}_60_self_hosted_server');
+      await app.dispose(tester);
+    });
+  }
+
   // In-app help (#993): the book icon next to the title of a category and
   // the user guide entry under Help & info.
   for (final (lang, dark) in [('de', false), ('en', true)]) {

@@ -1,6 +1,6 @@
 // The Docker image of the server (ADR-0063 §2b, issue #1051), built from a
 // bundle with tool/server-dist/build-image.sh and started with the example
-// compose file tool/server-dist/docker-compose.yml (only the image and the
+// compose file of the self-hosting docs (docker.mdx; only the image and the
 // host port replaced).
 //
 // With SETDING_TEST_IMAGE (and SETDING_TEST_BUNDLE, the bundle it was built
@@ -110,9 +110,7 @@ void main() {
 
     final port = await _freePort();
     baseUrl = Uri.parse('http://127.0.0.1:$port');
-    final example = File(
-      '$_root/tool/server-dist/docker-compose.yml',
-    ).readAsStringSync();
+    final example = docExample('docker', 'docker-compose.yml');
     final imageLine = RegExp(r'image: \S+');
     final portLine = RegExp(r'"127\.0\.0\.1:8090:8090"');
     expect(example, contains(imageLine));

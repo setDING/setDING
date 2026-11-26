@@ -62,6 +62,12 @@ export default defineConfig({
           translations: { en: 'Settings' },
           items: [{ autogenerate: { directory: 'settings' } }],
         },
+        // Running the server yourself (ADR-0063).
+        {
+          label: 'Selbst hosten',
+          translations: { en: 'Self-hosting' },
+          items: [{ autogenerate: { directory: 'self-hosting' } }],
+        },
       ],
       lastUpdated: false,
       plugins: [starlightLinksValidator()],

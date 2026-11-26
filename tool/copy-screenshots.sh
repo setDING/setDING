@@ -32,6 +32,7 @@ map=(
   invite_band_hint 14a_invite_band_hint
   band 14_band
   settings 15_settings
+  self_hosted_server 60_self_hosted_server
   settings_musician 16_settings_musician
   settings_voice_hint 16a_settings_voice_hint
   settings_chorus_once 17b_settings_chorus_once

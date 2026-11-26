@@ -20,7 +20,6 @@ import 'package:test/test.dart';
 import 'support/dist.dart';
 import 'support/fixtures.dart';
 
-final _root = Directory.current.parent.path;
 final _env = Platform.environment;
 
 final _pdf = utf8.encode(
@@ -127,9 +126,10 @@ void main() {
 
       // The example unit's command, with /opt/setding/current a link to the
       // bundle in use and the data in its own directory.
-      final unit = File(
-        '$_root/tool/server-dist/setding.service',
-      ).readAsStringSync().replaceAll(RegExp(r'\\\n\s*'), ' ');
+      final unit = docExample(
+        'native',
+        'setding.service',
+      ).replaceAll(RegExp(r'\\\n\s*'), ' ');
       final exec = unit
           .split('\n')
           .firstWhere((l) => l.startsWith('ExecStart='))
@@ -177,9 +177,7 @@ void main() {
       final socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
       final port = socket.port;
       await socket.close();
-      final example = File(
-        '$_root/tool/server-dist/docker-compose.yml',
-      ).readAsStringSync();
+      final example = docExample('docker', 'docker-compose.yml');
       final composeFile = '${work.path}/docker-compose.yml';
       void write(String img) => File(composeFile).writeAsStringSync(
         example

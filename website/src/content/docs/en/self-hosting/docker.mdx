@@ -1,0 +1,109 @@
+---
+title: With Docker
+description: Install and update the setDING server with Docker Compose or docker run.
+sidebar:
+  order: 2
+---
+
+The image `ghcr.io/tafli/setding-server` runs on amd64 and arm64. It contains only
+the server and the web app, no shell and no package manager, and runs as its own
+user without root rights. Your data lives in a volume.
+
+## Install with Docker Compose
+
+1. Create a secret key for the invitation links:
+
+   ```bash
+   openssl rand -base64 32
+   ```
+
+2. In an empty directory, create the file `docker-compose.yml` and put the key into
+   `SETDING_INVITE_KEY`:
+
+   ```yaml title="docker-compose.yml"
+   services:
+     setding:
+       # Use a fixed version (e.g. :0.22.0) and update it on purpose.
+       image: ghcr.io/tafli/setding-server:latest
+       restart: unless-stopped
+       ports:
+         # Only on this machine: put your reverse proxy with HTTPS in front.
+         - "127.0.0.1:8090:8090"
+       environment:
+         # Required: encrypts stored invitation links (openssl rand -base64 32).
+         SETDING_INVITE_KEY: "replace-with-a-long-random-secret"
+         # invite_only (default) or open.
+         SETDING_REGISTRATION: invite_only
+         # Automatic backups in the volume: daily at 03:00, 14 kept.
+         SETDING_BACKUP_CRON: "0 3 * * *"
+         SETDING_BACKUP_KEEP: "14"
+         TZ: Europe/Zurich
+       volumes:
+         - setding-data:/setding/pb_data
+
+   volumes:
+     setding-data:
+   ```
+
+3. Start the server:
+
+   ```bash
+   docker compose up -d
+   docker compose ps
+   ```
+
+   After a few seconds `setding` shows **healthy**. Without the key the server does
+   not start and says in its log (`docker compose logs setding`) what is missing.
+
+4. Put a [reverse proxy](/en/self-hosting/reverse-proxy/) with HTTPS in front of
+   `127.0.0.1:8090` and [set up](/en/self-hosting/operation/) the server.
+
+## Without Compose
+
+The same with `docker run`:
+
+```bash
+docker run -d --name setding --restart unless-stopped \
+  -p 127.0.0.1:8090:8090 \
+  -e SETDING_INVITE_KEY="replace-with-a-long-random-secret" \
+  -e TZ=Europe/Zurich \
+  -v setding-data:/setding/pb_data \
+  ghcr.io/tafli/setding-server:latest
+```
+
+## Commands in the container
+
+The admin commands run in the container with `docker compose exec`:
+
+```bash
+docker compose exec setding /setding/pocketbase superuser upsert admin@example.org 'a-long-password'
+docker compose exec setding /setding/pocketbase founder-invite "Example Music School"
+docker compose exec setding /setding/pocketbase healthcheck
+```
+
+## Update
+
+Update your band's apps first, then the server
+([why](/en/self-hosting/overview/#which-version-goes-with-which-app)):
+
+1. Put the new version into `docker-compose.yml`, for example
+   `ghcr.io/tafli/setding-server:0.22.0`.
+2. Pull and start it:
+
+   ```bash
+   docker compose pull
+   docker compose up -d
+   ```
+
+The server updates the database itself when it starts. The data in the volume is
+kept; make a [backup](/en/self-hosting/operation/#backups) first anyway.
+
+## Data in the volume
+
+`/setding/pb_data` holds the database, the PDFs and the automatic backups
+(`backups/`). If you use a directory instead of a named volume
+(`./data:/setding/pb_data`), it must belong to the user with the ID 65532:
+
+```bash
+mkdir data && sudo chown 65532:65532 data
+```

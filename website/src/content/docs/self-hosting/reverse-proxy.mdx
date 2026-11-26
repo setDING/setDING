@@ -1,0 +1,65 @@
+---
+title: Reverse-Proxy
+description: Was ein Reverse-Proxy vor dem setDING-Server können muss, mit Caddy als Beispiel.
+sidebar:
+  order: 4
+---
+
+Der setDING-Server spricht nur HTTP auf `127.0.0.1:8090`. Für HTTPS und deine
+Domain sorgt ein Reverse-Proxy davor. Welchen du nimmst, entscheidest du: Caddy,
+Nginx, Traefik, Zoraxy, Nginx Proxy Manager oder ein Tunnel wie Cloudflare Tunnel –
+Hauptsache, er erfüllt die folgenden Punkte.
+
+## Was der Proxy können muss
+
+- **HTTPS** mit einem gültigen Zertifikat. Die Apps verbinden sich nur
+  verschlüsselt.
+- **Die IP-Adresse der Nutzer weitergeben** (`X-Forwarded-For` oder `X-Real-IP`) und
+  diesen Header in PocketBase als vertrauenswürdig eintragen
+  ([Einrichten](/self-hosting/operation/#einstellungen-in-pocketbase)). Sonst sieht
+  der Server alle Anfragen vom Proxy kommen, und seine Schutzgrenzen bremsen alle
+  Nutzer gemeinsam statt einzelne.
+- **Grosse Uploads** zulassen: mindestens **25 MB** pro Anfrage, weil PDFs mitsamt
+  Formular so gross werden können. Nginx erlaubt zum Beispiel nur 1 MB, wenn man
+  nichts einstellt (`client_max_body_size 25m;`).
+- **Live-Verbindungen** nicht puffern und nicht nach kurzer Zeit trennen: Die Apps
+  hören über eine lang offene Verbindung (Server-Sent Events) auf Änderungen. Wird
+  sie getrennt, verbinden sie sich wieder, aber Puffern verzögert die Änderungen.
+- **Die Verwaltung `/_/` schützen**, zum Beispiel nur aus deinem Netz oder mit einem
+  zusätzlichen Login. Nicht die ganze Domain schützen: Die Apps brauchen den Rest.
+
+## Beispiel: Caddy
+
+[Caddy](https://caddyserver.com) holt das Zertifikat selbst, gibt die IP-Adresse
+weiter, puffert Live-Verbindungen nicht und hat kein Upload-Limit. Eine
+`Caddyfile` für `setding.example.org`, mit der Verwaltung nur aus dem eigenen Netz:
+
+```caddy title="Caddyfile"
+setding.example.org {
+	@admin {
+		path /_/*
+		not remote_ip private_ranges
+	}
+	respond @admin 403
+
+	reverse_proxy 127.0.0.1:8090
+}
+```
+
+In PocketBase trägst du dazu den Header `X-Forwarded-For` als vertrauenswürdig ein.
+
+Läuft setDING in Docker und Caddy auf demselben Rechner, bleibt es bei
+`127.0.0.1:8090`. Läuft Caddy selbst in einem Container im selben Compose-Projekt,
+nimmst du `reverse_proxy setding:8090` und lässt die Zeile `ports` weg.
+
+## Prüfen
+
+Von einem anderen Rechner aus:
+
+```bash
+curl https://setding.example.org/api/health
+curl https://setding.example.org/api/setding/config
+```
+
+Die erste Antwort enthält `"code":200`, die zweite die Version deines Servers. Danach
+geht es weiter mit dem [Einrichten](/self-hosting/operation/).
