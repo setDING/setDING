@@ -53,9 +53,15 @@ RULES = [
     ('tool/server/', ['ops', 'server']),
     # Server bundle (ADR-0063): build script and example unit, tested by
     # server/test/bundle_test.dart.
+    ('tool/server-dist/test_doc_example.py', ['tools']),
+    ('tool/server-dist/doc-example.py', ['ops', 'server', 'tools']),
     ('tool/server-dist/', ['ops', 'server']),
     # Website server (ADR-0030): Caddyfile check, site_server_test.
     ('tool/site/', ['ops', 'server']),
+    # The self-hosting docs hold the examples the server tests and the ops
+    # checks run (ADR-0063 §5).
+    ('website/src/content/docs/self-hosting/', ['website', 'ops', 'server']),
+    ('website/src/content/docs/en/self-hosting/', ['website', 'ops', 'server']),
     ('tool/sbom', ['sbom']),
     ('tool/release/', ['changelog']),
     ('CHANGELOG.md', ['changelog']),

@@ -1,0 +1,60 @@
+---
+title: Überblick
+description: setDING auf dem eigenen Server betreiben – was du bekommst, was du brauchst und welche Version zu welcher App passt.
+sidebar:
+  order: 1
+---
+
+Deine Songs, Sets und Notizen gehören dir. Darum kannst du den Server von setDING
+selbst betreiben: für deine Band, deine Musikschule oder deinen Verein, auf einem
+kleinen VPS, einem NAS oder einem Rechner zu Hause. Die Apps verbinden sich dann mit
+deinem Server statt mit `setding.app`.
+
+## Was du bekommst
+
+Jede Version von setDING erscheint auch als Server, in zwei gleichwertigen Formen:
+
+- **Docker-Image** `ghcr.io/tafli/setding-server` für amd64 und arm64 – der
+  einfachste Weg, wenn auf deinem Server Docker läuft ([Docker](/self-hosting/docker/)).
+- **Server-Paket** `setding-server-<version>-linux-<arch>.tar.gz` bei den
+  [Releases auf GitHub](https://github.com/tafli/setDING/releases/latest) – ein
+  Verzeichnis, das ohne Docker direkt läuft, zum Beispiel als systemd-Dienst
+  ([Ohne Docker](/self-hosting/native/)).
+
+Beide enthalten dasselbe: den Datenbankserver [PocketBase](https://pocketbase.io)
+mit den Regeln und Erweiterungen von setDING und die
+[Web-App](/start/install/), die unter derselben Adresse im Browser läuft. Jede
+Version wird vor der Veröffentlichung automatisch getestet, auch das Update von der
+vorherigen Version.
+
+Nicht dabei ist ein Reverse-Proxy für HTTPS: den wählst du selbst, und vielleicht
+hast du schon einen ([Reverse-Proxy](/self-hosting/reverse-proxy/)).
+
+## Was du brauchst
+
+- Einen Linux-Server mit amd64- oder arm64-Prozessor. 1 CPU, 1 GB RAM und ein paar
+  GB Speicher reichen für viele Bands; PDFs brauchen am meisten Platz.
+- Eine **Domain** (zum Beispiel `setding.musikschule.ch`), die auf deinen Server
+  zeigt.
+- Einen **Reverse-Proxy mit HTTPS** davor. Die Apps verbinden sich nur verschlüsselt.
+- Optional einen **Mailserver (SMTP)**, damit Passwörter per Mail zurückgesetzt
+  werden können.
+
+## Welche Version zu welcher App passt
+
+Server und Apps haben dieselbe Versionsnummer. Ein Server nimmt Apps an, die gleich
+alt oder neuer sind als seine Mindestversion; ist eine App zu alt, zeigt sie
+**Bitte setDING aktualisieren** und synchronisiert erst wieder nach dem Update.
+
+Darum gilt bei jedem Update: **zuerst die Apps, dann der Server.** Aktualisiere den
+Server erst, wenn die Apps der neuen Version verfügbar sind, und nimm bei Docker
+eine feste Version statt `latest`, damit der Server nicht unbemerkt neuer wird als
+die Apps deiner Band.
+
+## So geht es weiter
+
+1. Server installieren: mit [Docker](/self-hosting/docker/) oder
+   [ohne Docker](/self-hosting/native/).
+2. [Reverse-Proxy](/self-hosting/reverse-proxy/) mit HTTPS davor stellen.
+3. [Einrichten und betreiben](/self-hosting/operation/): Administrator, erste
+   Organisation, Apps verbinden, Updates und Backups.

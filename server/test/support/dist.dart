@@ -2,6 +2,20 @@ import 'dart:io';
 
 import 'package:test/test.dart';
 
+/// The example file titled [title] on the self-hosting page [page]
+/// (`website/src/content/docs/self-hosting/<page>.mdx`), the same on the German
+/// and the English page (tool/server-dist/doc-example.py). The tests run what
+/// the documentation shows (ADR-0063 §5).
+String docExample(String page, String title) {
+  final r = Process.runSync('python3', [
+    '${Directory.current.parent.path}/tool/server-dist/doc-example.py',
+    page,
+    title,
+  ]);
+  if (r.exitCode != 0) throw StateError('${r.stderr}');
+  return r.stdout as String;
+}
+
 /// The server bundle a test runs (ADR-0063): the release artifact named by
 /// `SETDING_TEST_BUNDLE`, or one built now with
 /// tool/server-dist/build-bundle.sh, a stub web client and [version].

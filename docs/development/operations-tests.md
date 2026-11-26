@@ -11,8 +11,14 @@ only on the server, so a mistake in them would otherwise show up there first.
   (`# shellcheck disable=SCxxxx # why`).
 - **Caddyfile** of the website (`tool/site/Caddyfile`): `caddy validate` and `caddy fmt`; it
   must be formatted as Caddy writes it (`caddy fmt --overwrite`).
-- **systemd units** of `tool/server/` and the example unit of the server bundle
-  (`tool/server-dist/setding.service`): `systemd-analyze verify` (unknown keys,
+- **Examples of the self-hosting docs** (`website/src/content/docs/self-hosting/`,
+  ADR-0063): `tool/server-dist/doc-example.py` takes a titled code block from the
+  German and the English page and fails if they differ. The `Caddyfile` of
+  *Reverse proxy* gets `caddy validate` and `caddy fmt`, the unit of *Without
+  Docker* `systemd-analyze verify`; the compose file of *Docker* is run by the
+  image test. `tool/server-dist/test_doc_example.py` (job `tools`) tests the script.
+- **systemd units** of `tool/server/` and the example unit of the self-hosting
+  docs: `systemd-analyze verify` (unknown keys,
   bad values). Skipped on machines without systemd. The binaries the units
   start exist only on the server and are ignored.
 
@@ -22,8 +28,8 @@ only on the server, so a mistake in them would otherwise show up there first.
   only in the [server release test](releases.md#server-release-test), which
   passes the previous release's bundle and image; skipped in `make check`.
 - **Server image** (`image_test.dart`, ADR-0063): builds the image from a bundle
-  (stub web build, fixed version) and starts it with the example compose file
-  `tool/server-dist/docker-compose.yml` (only the image and the host port
+  (stub web build, fixed version) and starts it with the compose file of the
+  self-hosting docs (*Docker*, `docker.mdx`; only the image and the host port
   replaced): runs as user 65532, labels and `HEALTHCHECK`, the container becomes
   healthy, API, `serverVersion` and web client, sign-up and delta sync, data kept
   over a restart, `founder-invite` and `healthcheck` with `docker compose exec`,
@@ -34,7 +40,7 @@ only on the server, so a mistake in them would otherwise show up there first.
   `tool/server-dist/build-bundle.sh` (a stub web build, a fixed version) and
   checks its content, licences and `SHA256SUMS`. Then it unpacks it and starts
   it as it is (`./pocketbase serve` in the bundle directory) and with the
-  `ExecStart` of the example unit `tool/server-dist/setding.service` (paths
+  `ExecStart` of the unit of the self-hosting docs (*Without Docker*, `native.mdx`; paths
   moved into a temporary directory, the port replaced): health, `serverVersion`,
   the web client and the landing page's link to it, sign-up and delta sync,
   `founder-invite`, `healthcheck`, and a built-in backup restored into the

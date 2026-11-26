@@ -281,6 +281,13 @@ web client excepted).
 - 2026-11-26: §8 implemented (#1054): the website has its own deployment
   (`make server-site [VERSION=…]` to `SITE_SERVER`, files in `tool/site/`); the server
   deploys no longer touch it.
+- 2026-11-26: §5 implemented (#1053): the website chapter *Selbst hosten* /
+  *Self-hosting* (overview, Docker, without Docker, reverse proxy, setup and
+  operation) in de-CH and en, linked from the landing page, with a screenshot of
+  the app's *Server* dialog. The example compose file, systemd unit and Caddyfile
+  live only on these pages (the fixtures in `tool/server-dist/` are gone):
+  `tool/server-dist/doc-example.py` hands them to the bundle, image and upgrade
+  tests and to the ops checks, and fails when the German and English pages differ.
 
 ## Open points
 

@@ -1,7 +1,7 @@
 // The server bundle (ADR-0063 §1, issue #1050), built with
 // tool/server-dist/build-bundle.sh and started the two documented ways: as it
 // is (`./pocketbase serve`) and with the example systemd unit's command
-// (tool/server-dist/setding.service). With SETDING_TEST_BUNDLE it tests that
+// (native.mdx of the self-hosting docs). With SETDING_TEST_BUNDLE it tests that
 // release artifact instead (tool/server-dist/release-test.sh).
 import 'dart:convert';
 import 'dart:io';
@@ -178,9 +178,7 @@ void main() {
     late List<String> exec;
 
     setUpAll(() {
-      exec = _execStart(
-        File('$_root/tool/server-dist/setding.service').readAsStringSync(),
-      );
+      exec = _execStart(docExample('native', 'setding.service'));
     });
 
     /// The unit's command with its paths moved into [dir].

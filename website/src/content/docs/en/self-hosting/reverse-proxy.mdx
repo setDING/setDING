@@ -1,0 +1,64 @@
+---
+title: Reverse proxy
+description: What a reverse proxy in front of the setDING server must do, with Caddy as an example.
+sidebar:
+  order: 4
+---
+
+The setDING server only speaks HTTP on `127.0.0.1:8090`. A reverse proxy in front of
+it takes care of HTTPS and your domain. Which one you use is up to you: Caddy, Nginx,
+Traefik, Zoraxy, Nginx Proxy Manager or a tunnel such as Cloudflare Tunnel – as long
+as it does the following.
+
+## What the proxy must do
+
+- **HTTPS** with a valid certificate. The apps only connect encrypted.
+- **Pass on the users' IP address** (`X-Forwarded-For` or `X-Real-IP`) and enter
+  this header as trusted in PocketBase
+  ([Set up](/en/self-hosting/operation/#settings-in-pocketbase)). Otherwise the
+  server sees every request coming from the proxy, and its protective limits slow
+  down all users together instead of single ones.
+- **Allow large uploads**: at least **25 MB** per request, because PDFs and their
+  form can get that big. Nginx, for example, allows only 1 MB unless configured
+  (`client_max_body_size 25m;`).
+- **Do not buffer live connections** and do not close them after a short time: the
+  apps listen for changes over a long-lived connection (server-sent events). If it
+  is closed, they reconnect, but buffering delays the changes.
+- **Protect the admin UI `/_/`**, for example only from your network or with an
+  additional login. Do not protect the whole domain: the apps need the rest.
+
+## Example: Caddy
+
+[Caddy](https://caddyserver.com) gets the certificate itself, passes on the IP
+address, does not buffer live connections and has no upload limit. A `Caddyfile`
+for `setding.example.org`, with the admin UI only from the own network:
+
+```caddy title="Caddyfile"
+setding.example.org {
+	@admin {
+		path /_/*
+		not remote_ip private_ranges
+	}
+	respond @admin 403
+
+	reverse_proxy 127.0.0.1:8090
+}
+```
+
+In PocketBase you then enter the header `X-Forwarded-For` as trusted.
+
+If setDING runs in Docker and Caddy on the same machine, it stays at
+`127.0.0.1:8090`. If Caddy itself runs in a container of the same Compose project,
+use `reverse_proxy setding:8090` and leave out the `ports` lines.
+
+## Check
+
+From another computer:
+
+```bash
+curl https://setding.example.org/api/health
+curl https://setding.example.org/api/setding/config
+```
+
+The first answer contains `"code":200`, the second your server's version. Then
+continue with the [setup](/en/self-hosting/operation/).

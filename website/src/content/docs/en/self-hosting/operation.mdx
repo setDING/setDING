@@ -1,0 +1,117 @@
+---
+title: Set up and run
+description: Administrator, settings, first organization, connecting the apps, backups and updates of your own setDING server.
+sidebar:
+  order: 5
+---
+
+import { Image } from 'astro:assets';
+import serverSetting from '../../../../../../docs/screenshots/self_hosted_server.png';
+
+The commands below are written for Docker. Without Docker, use the command `setding`
+from [Without Docker](/en/self-hosting/native/#admin-commands) instead of
+`docker compose exec setding /setding/pocketbase`.
+
+## Create the administrator
+
+```bash
+docker compose exec setding /setding/pocketbase superuser upsert admin@example.org 'a-long-password'
+```
+
+Sign in with it at `https://setding.example.org/_/` and turn on two-factor sign-in
+(MFA) for administrators there.
+
+## Settings in PocketBase
+
+In the admin UI under **Settings**:
+
+1. **Application → Application URL:** your server's address, for example
+   `https://setding.example.org`. The invitation links are built from it; without
+   it they point to `http://127.0.0.1:8090` and work for nobody.
+2. **Trusted proxy:** the header your [reverse proxy](/en/self-hosting/reverse-proxy/)
+   passes the IP address in, usually `X-Forwarded-For` (`CF-Connecting-IP` with
+   Cloudflare).
+3. **Mail settings (SMTP):** so setDING can send mails to reset passwords. Without
+   SMTP everything else works, only these mails do not.
+
+## More settings
+
+All of setDING's settings come from the server's environment (`environment:` with
+Docker, otherwise `/etc/setding/setding.env`). Restart the server after a change.
+
+| Variable | Meaning |
+|---|---|
+| `SETDING_INVITE_KEY` | **Required.** Encrypts stored invitation links so they can be shown again. Create it with `openssl rand -base64 32`; it is not in the backups, so keep it safe. |
+| `SETDING_REGISTRATION` | `invite_only` (default): accounts only with an invitation, new organizations only with a founder invitation. `open`: anyone may sign up and found organizations. |
+| `SETDING_EMAIL_VERIFICATION` | `off` (default) or `required`: new accounts confirm their email address. Needs SMTP. |
+| `SETDING_BACKUP_CRON` | Schedule of the automatic backups in cron format, default `0 3 * * *` (daily at 3 am); `off` turns them off. |
+| `SETDING_BACKUP_KEEP` | How many automatic backups are kept, default `14`. |
+| `SETDING_WEB_URL` | Address of the web app if it has its own. The invitation page then offers **Open in the browser**. |
+| `TZ` | Time zone for schedules and logs, for example `Europe/Zurich`. |
+
+The backup settings apply at every start and replace what the admin UI shows.
+
+## First organization
+
+On a server with `invite_only`, a **founder invitation** founds the first
+organization:
+
+```bash
+docker compose exec setding /setding/pocketbase founder-invite "Example Music School"
+```
+
+The command prints a link (`url`), valid for 7 days and usable once. Whoever opens it
+in setDING creates an account (or signs in) and becomes the administrator of the new
+organization. That person then invites bands and members as described under
+[Invitations](/en/bands/invitations/).
+
+## Connect the apps
+
+In every app, under **Settings** → **Account & sync** → **Server**, enter your
+server's address, for example `https://setding.example.org`. Changing the server
+signs you out; then sign in on your server or open an invitation link. The web app
+runs at the same address in the browser and is already connected to your server.
+
+<Image src={serverSetting} alt="The «Server» dialog in the settings with the address of an own server" />
+
+Invitation links to your server open the apps through your server's invitation
+page: it offers **Open in setDING**, and the link can also be pasted into the app or
+scanned as a QR code.
+
+## Backups
+
+The server puts the automatic backups as ZIP files into `pb_data/backups/`: the
+database and all PDFs. They are on the same machine as the data, so copy them to
+another place regularly (another computer, a NAS, cloud storage). Keep the key
+`SETDING_INVITE_KEY` safe separately.
+
+In the admin UI under **Settings → Backups** you can also create and download a
+backup by hand.
+
+### Restore a backup
+
+1. Stop the server: `docker compose stop` (without Docker `systemctl stop setding`).
+2. Delete everything in `pb_data` except the folder `backups/` and unpack the backup
+   into it. With Docker, for example with a short-lived container:
+
+   ```bash
+   docker run --rm -v setding-data:/data -w /data alpine \
+     sh -c 'find . -mindepth 1 -maxdepth 1 ! -name backups -exec rm -rf {} + && unzip -q backups/<backup>.zip && chown -R 65532:65532 .'
+   ```
+
+   Without Docker:
+
+   ```bash
+   cd /var/lib/setding/pb_data
+   find . -mindepth 1 -maxdepth 1 ! -name backups -exec rm -rf {} +
+   unzip -q backups/<backup>.zip && chown -R setding:setding .
+   ```
+
+3. Start the server: `docker compose start` (without Docker `systemctl start setding`).
+
+## Updates
+
+New versions are on the [GitHub releases](https://github.com/tafli/setDING/releases);
+what changes is under [What's new](/en/news/). Update **first the apps, then the
+server**, as described for [Docker](/en/self-hosting/docker/#update) or
+[without Docker](/en/self-hosting/native/#update).

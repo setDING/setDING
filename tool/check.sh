@@ -45,6 +45,8 @@ job_tools() {
   cd "$ROOT/tool"
   python3 -m unittest -q test_check_select
   python3 -m unittest -q test_upgrade_guard
+  cd "$ROOT/tool/server-dist"
+  python3 -m unittest -q test_doc_example
 }
 
 # A pure Dart package: format, analysis, tests.

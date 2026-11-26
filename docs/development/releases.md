@@ -323,7 +323,7 @@ into `build/server-dist/` (`ARCH=arm64` for the other architecture, `WEB_DIR=<di
 to bundle an existing web build instead of building one). The release workflow
 builds, tests and publishes it. `server/test/bundle_test.dart` builds a
 bundle and starts it as it is and with the example systemd unit
-`tool/server-dist/setding.service` ([operations tests](operations-tests.md)).
+of the self-hosting docs ([operations tests](operations-tests.md)).
 
 ## Server image
 
@@ -339,7 +339,7 @@ builds a bundle for this machine and the image `setding-server:<version>`
 (`BUNDLE=<.tar.gz>` to package an existing bundle, `IMAGE=<name:tag>` for another
 name). The release workflow builds it for amd64 and arm64 and pushes it to
 ghcr.io. `server/test/image_test.dart` starts it with the example compose file
-`tool/server-dist/docker-compose.yml` ([operations tests](operations-tests.md)).
+of the self-hosting docs ([operations tests](operations-tests.md)).
 
 **Once, after the first release with an image (owner):** the package
 `setding-server` on GitHub is private when it is first pushed. Make it public
