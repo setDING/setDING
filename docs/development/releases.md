@@ -157,7 +157,7 @@ and are written by the release PR together with the changelog section:
 
 The website shows the same notes on its news page (https://setding.app/news/) and
 the newest version in its header ([website](website.md#news-page-and-version)); it
-is updated by `make server-release`.
+is updated by `make server-site VERSION=X.Y.Z`.
 
 ## Version numbers
 

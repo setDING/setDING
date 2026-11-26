@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 with the setDING-specific bump rules of
 [ADR-0028](docs/architecture/adr/0028-versioning-scheme.md).
 
+## [0.22.0] - 2026-11-26
+
+### Added
+
+- Run the setDING server yourself (ADR-0063): every release now comes with a **server bundle** for Linux (amd64 and arm64) that runs as it is or as a systemd service, and a **Docker image** `ghcr.io/tafli/setding-server`; both contain the web app and are tested before they are published, including the update from the previous release ([#1060](https://github.com/tafli/setDING/pull/1060), [#1061](https://github.com/tafli/setDING/pull/1061), [#1063](https://github.com/tafli/setDING/pull/1063))
+- A new website chapter *Self-hosting* explains the installation with Docker or without, the reverse proxy in front, the settings, backups and updates ([#1069](https://github.com/tafli/setDING/pull/1069))
+- For server operators: `pocketbase healthcheck`, automatic backups set with `SETDING_BACKUP_CRON` and `SETDING_BACKUP_KEEP` ([#1057](https://github.com/tafli/setDING/pull/1057))
+
+### Changed
+
+- **For server operators:** the server no longer starts without `SETDING_INVITE_KEY`, and says so in its log ([#1057](https://github.com/tafli/setDING/pull/1057))
+- Updated libraries ([#1059](https://github.com/tafli/setDING/pull/1059), [#1067](https://github.com/tafli/setDING/pull/1067))
+
 ## [0.21.0] - 2026-11-23
 
 ### Added
@@ -451,6 +464,7 @@ with the setDING-specific bump rules of
 
 - First release, built on GitHub Actions for Linux, Android and Windows ([#138](https://github.com/tafli/setDING/pull/138))
 
+[0.22.0]: https://github.com/tafli/setDING/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/tafli/setDING/compare/v0.20.0...v0.21.0
 [0.20.0]: https://github.com/tafli/setDING/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/tafli/setDING/compare/v0.18.0...v0.19.0
