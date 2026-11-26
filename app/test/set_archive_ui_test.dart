@@ -110,6 +110,67 @@ void main() {
     await app.dispose(tester);
   });
 
+  // Regression #1081: the web client hid the entry although it can export.
+  testWidgets('the web client exports a set as a download', (tester) async {
+    useTabletSize(tester);
+    final saved = <(String, Uint8List)>[];
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'currentBandId': 'b1'},
+      user: _ann,
+      web: true,
+    );
+    app.backend.addBand('b1', 'Rock', admin: _ann);
+    final setId = (await tester.runAsync(() async {
+      // Synced from the server (ADR-0018).
+      await app.db
+          .into(app.db.bands)
+          .insert(BandsCompanion.insert(id: 'b1', name: 'Rock'));
+      final song = await TestApp.songsIn(
+        app,
+        'org-b1',
+      ).createSong(source: '{title: Hello}\n[C]x');
+      final sets = SetRepository(app.db, app.storage, bandId: 'b1');
+      final set = await sets.createSet(name: 'Gig');
+      await sets.addSongs(set, [song]);
+      return set;
+    }))!;
+    await tester.pumpWidget(
+      app.build(
+        home: SetScreen(setId: setId),
+        extra: [
+          saveFileProvider.overrideWithValue((
+            name,
+            bytes, {
+            mimeType = '',
+          }) async {
+            saved.add((name, bytes));
+            return true;
+          }),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(PopupMenuButton<String>).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('set-export-menu')));
+    await tester.pumpAndSettle();
+
+    // Both formats, as in the apps.
+    expect(find.text('Set list as PDF'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('export-format-archive')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('set-export-start')));
+    await waitFor(tester, () => saved.isNotEmpty);
+
+    expect(saved.single.$1, 'Gig.setDING.zip');
+    final archive = (await tester.runAsync(
+      () => SetArchiveService.read(saved.single.$2),
+    ))!;
+    expect(archive.name, 'Gig');
+    expect(find.text('Exported'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
   testWidgets('the import dialog recognises an exported set and replaces the '
       'set it came from by default', (tester) async {
     useTabletSize(tester);

@@ -40,12 +40,14 @@ app** (`app/`), not as a separate web application.
 - **Platform code** (`dart:io`, file paths, `path_provider`, `app_links`) is moved
   behind conditional imports with a web implementation; deep links become URL
   routes (`/invite/<token>`).
-- **Sign-in required, file import but no export:** the web client works only
+- **Sign-in required, file import and export:** the web client works only
   with an account, and all data reaches the browser through sync. Importing
   ChordPro files or ZIPs is offered on web as in the app: the imported songs
   go into the current band's library and are pushed by the next sync.
-  Exporting songs or sets (ZIP, text, printable set list, ADR-0013) is not
-  offered on web; the native apps keep it.
+  Exporting songs and sets as a setDING archive (ZIP) and the printable set
+  list (ADR-0013) are offered on web as a download; the attachment files are
+  loaded for the export (ADR-0043). A single song as a ChordPro file stays
+  native-only.
 - **Local library hidden:** the local library "On this device" (ADR-0005) is not
   offered on web, because its data would exist only in one browser and could be
   evicted. The web client requires an account and shows only organization
@@ -66,7 +68,7 @@ app** (`app/`), not as a separate web application.
 | Songs: ChordPro editor with preview, PDF attachments | ✓ |
 | Sets: create, reorder | ✓ |
 | File import (ChordPro, ZIP) | ✓ (imported songs are synced like new songs) |
-| File export (songs, sets as ZIP, text, printable PDF) | – (not needed; data is synced with the server) |
+| File export (songs, sets as ZIP, printable set list PDF) | ✓ (a download; a single ChordPro file only in the apps) |
 | Personal overlays (ADR-0006) | ✓ (as on any device) |
 | Local library "On this device" | – (hidden; signing in is required on web) |
 | Live mode | ✓ with a notice "not offline-safe, use the app on stage" |
@@ -199,6 +201,9 @@ Tracked in issue #27, each step a separate PR:
   the imported songs are synced like new songs. Export stays native-only.
 - 2026-11-17: App renamed to **setDING** (#318): the web client is published at `https://app.setding.app` (`SETDING_WEB_URL`), the apps use `https://api.setding.app`.
 - 2026-11-20: **ADR-0043** (accepted, #622): the web client may export: the backup archive of an organization is offered on web too (attachment files are loaded for the export). The other exports (songs, sets, set list) may follow.
+- 2026-11-26: Sets are exported on web as well (#1081): the set's ⋮ menu offers
+  **Export …** with the set archive and the printable set list as a download,
+  like the song archive before; the guard from #115 hid it.
 
 ## Open points
 

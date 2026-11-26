@@ -70,8 +70,9 @@ covered by the normal widget tests (`test/web_client_test.dart`):
 
 - `StartScreen`: sign-in gate, "no band yet" screen, then the `HomeScreen`.
 - `bandsProvider` leaves out the local library.
-- Export (songs, sets, set lists) is hidden; import (ChordPro, ZIP) works as
-  in the app, and the imported songs are pushed by the next sync.
+- Export (song and set archives, set list PDF) is a download; a single song
+  as a ChordPro file is not offered. Import (ChordPro, ZIP) works as in the
+  app, and the imported songs are pushed by the next sync.
 - Attachments are not preloaded (`SyncEngine.preloadAttachments`); the live
   view loads a PDF through `attachmentFileProvider` / `AttachmentFetcher`
   when it is opened. "Offline ready" and missing files are not shown.
