@@ -384,7 +384,7 @@ void main() {
     expect(
       controller.text,
       '{title: T}\n\n{start_of_verse: label="Verse 1"}\n[C]a\n{end_of_verse}\n'
-      '\n{start_of_intro: label="Intro"}\n[G]\n{end_of_intro}\n\n'
+      '\n{start_of_verse: label="Intro"}\n[G]\n{end_of_verse}\n\n'
       '{comment: play softly}\nb',
     );
     expect(find.byType(CommentHeadingHint), findsNothing);

@@ -166,9 +166,9 @@ Songs from CCLI SongSelect and other sources mark their sections with a comment,
 e.g. `{comment: Verse 1}` or `{comment: Chorus}`. setDING already shows them as
 sections, but the editor shows a hint above the text: **Convert** turns them into
 ChordPro sections such as `{start_of_verse: label="Verse 1"}` … `{end_of_verse}`.
-Verses, choruses and bridges get their own environment, other parts one named after
-them (`{start_of_intro}`, `{start_of_pre_chorus}`, …), so the song looks the same
-afterwards. Ordinary comments stay comments, and a comment above CCLI bar lines is
+Choruses and bridges get their own environment, all other parts become a verse
+with their name as label (`{start_of_verse: label="Intro"}`), as the Sections menu
+inserts them, so the song looks the same afterwards. Ordinary comments stay comments, and a comment above CCLI bar lines is
 left to the chord grid conversion. For single sections: select them and choose
 **Convert comment headings to sections** in the Lines menu. The hint can be hidden
 with ✕.

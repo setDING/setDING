@@ -47,7 +47,8 @@ The design was worked out with the owner in an interactive mock-up
    - Fixed types: *Intro*, *Verse*, *Pre-Chorus*, *Chorus*, *Bridge*,
      *Interlude*, *Outro*.
    - The type is a **section role** derived from the section name, from
-     `{start_of_<name>}` or a comment heading, with fixed synonyms:
+     `{start_of_<name>}`, a comment heading or the label of a
+     `{start_of_verse}`, with fixed synonyms:
 
      | Type | Recognised names |
      |---|---|
@@ -186,6 +187,13 @@ The design was worked out with the owner in an interactive mock-up
   bold. The chorus keeps the thin bar of *Classic*. Older apps read the
   unknown preset ID as *Classic*.
 - 2026-11-19: The *Black/White* preset has bold, large headings (#538).
+- 2026-11-26: A `{start_of_verse}` with a recognised label takes the role of
+  the label (#1093): the editor inserts Intro, Interlude, Solo, Outro and
+  Pre-Chorus as labelled verses, which all got the verse style. `verse` is
+  the generic environment; `{start_of_chorus}` and `{start_of_bridge}` keep
+  their role whatever the label, and an unrecognised label stays a verse.
+  The comment heading conversion now writes such labelled verses too
+  (ADR-0011).
 
 ## Open points
 

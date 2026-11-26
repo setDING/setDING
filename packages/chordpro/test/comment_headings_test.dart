@@ -1,11 +1,12 @@
 import 'package:chordpro/chordpro.dart';
 import 'package:test/test.dart';
 
-/// Kind, role, label and line count of every section, to compare what
-/// the parser reads before and after the conversion.
-List<(SectionKind, SectionRole, String?, int)> shape(String source) => [
+/// Role, label and line count of every section, to compare what the
+/// parser reads before and after the conversion. The kind may change: a
+/// heading such as `Intro` becomes a labelled verse (#1093).
+List<(SectionRole, String?, int)> shape(String source) => [
   for (final e in parseChordPro(source).elements)
-    if (e is Section) (e.kind, sectionRoleOf(e), e.label, e.lines.length),
+    if (e is Section) (sectionRoleOf(e), e.label, e.lines.length),
 ];
 
 void main() {
@@ -36,23 +37,34 @@ void main() {
         '{comment: Schluss}\n[G]\n\n{comment: Vorspiel}\n[C]\n\n'
         '{comment: Zwischenspiel 2}\n[D]\n\n{c: Brücke}\nHm\n',
       ),
-      '{start_of_outro: label="Schluss"}\n[G]\n{end_of_outro}\n\n'
-      '{start_of_intro: label="Vorspiel"}\n[C]\n{end_of_intro}\n\n'
-      '{start_of_interlude: label="Zwischenspiel 2"}\n[D]\n'
-      '{end_of_interlude}\n\n'
+      '{start_of_verse: label="Schluss"}\n[G]\n{end_of_verse}\n\n'
+      '{start_of_verse: label="Vorspiel"}\n[C]\n{end_of_verse}\n\n'
+      '{start_of_verse: label="Zwischenspiel 2"}\n[D]\n'
+      '{end_of_verse}\n\n'
       '{start_of_bridge: label="Brücke"}\nHm\n{end_of_bridge}\n',
     );
   });
 
-  test('other names become environments of their own name', () {
+  // #1093: `{c: Interlude}` became `{start_of_interlude}`, an environment
+  // the ChordPro specification does not define.
+  test('other names become labelled verses keeping their role', () {
     expect(
       convertCommentHeadings(
         '{comment: Intro}\n[G] [C]\n\n{comment: Pre-Chorus}\nUp\n\n'
         '{comment: Solo 2}\n[Em]\n',
       ),
-      '{start_of_intro: label="Intro"}\n[G] [C]\n{end_of_intro}\n\n'
-      '{start_of_pre_chorus: label="Pre-Chorus"}\nUp\n{end_of_pre_chorus}\n\n'
-      '{start_of_solo: label="Solo 2"}\n[Em]\n{end_of_solo}\n',
+      '{start_of_verse: label="Intro"}\n[G] [C]\n{end_of_verse}\n\n'
+      '{start_of_verse: label="Pre-Chorus"}\nUp\n{end_of_verse}\n\n'
+      '{start_of_verse: label="Solo 2"}\n[Em]\n{end_of_verse}\n',
+    );
+    final converted = convertCommentHeadings('{c: Interlude}\n[Am]\n');
+    expect(
+      converted,
+      '{start_of_verse: label="Interlude"}\n[Am]\n{end_of_verse}\n',
+    );
+    expect(
+      parseChordPro(converted).sections.single.role,
+      SectionRole.interlude,
     );
   });
 

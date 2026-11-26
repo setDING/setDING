@@ -92,6 +92,7 @@ Resulting changes in the `chordpro` package and the app:
   of shrinking the font, and measures with the same font as the display.
 - 2026-11-26: The editor's Song info menu no longer offers the CCLI number (`{x_ccli}`): it is no ChordPro directive and the menu offers only directives of the specification and `{x_sequence}`. `{x_ccli}` still comes from the import, the footer removal and the conversion, and is still read and shown as the SongSelect link.
 - 2026-11-26: `{footer: …}` of SongSelect files (the terms-of-use line) is no ChordPro directive either: `normalizeSongSelectDirectives` renames it to the custom directive `{x_ccli_footer: …}` (also in the `{meta: footer …}` form), and `countSongSelectDirectives` counts it for the editor hint. It is kept as metadata, not shown.
+- 2026-11-26: Comment headings other than chorus and bridge become labelled verses (`{start_of_verse: label="Intro"}`) instead of an environment of their own name (#1093), like the editor's Sections menu inserts them; `{start_of_interlude}` and the like are not defined by the ChordPro specification. The label keeps the display role (ADR-0033), so the song still renders the same.
 
 ## Open points
 
