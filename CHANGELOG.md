@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 with the setDING-specific bump rules of
 [ADR-0028](docs/architecture/adr/0028-versioning-scheme.md).
 
+## [0.22.1] - 2026-11-26
+
+### Changed
+
+- Updated libraries ([#1075](https://github.com/tafli/setDING/pull/1075))
+
+### Fixed
+
+- The server image `ghcr.io/tafli/setding-server` is published, and the release carries only the server bundles of its own version; 0.22.0 had no image and two misplaced bundles ([#1076](https://github.com/tafli/setDING/pull/1076))
+
 ## [0.22.0] - 2026-11-26
 
 ### Added
@@ -464,6 +474,7 @@ with the setDING-specific bump rules of
 
 - First release, built on GitHub Actions for Linux, Android and Windows ([#138](https://github.com/tafli/setDING/pull/138))
 
+[0.22.1]: https://github.com/tafli/setDING/compare/v0.22.0...v0.22.1
 [0.22.0]: https://github.com/tafli/setDING/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/tafli/setDING/compare/v0.20.0...v0.21.0
 [0.20.0]: https://github.com/tafli/setDING/compare/v0.19.0...v0.20.0
