@@ -12,6 +12,9 @@
 #
 # WEB_OUT (absolute) builds into another directory than app/build/web, e.g.
 # the web integration tests (tool/web-test.sh).
+# WEB_SOURCE_MAP (absolute) builds with source maps and moves the one of
+# main.dart.js there, outside the build: the server SBOM reads which packages
+# are compiled into the web client from it (ADR-0037); no map is shipped.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -40,7 +43,13 @@ dart compile js -O4 --no-source-maps -o web/drift_worker.js web/drift_worker.dar
 rm -f web/drift_worker.js.deps
 # Everything from this server: no CanvasKit or fonts from Google's CDN
 # (privacy, and cross-origin isolation, ADR-0018).
-flutter build web --no-pub --no-wasm-dry-run --no-web-resources-cdn --output "$OUT" "$@" >/dev/null
+maps=()
+[ -z "${WEB_SOURCE_MAP:-}" ] || maps=(--source-maps)
+flutter build web --no-pub --no-wasm-dry-run --no-web-resources-cdn --output "$OUT" "${maps[@]}" "$@" >/dev/null
+if [ -n "${WEB_SOURCE_MAP:-}" ]; then
+  mv "$OUT/main.dart.js.map" "$WEB_SOURCE_MAP"
+  rm -f "$OUT"/*.js.map
+fi
 # flutter.js and flutter_bootstrap.js point to flutter.js.map, which the
 # release build does not ship; the server would answer with index.html and
 # browser devtools report a source map error. Drop references to missing maps.

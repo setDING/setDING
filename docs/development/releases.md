@@ -41,7 +41,7 @@ Android tests start is stopped at the end.
    | `setding-X.Y.Z-windows-x64-setup.exe` | Windows installer, from which the installed app updates itself (ADR-0035) |
    | `setding-X.Y.Z-windows-x64.zip` | Windows build with the Visual C++ runtime |
    | `setding-server-X.Y.Z-linux-amd64.tar.gz`, `…-arm64.tar.gz` | Server bundles ([Server bundle](#server-bundle), ADR-0063) |
-   | `<file>.cdx.json` | CycloneDX SBOM of each app file above ([SBOM](#sbom), ADR-0037; the server bundles have none yet, #1062) |
+   | `<file>.cdx.json` | CycloneDX SBOM of each file above ([SBOM](#sbom), ADR-0037) |
    | `SHA256SUMS` | Checksums of the files above |
 
    After the GitHub Release, the job `server-image` pushes the server image
@@ -307,6 +307,21 @@ the cause or extend the tool deliberately; never drop the check.
 
 Vulnerabilities and licences are evaluated on GitHub (Dependabot, dependency
 review; ADR-0037).
+
+**Server bundles and image** (ADR-0063): the `server` job runs
+`tool/server-dist/sbom.sh <main.dart.js.map> <bundles…>`, which writes
+`<bundle>.cdx.json` with `tool/sbom.sh generate-server`: the web client's Dart
+packages from the source map of its `main.dart.js` (built with
+`WEB_SOURCE_MAP`, the map is not shipped), its asset packages and
+`sqlite3.wasm`, PocketBase with the SHA-256 of its binary, the Go modules of its
+build information (`go version -m`, licences from deps.dev) and the Go runtime,
+and Flutter. The `server-image` job writes the image's SBOM with `tool/sbom.sh
+generate-image` (both bundles' SBOMs and the distroless base, identified by the
+image digest), checks and validates it and attests it to the image on ghcr.io
+(`actions/attest-sbom`); check it with
+`gh attestation verify oci://ghcr.io/tafli/setding-server:X.Y.Z --owner tafli
+--predicate-type https://cyclonedx.org/bom`. The `server` job needs Go and deps.dev
+in addition.
 
 ## Server bundle
 

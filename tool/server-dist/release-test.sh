@@ -18,7 +18,9 @@
 #                   QEMU (binfmt) to run its binary, and docker buildx for its
 #                   image.
 #   OUT             output directory (default: build/server-dist)
-#   WEB_DIR         a web build to bundle (default: built once now)
+#   WEB_DIR         a web build to bundle (default: built once now, with the
+#                   source map of main.dart.js in OUT/main.dart.js.map for the
+#                   bundles' SBOMs, tool/server-dist/sbom.sh)
 #   SERVER_VERSION  version (default: tool/release/version-stamp.sh)
 #
 # Prints the paths of the bundles.
@@ -47,7 +49,8 @@ fi
 if [ -z "${WEB_DIR:-}" ]; then
   step "Web client"
   (cd "$ROOT/app" && flutter pub get >/dev/null)
-  "$ROOT/tool/build-web.sh" >&2
+  mkdir -p "$OUT"
+  WEB_SOURCE_MAP="$(cd "$OUT" && pwd)/main.dart.js.map" "$ROOT/tool/build-web.sh" >&2
   WEB_DIR="$ROOT/app/build/web"
 fi
 export WEB_DIR
@@ -56,7 +59,7 @@ export WEB_DIR
 # Absolute: the tests run in server/ (#1064).
 mkdir -p "$OUT"
 OUT="$(cd "$OUT" && pwd)"
-rm -f "$OUT"/setding-server-*.tar.gz "$OUT/SHA256SUMS"
+rm -f "$OUT"/setding-server-*.tar.gz "$OUT"/setding-server-*.cdx.json "$OUT/SHA256SUMS"
 bundles=()
 images=()
 cleanup() {

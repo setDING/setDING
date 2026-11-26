@@ -290,7 +290,8 @@ web client excepted).
   tests and to the ops checks, and fails when the German and English pages differ.
 
 - 2026-11-26: §7 tooling (#1055): the owner's servers install the published bundle with `tool/server/install.sh` in the docs' layout and with the docs' unit; `make server-release` (production) and `make server-install` (test server, `setding.dev`) pick the host with `SERVER_PROD`/`SERVER_STAGING`. The website also lives on the production VPS, installed separately (owner).
+- 2026-11-26: SBOMs (#1062, ADR-0037): each bundle has a CycloneDX SBOM as a release asset; the image's SBOM is attested to its digest on ghcr.io (signed with GitHub's attestations), which also resolves the open point of an SBOM per image.
 ## Open points
 
-- Signing the image and the bundles (e.g. cosign, SBOM per image, ADR-0037).
+- Signing the image and the bundles themselves (e.g. cosign); their SBOMs exist (#1062).
 - Off-host backup copies for the owner's production VPS.

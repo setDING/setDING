@@ -17,7 +17,12 @@ class SbomException implements Exception {
 enum Platform {
   android('android', 'android', 'android_arm64'),
   linuxX64('linux-x64', 'linux', 'linux_x64'),
-  windowsX64('windows-x64', 'windows', 'windows_x64');
+  windowsX64('windows-x64', 'windows', 'windows_x64'),
+
+  /// The server bundles (ADR-0063): PocketBase and the web client, whose
+  /// plugins are the web ones; they have no native assets of build hooks.
+  serverLinuxAmd64('server-linux-amd64', 'web', 'web'),
+  serverLinuxArm64('server-linux-arm64', 'web', 'web');
 
   const Platform(this.id, this.pluginKey, this.nativeAssetsKey);
 
@@ -139,4 +144,98 @@ Map<String, List<String>> pubDependencies(String pubDepsJson) {
         for (final d in (p['dependencies'] as List? ?? const [])) d as String,
       ],
   };
+}
+
+/// The packages with code in the web client (dart2js), from the source map of
+/// `main.dart.js`: hosted packages by their pub cache directory
+/// (`…/hosted/pub.dev/<name>-<version>/lib/…`), others by the directory in
+/// front of `/lib/` when that is a package of [lock] (path and SDK packages).
+Set<String> compiledPackagesFromSourceMap(
+  String sourceMapJson,
+  Map<String, LockedPackage> lock,
+) {
+  final sources =
+      (jsonDecode(sourceMapJson) as Map)['sources'] as List? ?? const [];
+  final hosted = RegExp(r'/hosted/[^/]+/([a-z0-9_]+)-\d[^/]*/lib/');
+  final other = RegExp(r'(?:^|/)([a-z0-9_]+)/lib/');
+  final packages = <String>{};
+  for (final source in sources) {
+    final path = source as String;
+    final h = hosted.firstMatch(path);
+    if (h != null) {
+      packages.add(h.group(1)!);
+      continue;
+    }
+    final o = other.firstMatch(path);
+    if (o != null && lock.containsKey(o.group(1))) packages.add(o.group(1)!);
+  }
+  if (packages.isEmpty) {
+    throw SbomException('the source map names no package libraries');
+  }
+  return packages;
+}
+
+/// A Go module from a binary's build information.
+class GoModule {
+  GoModule(this.path, this.version, [this.sum]);
+
+  final String path;
+
+  /// With `v`, as Go writes it (`v1.2.3`).
+  final String version;
+
+  /// The `go.sum` hash (`h1:…`), if any.
+  final String? sum;
+}
+
+/// The build information Go embeds in a binary (`go version -m <binary>`).
+class GoBuildInfo {
+  GoBuildInfo({
+    required this.goVersion,
+    required this.main,
+    required this.deps,
+  });
+
+  /// Without `go` (`1.27.4`).
+  final String goVersion;
+  final GoModule main;
+  final List<GoModule> deps;
+}
+
+/// Parses the output of `go version -m <binary>`. Replaced modules (`=>`) are
+/// not supported: the SBOM would name a module that is not in the binary.
+GoBuildInfo parseGoBuildInfo(String text) {
+  String? goVersion;
+  GoModule? main;
+  final deps = <GoModule>[];
+  for (final line in const LineSplitter().convert(text)) {
+    if (goVersion == null) {
+      final m = RegExp(r':\s+go([0-9][^\s]*)').firstMatch(line);
+      if (m != null) {
+        goVersion = m.group(1)!.split('-').first;
+        continue;
+      }
+    }
+    final fields = line.trim().split('\t');
+    switch (fields.first) {
+      case 'mod' when fields.length >= 3:
+        main = GoModule(
+          fields[1],
+          fields[2],
+          fields.length > 3 ? fields[3] : null,
+        );
+      case 'dep' when fields.length >= 3:
+        deps.add(
+          GoModule(fields[1], fields[2], fields.length > 3 ? fields[3] : null),
+        );
+      case '=>':
+        throw SbomException(
+          'replaced Go module ${fields.skip(1).join(' ')} is not supported',
+        );
+    }
+  }
+  if (goVersion == null || main == null) {
+    throw SbomException('no Go build information (go version -m)');
+  }
+  return GoBuildInfo(goVersion: goVersion, main: main, deps: deps);
 }

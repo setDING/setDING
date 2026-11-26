@@ -8,9 +8,9 @@
 # workflow, section 10): releases and test builds share one counter, so the Android
 # versionCode grows with every build and identifies it. pubspec.yaml carries no
 # build number. Test build files are named with it (setding-0.8.0-build42-…).
-# Every app asset gets a CycloneDX SBOM next to it (<asset>.cdx.json, ADR-0037),
+# Every asset gets a CycloneDX SBOM next to it (<asset>.cdx.json, ADR-0037),
 # generated and checked in its build job and validated in the sbom job; the
-# server bundles do not have one yet (#1062).
+# server image gets one as an attestation on ghcr.io.
 # The server (ADR-0063) is released as a bundle per architecture (an asset of
 # the GitHub Release) and as a multi-platform image on ghcr.io; both are tested
 # (also the update from the previous release) before anything is published,
@@ -347,17 +347,31 @@ jobs:
           if [ "$GITHUB_REF_TYPE" = tag ]; then export SERVER_VERSION="$VERSION"; fi
           tool/server-dist/release-test.sh
 
+      # One SBOM per bundle (ADR-0037): the web client's packages from the
+      # source map the release test kept, PocketBase's Go modules, licences
+      # from pub.dev and deps.dev.
+      - name: SBOMs of the server bundles
+        env:
+          BUILD: ${{ github.run_number }}
+          COMMIT: ${{ github.sha }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          tool/server-dist/sbom.sh dist-server/main.dart.js.map \
+            dist-server/setding-server-"$VERSION"*-linux-*.tar.gz
+
       - name: Upload
         uses: actions/upload-artifact@v7
         with:
           name: server
-          path: dist-server/setding-server-${{ needs.version.outputs.version }}*-linux-*.tar.gz
+          path: |
+            dist-server/setding-server-${{ needs.version.outputs.version }}*-linux-*.tar.gz
+            dist-server/setding-server-${{ needs.version.outputs.version }}*-linux-*.tar.gz.cdx.json
           if-no-files-found: error
 
   # Validates every SBOM against the CycloneDX specification (ADR-0037), also
   # for test builds; their content was checked in the build jobs.
   sbom:
-    needs: [linux, android, windows]
+    needs: [linux, android, windows, server]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -408,7 +422,8 @@ jobs:
 
   # The server image, built for amd64 and arm64 from the tested bundles of this
   # release and pushed to ghcr.io once the GitHub Release exists. Final
-  # releases are also tagged X.Y and latest.
+  # releases are also tagged X.Y and latest. Its SBOM (the bundles' SBOMs and
+  # the distroless base, ADR-0037) is attested to the image's digest.
   server-image:
     if: github.ref_type == 'tag'
     needs: [version, publish]
@@ -417,6 +432,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
+      attestations: write
     steps:
       - name: Check out
         uses: actions/checkout@v7
@@ -452,3 +469,35 @@ jobs:
           BUNDLES="$(ls dist-server/setding-server-"$VERSION"-linux-*.tar.gz | tr '\n' ' ')" \
             PLATFORMS=linux/amd64,linux/arm64 PUSH=1 IMAGE="$images" \
             tool/server-dist/build-image.sh
+
+      # Only for the SBOM tool (tool/sbom.sh).
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
+
+      - name: SBOM of the image
+        id: sbom
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          repo="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/setding-server"
+          digest="$(docker buildx imagetools inspect "$repo:$VERSION" --format '{{json .Manifest}}' |
+            python3 -c 'import json,sys;print(json.load(sys.stdin)["digest"])')"
+          base="$(sed -n 's/^FROM //p' tool/server-dist/Dockerfile)"
+          args=()
+          for f in dist-server/setding-server-"$VERSION"-linux-*.tar.gz.cdx.json; do args+=(--bundle-sbom "$f"); done
+          tool/sbom.sh generate-image "${args[@]}" --repository "$repo" --digest "$digest" \
+            --base "$base" --version "$VERSION" --build "$GITHUB_RUN_NUMBER" --commit "$GITHUB_SHA" \
+            --output setding-server-image.cdx.json
+          tool/sbom.sh check --sbom setding-server-image.cdx.json --version "$VERSION" \
+            --digest "$digest" --artifact-name "$repo:$VERSION"
+          tool/sbom/validate.sh setding-server-image.cdx.json
+          echo "repo=$repo" >> "$GITHUB_OUTPUT"
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
+      - name: Attest the SBOM to the image
+        uses: actions/attest-sbom@v4
+        with:
+          subject-name: ${{ steps.sbom.outputs.repo }}
+          subject-digest: ${{ steps.sbom.outputs.digest }}
+          sbom-path: setding-server-image.cdx.json
+          push-to-registry: true

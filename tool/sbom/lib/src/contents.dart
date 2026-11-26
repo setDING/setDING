@@ -10,7 +10,8 @@ import 'inputs.dart';
 class ArchiveContents {
   ArchiveContents({required this.assetPackages, required this.fileHashes});
 
-  /// Packages with files under `flutter_assets/packages/<name>/`.
+  /// Packages with files under `flutter_assets/packages/<name>/` (apps) or
+  /// `pb_public/assets/packages/<name>/` (the web client of a server bundle).
   final Set<String> assetPackages;
 
   /// SHA-256 per file name (last path segment) of every file in the archive.
@@ -55,6 +56,13 @@ ArchiveContents contentsOf(Iterable<(String, List<int>)> files) {
         assets + 2 < segments.length &&
         segments[assets + 1] == 'packages') {
       assetPackages.add(segments[assets + 2]);
+    }
+    final public = segments.indexOf('pb_public');
+    if (public >= 0 &&
+        public + 3 < segments.length &&
+        segments[public + 1] == 'assets' &&
+        segments[public + 2] == 'packages') {
+      assetPackages.add(segments[public + 3]);
     }
     final name = segments.last;
     final hash = sha256.convert(bytes).toString();
