@@ -3,21 +3,17 @@ title: Datenschutz
 description: Welche Daten setDING speichert, wo und wie lange, und wie du sie löschen lässt.
 ---
 
-<!-- Draft (#1118): the owner fills in the placeholders marked TODO before the page goes live. -->
-
 Diese Datenschutzerklärung gilt für die Website `setding.app` und für den Server
 von setDING unter `api.setding.app` und `app.setding.app`, mit dem sich die App
 standardmässig verbindet. Sie richtet sich nach dem Schweizer Datenschutzgesetz
 (DSG) und, soweit sie anwendbar ist, nach der Datenschutz-Grundverordnung der EU
 (DSGVO).
 
-Stand: **TODO: Datum**
+Stand: 26. November 2026
 
 ## Verantwortlich
 
-**TODO: Vorname Name**
-**TODO: Adresse**
-**TODO: E-Mail-Adresse**
+info@setDING.app
 
 Siehe auch das [Impressum](/legal-notice/).
 
@@ -67,14 +63,15 @@ du mit dem Konto nutzt (Art. 6 Abs. 1 lit. b DSGVO).
 
 Der Server verschickt E-Mails nur, wenn sie für dein Konto nötig sind: Bestätigung
 der E-Mail-Adresse, Passwort zurücksetzen und Einladungen. Dafür nutzen wir
-**TODO: E-Mail-Anbieter, Land**. Es gibt keinen Newsletter.
+cyon AG mit Standort Schweiz. Es gibt keinen Newsletter.
 
 ## Server-Protokolle
 
 Beim Aufruf der Website, des Web-Clients oder des Servers fallen technische Daten
 an: IP-Adresse, Zeitpunkt, aufgerufene Adresse, Statuscode und Browser bzw.
 App-Version. Sie dienen dem sicheren Betrieb und der Fehlersuche und werden nach
-**TODO: Anzahl** Tagen gelöscht.
+7 Tagen gelöscht, aus den Backups des Servers spätestens nach weiteren 14 Tagen.
+Die Website selbst schreibt keine Protokolle.
 
 ## Wo die Daten liegen
 
@@ -95,8 +92,8 @@ Die Backups des Servers behalten bis zu 14 Tage eine Kopie.
 
 In der App löschst du dein Konto unter **Einstellungen** → **Konto & Synchronisation** →
 **Konto löschen** (siehe [Konto](/settings/account/)). Hast du keinen Zugriff mehr auf
-die App, schreib eine E-Mail von der Adresse deines Kontos an **TODO: E-Mail-Adresse**;
-wir löschen das Konto dann innerhalb von 30 Tagen.
+die App, schreib dafür an die Adresse unter [Verantwortlich](#verantwortlich); wir löschen das Konto
+dann innerhalb von 30 Tagen.
 
 Gelöscht werden dein Konto, deine persönlichen Anpassungen, Annotationen und
 Einstellungen und deine Mitgliedschaften. Songs und Sets, die du erstellt oder
@@ -115,8 +112,3 @@ Aufsichtsbehörde deines Landes beschweren.
 Verbindet sich die App mit einem anderen Server (siehe
 [Selbst hosten](/self-hosting/overview/)), ist dessen Betreiber für die Daten
 verantwortlich. Diese Erklärung gilt dann nur für die App selbst.
-
-## Änderungen
-
-Ändert sich, wie setDING Daten bearbeitet, passen wir diese Seite an. Das Datum oben
-zeigt den Stand.

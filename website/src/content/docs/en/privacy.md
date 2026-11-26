@@ -3,20 +3,16 @@ title: Privacy policy
 description: What data setDING stores, where and for how long, and how to have it deleted.
 ---
 
-<!-- Draft (#1118): the owner fills in the placeholders marked TODO before the page goes live. -->
-
 This privacy policy applies to the website `setding.app` and to the setDING server
 at `api.setding.app` and `app.setding.app`, which the app connects to by default.
 It follows the Swiss Federal Act on Data Protection (FADP) and, where it applies,
 the EU General Data Protection Regulation (GDPR).
 
-Last updated: **TODO: date**
+Last updated: 26 November 2026
 
 ## Controller
 
-**TODO: first and last name**
-**TODO: address**
-**TODO: email address**
+info@setDING.app
 
 See also the [legal notice](/en/legal-notice/).
 
@@ -65,15 +61,16 @@ on every device. The legal basis is providing the service you use with your acco
 ### Emails
 
 The server only sends emails your account needs: confirming your email address,
-resetting your password and invitations. We use **TODO: email provider, country**
-for this. There is no newsletter.
+resetting your password and invitations. We use cyon AG,
+Switzerland, for this. There is no newsletter.
 
 ## Server logs
 
 When you open the website, the web client or the server, technical data is
 recorded: IP address, time, requested address, status code and browser or app
 version. It serves secure operation and troubleshooting and is deleted after
-**TODO: number** days.
+7 days, and from the server's backups after another 14 days at the latest. The
+website itself keeps no logs.
 
 ## Where the data is
 
@@ -94,8 +91,8 @@ keep a copy for up to 14 days.
 
 In the app, you delete your account under **Settings** → **Account & sync** →
 **Delete account** (see [Account](/en/settings/account/)). If you no longer have access to
-the app, send an email from your account's address to **TODO: email address**; we
-then delete the account within 30 days.
+the app, write to the address under [Controller](#controller); we then delete the
+account within 30 days.
 
 Deleted are your account, your personal adjustments, annotations and settings and
 your memberships. Songs and sets you created or edited belong to the organization
@@ -114,8 +111,3 @@ your country.
 If the app connects to another server (see
 [Self-hosting](/en/self-hosting/overview/)), its operator is responsible for the
 data. This policy then only applies to the app itself.
-
-## Changes
-
-If the way setDING processes data changes, we update this page. The date at the top
-shows when it was last updated.

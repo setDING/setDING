@@ -111,11 +111,15 @@ Constraints:
   to `tool/site/` (Caddyfile, installer, deploy script). The website needs nothing
   from the backend. Replaces points 4 and 5 of the decision (website deployed with the
   server targets).
+- 2026-11-26: Privacy policy and legal notice (#1118): pages `/privacy/` and
+  `/legal-notice/` in both languages, linked in the footer of every page (a
+  Starlight `Footer` override); the public privacy policy URL the app stores need.
+  The request log retention it names is set by the server (`SETDING_LOG_DAYS`,
+  ADR-0063).
 
 ## Open points
 
 - Remaining documentation chapters (sets, live mode, songs and the editor, bands and
   roles, settings, self-hosting) in follow-up PRs.
-- Privacy policy and legal notice (needed for the app stores): draft pages `/privacy/` and `/legal-notice/`, linked in the footer of every page (#1118); the owner fills in the placeholders (name, address, contact email, mail provider, log retention) before they go live.
 - Whether feature PRs must update the user documentation (a rule in the git
   workflow, which only the owner may change).

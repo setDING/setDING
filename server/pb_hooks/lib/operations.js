@@ -13,6 +13,9 @@ const REQUIRED = [
 
 const DEFAULT_BACKUP_CRON = "0 3 * * *";
 const DEFAULT_BACKUP_KEEP = 14;
+// Request logs (with IP addresses) are kept this many days; the privacy policy
+// on the website names this value (#1118).
+const DEFAULT_LOG_DAYS = 7;
 const DEFAULT_HEALTH_URL = "http://127.0.0.1:8090";
 
 // PocketBase's global flags that take a separate value (`--dir x`).
@@ -91,6 +94,28 @@ function applyBackupSettings(app) {
   );
 }
 
+/// The number of days PocketBase keeps its request logs, from SETDING_LOG_DAYS
+/// (default 7); 0 keeps no logs.
+function logDays() {
+  const raw = ($os.getenv("SETDING_LOG_DAYS") || "").trim();
+  if (raw === "") return DEFAULT_LOG_DAYS;
+  if (!/^(0|[1-9]\d*)$/.test(raw)) {
+    throw new Error(`SETDING_LOG_DAYS must be a whole number of at least 0, not "${raw}".`);
+  }
+  return Number(raw);
+}
+
+/// Applies the log retention to PocketBase's logs (Settings → Logs). The
+/// environment wins over changes in the admin UI.
+function applyLogSettings(app) {
+  const days = logDays();
+  const settings = app.settings();
+  if (settings.logs.maxDays === days) return;
+  settings.logs.maxDays = days;
+  app.save(settings);
+  app.logger().info("Request logs", "days", days);
+}
+
 /// Checks that the server at [url] (default http://127.0.0.1:8090) answers
 /// its health endpoint; throws otherwise, so the command exits with 1.
 function healthcheck(url) {
@@ -112,5 +137,7 @@ module.exports = {
   backupConfig,
   checkConfiguration,
   applyBackupSettings,
+  logDays,
+  applyLogSettings,
   healthcheck,
 };

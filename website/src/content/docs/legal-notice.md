@@ -3,15 +3,9 @@ title: Impressum
 description: Wer hinter setDING steht und wie du uns erreichst.
 ---
 
-<!-- Draft (#1118): the owner fills in the placeholders marked TODO before the page goes live. -->
-
 ## Verantwortlich für diese Website und den Server von setDING
 
-**TODO: Vorname Name**
-**TODO: Adresse**
-**TODO: PLZ Ort, Schweiz**
-
-E-Mail: **TODO: E-Mail-Adresse**
+E-Mail: info@setDING.app
 
 setDING ist ein kostenloses Open-Source-Projekt ohne kommerzielle Absicht. Der
 Quellcode steht unter der MIT-Lizenz auf

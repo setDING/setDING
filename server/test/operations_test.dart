@@ -91,6 +91,55 @@ void main() {
     });
   });
 
+  // The privacy policy on the website names the retention (#1118).
+  group('request logs', () {
+    Future<int> maxDays(PocketBase pb) async {
+      final r = await pb.superuser.send('GET', '/api/settings');
+      r.expectStatus(200);
+      return (r.json['logs'] as Map<String, dynamic>)['maxDays'] as int;
+    }
+
+    test('are kept 7 days by default', () async {
+      final pb = await PocketBase.start();
+      addTearDown(pb.stop);
+      expect(await maxDays(pb), 7);
+    });
+
+    test(
+      'follow SETDING_LOG_DAYS, also over changes in the admin UI',
+      () async {
+        var pb = await PocketBase.start(environment: {'SETDING_LOG_DAYS': '2'});
+        addTearDown(() => pb.stop());
+        expect(await maxDays(pb), 2);
+
+        (await pb.superuser.send(
+          'PATCH',
+          '/api/settings',
+          body: {
+            'logs': {'maxDays': 90},
+          },
+        )).expectStatus(200);
+        pb = await pb.restart();
+        expect(await maxDays(pb), 2);
+      },
+    );
+
+    test('are off with SETDING_LOG_DAYS=0', () async {
+      final pb = await PocketBase.start(environment: {'SETDING_LOG_DAYS': '0'});
+      addTearDown(pb.stop);
+      expect(await maxDays(pb), 0);
+    });
+
+    test('an invalid value stops the start with a message', () async {
+      await _expectRefused({
+        'SETDING_LOG_DAYS': 'a week',
+      }, 'SETDING_LOG_DAYS must be a whole number of at least 0');
+      await _expectRefused({
+        'SETDING_LOG_DAYS': '-1',
+      }, 'SETDING_LOG_DAYS must be a whole number of at least 0');
+    });
+  });
+
   group('automatic backups', () {
     test('are on by default: daily at 03:00, 14 kept', () async {
       final pb = await PocketBase.start();

@@ -46,6 +46,7 @@ Docker, otherwise `/etc/setding/setding.env`). Restart the server after a change
 | `SETDING_EMAIL_VERIFICATION` | `off` (default) or `required`: new accounts confirm their email address. Needs SMTP. |
 | `SETDING_BACKUP_CRON` | Schedule of the automatic backups in cron format, default `0 3 * * *` (daily at 3 am); `off` turns them off. |
 | `SETDING_BACKUP_KEEP` | How many automatic backups are kept, default `14`. |
+| `SETDING_LOG_DAYS` | How many days PocketBase keeps the request logs (with IP addresses), default `7`; `0` keeps none. |
 | `SETDING_WEB_URL` | Address of the web app if it has its own. The invitation page then offers **Open in the browser**. |
 | `TZ` | Time zone for schedules and logs, for example `Europe/Zurich`. |
 

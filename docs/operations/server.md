@@ -339,6 +339,10 @@ the tunnel creates its own CNAME records.
   SETDING_BACKUP_KEEP=14
   ```
 
+  The request logs (Settings → Logs, with IP addresses) are set the same way:
+  `SETDING_LOG_DAYS` (default 7, `0` keeps none). The privacy policy on the
+  website names this value; change both together.
+
   They are ZIP files of `pb_data` (database and files, without the backups
   themselves) in `/var/lib/setding/pb_data/backups/`. An invalid value stops the
   start with a message.

@@ -3,15 +3,9 @@ title: Legal notice
 description: Who is behind setDING and how to reach us.
 ---
 
-<!-- Draft (#1118): the owner fills in the placeholders marked TODO before the page goes live. -->
-
 ## Responsible for this website and the setDING server
 
-**TODO: first and last name**
-**TODO: address**
-**TODO: postcode, town, Switzerland**
-
-Email: **TODO: email address**
+Email: info@setDING.app
 
 setDING is a free, non-commercial open-source project. Its source code is available
 under the MIT License on [GitHub](https://github.com/tafli/setDING).
