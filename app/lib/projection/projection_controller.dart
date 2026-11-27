@@ -183,6 +183,15 @@ class ProjectionController extends ChangeNotifier {
   /// The slide shown, 0-based.
   int get slide => _slide;
 
+  /// The section of the slide shown (#1189): its own label, else the name
+  /// of its kind; null without one. For the presenter in the projection
+  /// bar, whether or not the page shows it.
+  String? get label {
+    if (_slides.isEmpty) return null;
+    final section = _slides[_slide].source;
+    return section.label ?? _labeler?.call(section.section.kind);
+  }
+
   bool get canPrevious => _slide > 0;
   bool get canNext => _slide + 1 < _slides.length;
 

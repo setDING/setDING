@@ -244,6 +244,9 @@ Forces:
   label, else the name of its kind in the app's language as live mode shows it
   (*Verse*, *Chorus*, *Bridge*), none for other sections and for markers. A device
   setting *Show the section*, on by default.
+- 2026-11-27: Owner request (#1189): the projection bar names the projected
+  section above the slide position (e.g. *Chorus* over *3/8*), also when the page
+  does not show it, so the presenter knows which block is on screen.
 
 ## Open points
 

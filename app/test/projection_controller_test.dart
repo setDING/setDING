@@ -309,6 +309,31 @@ Chorus line
     },
   );
 
+  test('the section of the shown slide for the bar (#1189)', () async {
+    final labelled = ProjectionController(
+      host,
+      labeler: (kind) => kind == SectionKind.chorus ? 'Refrain' : null,
+      // The page hides it; the bar still names it.
+      options: const ProjectionOptions(showLabel: false),
+    );
+    await labelled.start('<html>', token: 'a' * 22);
+    expect(labelled.label, isNull, reason: 'nothing shown');
+    labelled.show(
+      item(
+        parseChordPro(
+          '{start_of_verse: Verse 1}\nOne\n{end_of_verse}\n'
+          '{start_of_chorus}\nTwo\n{end_of_chorus}\n'
+          '{start_of_verse}\nThree\n{end_of_verse}\n',
+        ),
+      ),
+    );
+    expect(labelled.label, 'Verse 1');
+    labelled.next();
+    expect(labelled.label, 'Refrain');
+    labelled.next();
+    expect(labelled.label, isNull);
+  });
+
   test('the song page reports the first section of the shown page', () {
     final pages = SongPageController();
     addTearDown(pages.dispose);

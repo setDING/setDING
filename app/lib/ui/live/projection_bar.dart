@@ -65,10 +65,28 @@ class ProjectionBar extends StatelessWidget {
                       ? controller.previous
                       : null,
                 ),
+                // The projected section above the position (#1189), so
+                // the presenter knows which block is on screen.
                 if (slides.isNotEmpty)
-                  Text(
-                    '${controller.slide + 1}/${slides.length}',
-                    key: const Key('projection-slide'),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (controller.label case final label?)
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 120),
+                          child: Text(
+                            label,
+                            key: const Key('projection-section'),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.labelSmall,
+                          ),
+                        ),
+                      Text(
+                        '${controller.slide + 1}/${slides.length}',
+                        key: const Key('projection-slide'),
+                      ),
+                    ],
                   ),
                 IconButton(
                   key: const Key('projection-next'),
