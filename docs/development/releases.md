@@ -320,7 +320,8 @@ build information (`go version -m`, licences from deps.dev) and the Go runtime,
 and Flutter. The `server-image` job writes the image's SBOM with `tool/sbom.sh
 generate-image` (both bundles' SBOMs and the distroless base, identified by the
 image digest), checks and validates it and attests it to the image on ghcr.io
-(`actions/attest-sbom`); check it with
+(`actions/attest` with `sbom-path`, which also records the image on the
+organization's Linked Artifacts page); check it with
 `gh attestation verify oci://ghcr.io/setding/setding-server:X.Y.Z --owner setDING
 --predicate-type https://cyclonedx.org/bom`. The `server` job needs Go and deps.dev
 in addition.

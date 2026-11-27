@@ -216,6 +216,8 @@ GitHub on the same data, from the repository:
   its own SBOM with the AppImage runtime.
 
 - 2026-11-26: Server SBOMs (#1062, ADR-0063): every server bundle gets `setding-server-<version>-linux-<arch>.tar.gz.cdx.json` (platform `server-linux-<arch>`): the web client's Dart packages from the source map of its `main.dart.js` (built with source maps, which are not shipped), its asset packages and `sqlite3.wasm`, PocketBase (`pkg:golang/…`, hash of the binary) with the Go modules of its build information and the Go runtime, licences of Go modules from deps.dev (unknown ids fail, like on pub.dev), and Flutter. The server image gets an SBOM of its own (`type: container`, the image digest as hash, both bundles' SBOMs and the distroless base) that is **attested to the image on ghcr.io** with `actions/attest-sbom` instead of a release asset (owner, 2026-11-26), since the image is pushed after the GitHub Release.
+- 2026-11-27: The server image's SBOM is attested with `actions/attest` (`sbom-path`) instead of the deprecated `actions/attest-sbom` (#1145); the job has `artifact-metadata: write`, so the attestation also creates the image's storage record (the organization's Linked Artifacts).
+
 ## Open points
 
 - Owner: switch on the dependency graph and Dependabot alerts in the repository
@@ -223,7 +225,8 @@ GitHub on the same data, from the repository:
   (`gradle/actions/dependency-submission`).
 - Versions and licences of the native libraries of build hooks (SQLite, PDFium,
   Xiph codecs), if the hooks start to report them.
-- Attesting the SBOMs (`actions/attest-sbom`).
+- Attesting the SBOMs of the release assets (`actions/attest`); the server image's
+  SBOM is attested already.
 - iOS, once there is an iOS build.
 - The Linux AppImage (ADR-0038, #504) is a fifth release asset: it needs its own
   SBOM (`setding-<version>-linux-x64.AppImage.cdx.json`) with the components of the

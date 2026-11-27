@@ -434,6 +434,8 @@ jobs:
       packages: write
       id-token: write
       attestations: write
+      # The storage record of the pushed image (the org's Linked Artifacts).
+      artifact-metadata: write
     steps:
       - name: Check out
         uses: actions/checkout@v7
@@ -495,7 +497,7 @@ jobs:
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
 
       - name: Attest the SBOM to the image
-        uses: actions/attest-sbom@v4
+        uses: actions/attest@v4
         with:
           subject-name: ${{ steps.sbom.outputs.repo }}
           subject-digest: ${{ steps.sbom.outputs.digest }}
