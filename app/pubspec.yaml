@@ -86,6 +86,8 @@ flutter:
     - assets/licenses/stb-LICENSE.txt
     # "What's new" after an update (ADR-0041), written in the release PR.
     - assets/whats_new.json
+    # The projected page of the lyrics projection (ADR-0068).
+    - assets/projection/index.html
   fonts:
     # Wordmark of the logo (lib/ui/widgets/logo.dart).
     - family: NotoSans

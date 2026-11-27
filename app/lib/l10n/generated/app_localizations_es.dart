@@ -702,6 +702,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get liveExit => 'Salir del modo en vivo';
 
   @override
+  String get projectionFullScreen => 'Pantalla completa';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Página $page/$count';
   }
