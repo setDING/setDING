@@ -57,6 +57,8 @@ map=(
   annotations_live 17b_annotations_live
   settings_midi 22_settings_midi
   live_midi 22b_live_midi
+  live_midi_sheet 22c_live_midi_sheet
+  midi_program_picker 22d_midi_program_picker
   editor_labels 23_editor_labels
   import_labels 23b_import_labels
   songs_selected 3c_songs_selected
