@@ -31,7 +31,7 @@ export default defineConfig({
         root: { label: 'Deutsch', lang: 'de-CH' },
         en: { label: 'English', lang: 'en' },
       },
-      social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/tafli/setDING' }],
+      social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/setDING/setDING' }],
       sidebar: [
         // Current version and what changed, from app/assets/whats_new.json (ADR-0041).
         { label: 'Neuigkeiten', translations: { en: "What's new" }, link: '/news/' },

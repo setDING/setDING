@@ -50,7 +50,7 @@ if [ -f "$OUT/$asset" ]; then
 fi
 
 if command -v gh >/dev/null &&
-  gh release download "$tag" --repo tafli/setDING --pattern "$asset" --dir "$OUT" >/dev/null 2>&1; then
+  gh release download "$tag" --repo setDING/setDING --pattern "$asset" --dir "$OUT" >/dev/null 2>&1; then
   echo "previous-bundle: downloaded $asset from the GitHub Release $tag" >&2
   echo "$OUT/$asset"
   exit 0

@@ -365,7 +365,7 @@ void main() {
       expect(c['type'], 'application');
       expect(c['name'], 'setDING');
       expect(c['version'], '1.2.3');
-      expect(c['purl'], 'pkg:github/tafli/setDING@v1.2.3');
+      expect(c['purl'], 'pkg:github/setDING/setDING@v1.2.3');
       expect(c['bom-ref'], 'setding-linux-x64');
       expect(c['hashes'], [
         {'alg': 'SHA-256', 'content': '0123'},

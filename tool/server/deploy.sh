@@ -39,7 +39,7 @@ if [ -n "$release" ]; then
   command -v gh >/dev/null || fail "the GitHub CLI (gh) is required"
   asset="setding-server-$release-linux-$arch.tar.gz"
   echo "Bundle: $asset (GitHub Release v$release)"
-  gh release download "v$release" --repo tafli/setDING \
+  gh release download "v$release" --repo setDING/setDING \
     --pattern "$asset" --pattern SHA256SUMS --dir "$setup" ||
     fail "v$release has no published $asset"
   (cd "$setup" && sha256sum --ignore-missing -c SHA256SUMS >/dev/null) ||

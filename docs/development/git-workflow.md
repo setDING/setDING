@@ -20,7 +20,7 @@ cases where a human must decide.
 ## 2. Work items (issues)
 
 The backlog is kept as issues in the project's **GitHub** repository
-(`github.com/tafli/setDING`, see section 12). An agent always works on an issue;
+(`github.com/setDING/setDING`, see section 12). An agent always works on an issue;
 if none exists for the task, it creates one first.
 
 | Label | Meaning |
@@ -336,10 +336,13 @@ has not logged in yet):
 
 ## 12. GitHub
 
-- **Host:** GitHub, repository `github.com/tafli/setDING`, remote `origin` over
-  SSH (`git@github.com:tafli/setDING.git`). Moved from a self-hosted Forgejo in
+- **Host:** GitHub, repository `github.com/setDING/setDING`, remote `origin` over
+  SSH (`git@github.com:setDING/setDING.git`). Moved from a self-hosted Forgejo in
   November 2026 with the same issue and PR numbers; former pull requests are closed
   issues labelled `imported:pull-request` ([migration runbook](github-migration.md)).
+- **Organization:** the repository belongs to the GitHub organization `setDING`
+  (ADR-0066); until November 2026 it was `tafli/setDING`. GitHub redirects the old
+  URLs, so **no repository named `tafli/setDING` may ever be created again**.
 - **Commit identity:** commits are made with the owner's global git identity and
   are **GPG-signed** (commits and tags, `commit.gpgsign`/`tag.gpgsign` in the global
   git config); there is no repository-local identity. Every commit carries the

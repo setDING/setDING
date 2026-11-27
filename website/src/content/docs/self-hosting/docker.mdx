@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-Das Image `ghcr.io/tafli/setding-server` läuft auf amd64 und arm64. Es enthält nur
+Das Image `ghcr.io/setding/setding-server` läuft auf amd64 und arm64. Es enthält nur
 den Server und die Web-App, keine Shell und keinen Paketmanager, und es läuft als
 eigener Benutzer ohne Root-Rechte. Deine Daten liegen in einem Volume.
 
@@ -24,7 +24,7 @@ eigener Benutzer ohne Root-Rechte. Deine Daten liegen in einem Volume.
    services:
      setding:
        # Use a fixed version (e.g. :0.22.0) and update it on purpose.
-       image: ghcr.io/tafli/setding-server:latest
+       image: ghcr.io/setding/setding-server:latest
        restart: unless-stopped
        ports:
          # Only on this machine: put your reverse proxy with HTTPS in front.
@@ -69,7 +69,7 @@ docker run -d --name setding --restart unless-stopped \
   -e SETDING_INVITE_KEY="replace-with-a-long-random-secret" \
   -e TZ=Europe/Zurich \
   -v setding-data:/setding/pb_data \
-  ghcr.io/tafli/setding-server:latest
+  ghcr.io/setding/setding-server:latest
 ```
 
 ## Befehle im Container
@@ -88,7 +88,7 @@ Aktualisiere zuerst die Apps deiner Band, dann den Server
 ([warum](/self-hosting/overview/#welche-version-zu-welcher-app-passt)):
 
 1. Trage in `docker-compose.yml` die neue Version ein, zum Beispiel
-   `ghcr.io/tafli/setding-server:0.22.0`.
+   `ghcr.io/setding/setding-server:0.22.0`.
 2. Lade und starte sie:
 
    ```bash
@@ -98,6 +98,12 @@ Aktualisiere zuerst die Apps deiner Band, dann den Server
 
 Der Server passt die Datenbank beim Start selbst an. Die Daten im Volume bleiben
 erhalten; mach vorher trotzdem ein [Backup](/self-hosting/operation/#backups).
+
+:::note[Neuer Name des Images]
+Bis Version 0.22.1 hiess das Image `ghcr.io/tafli/setding-server`. Neuere
+Versionen erscheinen nur noch als `ghcr.io/setding/setding-server`: Ändere den
+Namen in `docker-compose.yml`, wenn du aktualisierst.
+:::
 
 ## Daten im Volume
 

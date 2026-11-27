@@ -16,7 +16,7 @@ const changelog = `# Changelog
 
 ## [0.9.1] - 2026-11-01
 
-[0.10.0]: https://github.com/tafli/setDING/compare/v0.9.1...v0.10.0
+[0.10.0]: https://github.com/setDING/setDING/compare/v0.9.1...v0.10.0
 `;
 
 test('compares versions numerically', () => {

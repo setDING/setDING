@@ -12,13 +12,13 @@
 ///     [--flutter-version …] [--pub-deps F] [--version …] [--build N] [--commit SHA]
 ///
 ///   dart run bin/sbom.dart generate-image --bundle-sbom A.cdx.json \
-///     --bundle-sbom B.cdx.json --repository ghcr.io/tafli/setding-server \
+///     --bundle-sbom B.cdx.json --repository ghcr.io/setding/setding-server \
 ///     --digest sha256:… --base gcr.io/distroless/static-debian13:nonroot@sha256:… \
 ///     --version 1.2.3 --output image.cdx.json
 ///
 ///   dart run bin/sbom.dart check --sbom F.cdx.json --artifact F --version 1.2.3
 ///   dart run bin/sbom.dart check --sbom image.cdx.json --version 1.2.3 \
-///     --digest sha256:… --artifact-name ghcr.io/tafli/setding-server:1.2.3
+///     --digest sha256:… --artifact-name ghcr.io/setding/setding-server:1.2.3
 library;
 
 import 'dart:convert';

@@ -35,7 +35,7 @@ void main() {
     test('release page', () {
       expect(
         releasePageUrl('0.7.0').toString(),
-        'https://github.com/tafli/setDING/releases/tag/v0.7.0',
+        'https://github.com/setDING/setDING/releases/tag/v0.7.0',
       );
     });
   });

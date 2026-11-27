@@ -11,6 +11,6 @@ export const releasesFor = (lang: Lang): Release[] => releases(whatsNew, changel
 export const currentVersion: string = releasesFor('en')[0].version;
 
 export const releaseUrl = (version: string): string =>
-  `https://github.com/tafli/setDING/releases/tag/v${version}`;
+  `https://github.com/setDING/setDING/releases/tag/v${version}`;
 
-export const changelogUrl = 'https://github.com/tafli/setDING/blob/main/CHANGELOG.md';
+export const changelogUrl = 'https://github.com/setDING/setDING/blob/main/CHANGELOG.md';

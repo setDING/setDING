@@ -256,7 +256,7 @@ void main() {
         buildImageBom(
           bundleBoms: boms ?? [amd64, arm64],
           version: '1.2.3',
-          repository: 'ghcr.io/tafli/setding-server',
+          repository: 'ghcr.io/setding/setding-server',
           digest: digest,
           baseImage: base,
         );
@@ -271,7 +271,7 @@ void main() {
         checkBom(
           bom,
           version: '1.2.3',
-          artifactName: 'ghcr.io/tafli/setding-server:1.2.3',
+          artifactName: 'ghcr.io/setding/setding-server:1.2.3',
           artifactSha256: digest.substring('sha256:'.length),
           componentType: 'container',
         ),

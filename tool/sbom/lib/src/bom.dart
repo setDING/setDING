@@ -3,7 +3,7 @@ import 'dart:math';
 import 'inputs.dart';
 
 const appName = 'setDING';
-const repository = 'https://github.com/tafli/setDING';
+const repository = 'https://github.com/setDING/setDING';
 const website = 'https://setding.app';
 const specVersion = '1.6';
 
@@ -319,7 +319,7 @@ Map<String, Object?> buildBom(BomInput input) {
         'bom-ref': rootRef,
         'name': appName,
         'version': input.version,
-        'purl': 'pkg:github/tafli/setDING@$tag',
+        'purl': 'pkg:github/setDING/setDING@$tag',
         'supplier': _supplier,
         'licenses': [
           {

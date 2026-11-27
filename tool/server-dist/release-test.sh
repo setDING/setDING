@@ -88,7 +88,7 @@ for arch in "${archs[@]}"; do
   step "Previous release ($arch)"
   previous="$(ARCH="$arch" "$HERE/previous-bundle.sh")"
   previous_version="$(tar -xzOf "$previous" --wildcards '*/VERSION')"
-  previous_image="ghcr.io/tafli/setding-server:$previous_version"
+  previous_image="ghcr.io/setding/setding-server:$previous_version"
   if docker pull -q --platform "linux/$arch" "$previous_image" >/dev/null 2>&1; then
     echo "pulled $previous_image" >&2
   else

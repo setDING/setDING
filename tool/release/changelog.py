@@ -24,7 +24,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_FILE = ROOT / "CHANGELOG.md"
-REPO_URL = "https://github.com/tafli/setDING"
+REPO_URL = "https://github.com/setDING/setDING"
 
 # "Update required" comes first when devices must be updated (releases.md);
 # the others are the Keep a Changelog categories in their recommended order.

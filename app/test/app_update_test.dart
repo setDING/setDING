@@ -20,10 +20,10 @@ import 'sync_ui_test.dart' show syncNow;
 import 'test_app.dart';
 
 const _sums =
-    'https://github.com/tafli/setDING/releases/download/v0.9.0/'
+    'https://github.com/setDING/setDING/releases/download/v0.9.0/'
     'SHA256SUMS';
 const _setup =
-    'https://github.com/tafli/setDING/releases/download/v0.9.0/'
+    'https://github.com/setDING/setDING/releases/download/v0.9.0/'
     'setding-0.9.0-windows-x64-setup.exe';
 final _setupBytes = utf8.encode('the setup');
 final _setupHash = sha256.convert(_setupBytes).toString();
@@ -74,7 +74,7 @@ void main() {
       expect(update.setupName, 'setding-0.9.0-linux-x64.AppImage');
       expect(
         update.setupUrl.toString(),
-        'https://github.com/tafli/setDING/releases/download/v0.9.0/'
+        'https://github.com/setDING/setDING/releases/download/v0.9.0/'
         'setding-0.9.0-linux-x64.AppImage',
       );
       expect(update.sha256, 'a' * 64);
