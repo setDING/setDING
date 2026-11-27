@@ -204,6 +204,16 @@ Forces:
   current slide first. `ProjectionController` holds the follow/manual logic;
   the projection settings (#1170) are `ProjectionOptions`, with the defaults
   until then (8 lines, markers blank, no preview, no second language).
+- 2026-11-27: Projection settings (#1170): a *Projection* section in the live
+  mode settings (native apps only) with colours (white on black / black on
+  white), font (sans / serif), alignment, lines per slide (2–12, default 8),
+  copyright on every slide or on the first and last one, a second language
+  (a song language of ADR-0053, none by default), markers as text and the
+  next-slide preview; all device settings (`projection*` keys). A change
+  reaches a running projection at once. The version in the second language is
+  the first linked version of the song with that language, paired with its
+  own `{x_sequence}`; it is looked up after the song is shown and added
+  without moving the slide.
 
 ## Open points
 

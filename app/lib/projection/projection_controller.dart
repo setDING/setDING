@@ -6,6 +6,7 @@ import 'package:chordpro/chordpro.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../settings/settings.dart';
 import 'projection_server.dart';
 import 'projection_state.dart';
 
@@ -93,15 +94,31 @@ class ProjectionMarker extends ProjectionItem {
   final String text;
 }
 
-/// The projection settings (ADR-0068 §11); the device settings come with
-/// #1170, these are the defaults.
+/// The projection settings (ADR-0068 §11).
 class ProjectionOptions {
   const ProjectionOptions({
     this.linesPerSlide = 8,
     this.markersAsText = false,
     this.preview = false,
+    this.copyright = ProjectionCopyright.everySlide,
     this.style = const ProjectionStyle(),
   });
+
+  /// The options of the device settings.
+  factory ProjectionOptions.of(AppSettings s) => ProjectionOptions(
+    linesPerSlide: s.projectionLines,
+    markersAsText: s.projectionMarkersAsText,
+    preview: s.projectionPreview,
+    copyright: s.projectionCopyright,
+    style: ProjectionStyle(
+      theme: s.projectionTheme,
+      font: s.projectionFont,
+      align: s.projectionAlign,
+    ),
+  );
+
+  /// On every slide of a song, or on its first and last one only.
+  final ProjectionCopyright copyright;
 
   final int linesPerSlide;
   final bool markersAsText;
@@ -202,6 +219,27 @@ class ProjectionController extends ChangeNotifier {
     _send();
   }
 
+  /// Adds the linked language version [second] of [song] to the song on
+  /// stage (ADR-0068 §9), found after it was shown; the slide and whether
+  /// the song is manual stay. Ignored when another item is shown by now.
+  void pairWith(
+    Song song,
+    Song second, {
+    List<SequenceItem> sequence = const [],
+  }) {
+    final item = _item;
+    if (item is! ProjectionSong || !identical(item.song, song)) return;
+    _item = ProjectionSong(
+      item.song,
+      sequence: item.sequence,
+      title: item.title,
+      second: second,
+      secondSequence: sequence,
+    );
+    _build();
+    _send();
+  }
+
   /// Live mode shows the section starting at [sourceLine] at the top of its
   /// page; the projection goes to its first slide unless the song is
   /// manual. A section played more than once is found after the current
@@ -289,11 +327,19 @@ class ProjectionController extends ChangeNotifier {
             : ProjectionState.blank(style: style);
       case ProjectionSong(:final song, :final title):
         if (_slides.isEmpty) return ProjectionState.blank(style: style);
-        final copyright = song.copyright?.trim();
+        final text = song.copyright?.trim();
+        final edge = _slide == 0 || _slide == _slides.length - 1;
+        final copyright =
+            text == null ||
+                text.isEmpty ||
+                (_options.copyright == ProjectionCopyright.firstAndLast &&
+                    !edge)
+            ? null
+            : text;
         return ProjectionState.slide(
           _slides[_slide],
           title: title ?? song.title,
-          copyright: copyright == null || copyright.isEmpty ? null : copyright,
+          copyright: copyright,
           next: _options.preview && canNext ? _slides[_slide + 1] : null,
           style: style,
         );

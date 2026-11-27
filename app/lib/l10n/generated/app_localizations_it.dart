@@ -757,6 +757,81 @@ class AppLocalizationsIt extends AppLocalizations {
       'Non è stato possibile avviare la proiezione.';
 
   @override
+  String get settingsHeadingProjection => 'Proiezione';
+
+  @override
+  String get settingsProjectionHint =>
+      'Come appare il testo nel browser del proiettore. Per questo dispositivo.';
+
+  @override
+  String get settingsProjectionColours => 'Colori';
+
+  @override
+  String get projectionThemeDark => 'Bianco su nero';
+
+  @override
+  String get projectionThemeLight => 'Nero su bianco';
+
+  @override
+  String get settingsProjectionFont => 'Carattere';
+
+  @override
+  String get projectionFontSans => 'Senza grazie';
+
+  @override
+  String get projectionFontSerif => 'Con grazie';
+
+  @override
+  String get settingsProjectionAlign => 'Allineamento';
+
+  @override
+  String get projectionAlignCenter => 'Centrato';
+
+  @override
+  String get projectionAlignLeft => 'A sinistra';
+
+  @override
+  String get settingsProjectionLines => 'Righe per diapositiva';
+
+  @override
+  String get settingsProjectionLinesHint =>
+      'Le sezioni più lunghe sono distribuite su più diapositive. Per il sottopancia da 2 a 4.';
+
+  @override
+  String get settingsProjectionCopyright => 'Copyright';
+
+  @override
+  String get projectionCopyrightEvery => 'Su ogni diapositiva';
+
+  @override
+  String get projectionCopyrightFirstAndLast =>
+      'Sulla prima e sull’ultima diapositiva';
+
+  @override
+  String get settingsProjectionSecondLanguage => 'Seconda lingua';
+
+  @override
+  String get settingsProjectionSecondLanguageHint =>
+      'Se un brano ha una versione in questa lingua, viene proiettata accanto.';
+
+  @override
+  String get projectionSecondLanguageOff => 'Nessuna';
+
+  @override
+  String get settingsProjectionMarkers => 'Marcatori come testo';
+
+  @override
+  String get settingsProjectionMarkersHint =>
+      'Mostra il testo di un marcatore (ad es. Preghiera) invece di una diapositiva nera.';
+
+  @override
+  String get settingsProjectionPreview => 'Mostra la diapositiva successiva';
+
+  @override
+  String get settingsProjectionPreviewHint =>
+      'In piccolo sotto il testo, per un monitor di palco.';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Pagina $page/$count';
   }

@@ -1,7 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/data/marker_icons.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:setding/projection/projection_controller.dart';
+import 'package:setding/projection/projection_state.dart';
+import 'package:setding/settings/settings.dart';
 import 'package:setding/ui/live/live_screen.dart';
 
 import 'projection_controller_test.dart' show FakeProjectionHost;
@@ -21,21 +24,29 @@ void main() {
     WidgetTester tester, {
     required List<String?> sources,
     bool supported = true,
+    Map<String, Object> prefs = const {},
+    Future<void> Function(TestApp app, List<String> ids)? prepare,
   }) async {
     useTabletSize(tester);
     host = FakeProjectionHost(
       addresses: [Uri.parse('http://192.168.1.5:8231/p/token')],
     );
-    app = await TestApp.create(prefs: {'language': 'en'});
+    app = await TestApp.create(prefs: {'language': 'en', ...prefs});
     final items = (await tester.runAsync(() async {
       final items = <LiveItem>[];
+      final ids = <String>[];
+      for (final source in sources) {
+        if (source == null) continue;
+        ids.add(await app.songs.createSong(source: source));
+      }
+      await prepare?.call(app, ids);
+      var next = 0;
       for (final source in sources) {
         if (source == null) {
           items.add(const LiveItem.marker(MarkerIcons.breakIcon, 'Break'));
           continue;
         }
-        final id = await app.songs.createSong(source: source);
-        items.add(LiveItem.song((await app.songs.getSong(id))!));
+        items.add(LiveItem.song((await app.songs.getSong(ids[next++]))!));
       }
       return items;
     }))!;
@@ -151,6 +162,48 @@ void main() {
     expect(first, isNot('Verse 1 line 1 la la la'));
     expect(first, endsWith('line 1 la la la'));
     expect(find.byKey(const Key('projection-follow')), findsNothing);
+    await app.dispose(tester);
+  });
+
+  testWidgets('settings: the look, and the version of the song in the second '
+      'language beside it (#1170)', (tester) async {
+    await start(
+      tester,
+      // Only the first song is played; the second is its English version.
+      sources: [
+        '{title: Gott}\n{start_of_verse}\nGrosser Gott\n{end_of_verse}',
+        '{title: God}\n{start_of_verse}\nHoly God\n{end_of_verse}',
+      ],
+      prefs: {'projectionTheme': 'light', 'projectionSecondLanguage': 'en'},
+      prepare: (app, ids) async {
+        await app.songs.setLanguage(ids[0], 'de');
+        await app.songs.setLanguage(ids[1], 'en');
+        await app.songs.setWorkId(ids[0], 'work-1');
+        await app.songs.setWorkId(ids[1], 'work-1');
+      },
+    );
+    await startProjection(tester);
+    await closeSheet(tester);
+    // The version is looked up in the database after the song is shown.
+    for (var i = 0; i < 20 && host.last['second'] == null; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump();
+    }
+    expect(lines(), ['Grosser Gott']);
+    expect(host.last['second'], ['Holy God']);
+    expect((host.last['style']! as Map)['theme'], 'light');
+
+    // A change in the settings reaches the projection at once.
+    await tester.runAsync(
+      () =>
+          ProviderScope.containerOf(tester.element(find.byType(LiveScreen)))
+              .read(settingsProvider.notifier)
+              .update((s) => s.copyWith(projectionAlign: ProjectionAlign.left)),
+    );
+    await tester.pumpAndSettle();
+    expect((host.last['style']! as Map)['align'], 'left');
     await app.dispose(tester);
   });
 

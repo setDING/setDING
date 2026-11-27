@@ -758,6 +758,81 @@ class AppLocalizationsDe extends AppLocalizations {
       'Die Projektion konnte nicht gestartet werden.';
 
   @override
+  String get settingsHeadingProjection => 'Projektion';
+
+  @override
+  String get settingsProjectionHint =>
+      'Wie der Liedtext im Browser am Beamer erscheint. Gilt für dieses Gerät.';
+
+  @override
+  String get settingsProjectionColours => 'Farben';
+
+  @override
+  String get projectionThemeDark => 'Weiss auf Schwarz';
+
+  @override
+  String get projectionThemeLight => 'Schwarz auf Weiss';
+
+  @override
+  String get settingsProjectionFont => 'Schrift';
+
+  @override
+  String get projectionFontSans => 'Ohne Serifen';
+
+  @override
+  String get projectionFontSerif => 'Mit Serifen';
+
+  @override
+  String get settingsProjectionAlign => 'Ausrichtung';
+
+  @override
+  String get projectionAlignCenter => 'Zentriert';
+
+  @override
+  String get projectionAlignLeft => 'Links';
+
+  @override
+  String get settingsProjectionLines => 'Zeilen pro Folie';
+
+  @override
+  String get settingsProjectionLinesHint =>
+      'Längere Abschnitte werden auf mehrere Folien verteilt. Für die Bauchbinde 2 bis 4.';
+
+  @override
+  String get settingsProjectionCopyright => 'Copyright';
+
+  @override
+  String get projectionCopyrightEvery => 'Auf jeder Folie';
+
+  @override
+  String get projectionCopyrightFirstAndLast =>
+      'Auf der ersten und letzten Folie';
+
+  @override
+  String get settingsProjectionSecondLanguage => 'Zweite Sprache';
+
+  @override
+  String get settingsProjectionSecondLanguageHint =>
+      'Hat ein Song eine Version in dieser Sprache, wird sie daneben projiziert.';
+
+  @override
+  String get projectionSecondLanguageOff => 'Keine';
+
+  @override
+  String get settingsProjectionMarkers => 'Marker als Text';
+
+  @override
+  String get settingsProjectionMarkersHint =>
+      'Zeigt den Text eines Markers (z.B. Gebet) statt einer schwarzen Folie.';
+
+  @override
+  String get settingsProjectionPreview => 'Nächste Folie zeigen';
+
+  @override
+  String get settingsProjectionPreviewHint =>
+      'Klein unter dem Text, für einen Bühnenmonitor.';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Seite $page/$count';
   }
