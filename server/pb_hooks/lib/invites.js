@@ -91,11 +91,37 @@ function newToken() {
   return $security.randomString(TOKEN_LENGTH);
 }
 
-/// AES key for stored tokens, derived from `SETDING_INVITE_KEY`
+/// The secret for stored tokens: `SETDING_INVITE_KEY`
 /// (`/etc/setding/setding.env` on the owner's servers, or the container's
 /// environment); the server does not start without it (ADR-0063).
+function inviteSecret() {
+  return $os.getenv("SETDING_INVITE_KEY") || "";
+}
+
+/// Marks a `token_enc` encrypted with [tokenKey] (base64 has no ":"); values
+/// without it use [legacyTokenKey].
+const TOKEN_ENC_PREFIX = "v2:";
+
+/// AES-256 key for stored tokens (issue #1200): HMAC-SHA256 of the secret,
+/// one character per digest byte. `$security.encrypt` takes the key as a
+/// string and uses its UTF-8 bytes, so only characters below 0x80 are one
+/// byte each: the top bit of every byte is dropped, which leaves 224 bits
+/// of key material (the old key had 128).
 function tokenKey() {
-  const secret = $os.getenv("SETDING_INVITE_KEY") || "";
+  const secret = inviteSecret();
+  if (!secret) return "";
+  const digest = $security.hs256("setding-invite-key-v2", secret);
+  let key = "";
+  for (let i = 0; i < digest.length; i += 2) {
+    key += String.fromCharCode(parseInt(digest.substr(i, 2), 16) & 0x7f);
+  }
+  return key;
+}
+
+/// The key of links stored before issue #1200: the first 32 hex characters
+/// of a SHA-256 (128 bits). Only used to read them.
+function legacyTokenKey() {
+  const secret = inviteSecret();
   return secret ? $security.sha256("setding-invite:" + secret).substring(0, 32) : "";
 }
 
@@ -103,20 +129,71 @@ function tokenKey() {
 function setToken(invite, token) {
   invite.set("token_hash", $security.sha256(token));
   const key = tokenKey();
-  if (key) invite.set("token_enc", $security.encrypt(token, key));
+  if (key) invite.set("token_enc", TOKEN_ENC_PREFIX + $security.encrypt(token, key));
 }
 
 /// The token of an invitation, or "" when it cannot be shown (created
-/// before tokens were stored, without a key, or with another key).
+/// before tokens were stored, without a key, or with another key). Reads
+/// both the current and the legacy format (issue #1200).
 function storedToken(invite) {
-  const key = tokenKey();
   const enc = invite.getString("token_enc");
-  if (!key || !enc) return "";
+  if (!enc) return "";
+  const legacy = !enc.startsWith(TOKEN_ENC_PREFIX);
+  const key = legacy ? legacyTokenKey() : tokenKey();
+  if (!key) return "";
   try {
-    const token = $security.decrypt(enc, key);
+    const token = $security.decrypt(legacy ? enc : enc.substring(TOKEN_ENC_PREFIX.length), key);
     return $security.sha256(token) === invite.getString("token_hash") ? token : "";
   } catch (_) {
     return "";
+  }
+}
+
+/// Whether the stored token of an invitation is in the legacy format.
+function hasLegacyToken(invite) {
+  const enc = invite.getString("token_enc");
+  return !!enc && !enc.startsWith(TOKEN_ENC_PREFIX);
+}
+
+/// Invitation tokens in request paths, replaced in the request log
+/// (issue #1200): the landing page, the preview and redeeming. The link
+/// route (`/api/setding/invites/<id>/link`) has a record id, no token.
+const TOKEN_PATHS = [
+  /^(\/invite\/)[^/]+(\/?)$/,
+  /^(\/api\/setding\/invites\/)[^/]+((?:\/redeem)?\/?)$/,
+];
+
+/// `path` with an invitation token replaced by "REDACTED", or `path`.
+function redactPath(path) {
+  for (const re of TOKEN_PATHS) {
+    if (re.test(path)) return path.replace(re, "$1REDACTED$2");
+  }
+  return path;
+}
+
+/// Global middleware that runs inside PocketBase's activity logger (see
+/// invites.pb.js): the logger reads the request URL after the request is
+/// handled, so the path is redacted afterwards, also on errors (issue
+/// #1200). Referer headers with a token are redacted too.
+function redactTokenLog(e) {
+  try {
+    return e.next();
+  } finally {
+    const url = e.request.url;
+    const path = url.path || "";
+    const redacted = redactPath(path);
+    if (redacted !== path) {
+      url.path = redacted;
+      url.rawPath = "";
+    }
+    const referer = e.request.header.get("Referer");
+    if (referer) {
+      const m = /^([a-z][a-z0-9+.-]*:\/\/[^/]*)?([^?#]*)(.*)$/i.exec(referer);
+      if (m) {
+        const refPath = redactPath(m[2]);
+        if (refPath !== m[2]) e.request.header.set("Referer", (m[1] || "") + refPath + m[3]);
+      }
+    }
   }
 }
 
@@ -276,6 +353,11 @@ function link(e) {
     throw new ApiError(409, "The link of this invitation is not stored.", {
       token: new ValidationError("not_stored", "The link of this invitation is not stored."),
     });
+  }
+  if (hasLegacyToken(invite)) {
+    // Re-encrypted with the current key once it was read (issue #1200).
+    setToken(invite, token);
+    e.app.save(invite);
   }
   return e.json(200, {
     id: invite.id,
@@ -609,4 +691,5 @@ module.exports = {
   landing,
   assetLinks,
   appleAppSiteAssociation,
+  redactTokenLog,
 };

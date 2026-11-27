@@ -446,6 +446,121 @@ void main() {
     });
   });
 
+  group('invitation token hardening (issue #1200)', () {
+    Future<Response> link(Client client, String id) =>
+        client.send('GET', '/api/setding/invites/$id/link');
+
+    test(
+      'new links are stored with the full-length key and shown again',
+      () async {
+        final f = await BandFixture.create(pb);
+        final created = await create(f.admin, f.orgId);
+        created.expectStatus(200);
+        final id = created.json['id'] as String;
+        final enc =
+            (await pb.superuser.view('invites', id)).json['token_enc']
+                as String;
+        expect(enc, startsWith('v2:'));
+        final r = await link(f.admin, id);
+        r.expectStatus(200);
+        expect(r.json['url'], created.json['url']);
+        // Showing it does not change it.
+        expect((await pb.superuser.view('invites', id)).json['token_enc'], enc);
+      },
+    );
+
+    test('links stored with the legacy key are still shown and then '
+        're-encrypted', () async {
+      // Encrypted before issue #1200 (AES-256-GCM, key: the first 32 hex
+      // characters of sha256("setding-invite:test-invite-key")), together
+      // with the SHA-256 of the token.
+      const token = 'LegacyToken0123456789abcdefABCDE';
+      const legacyEnc =
+          'AAECAwQFBgcICQoLAKmdXkAt0kJwal1mMQmlEe0pAthlQCH44ek8Dssi4XwxyuHGv9OIv8Z1u4/rGup7';
+      const tokenHash =
+          'fe6279431ac7a7361e86bd1cdc1a696941a926fe7e50730c06c9095db8c23e51';
+      final f = await BandFixture.create(pb);
+      final id = (await create(f.admin, f.orgId)).json['id'] as String;
+      (await pb.superuser.patch('invites', id, {
+        'token_hash': tokenHash,
+        'token_enc': legacyEnc,
+      })).expectStatus(200);
+
+      final r = await link(f.admin, id);
+      r.expectStatus(200);
+      expect(r.json['url'], endsWith('/invite/$token'));
+
+      final enc =
+          (await pb.superuser.view('invites', id)).json['token_enc'] as String;
+      expect(enc, startsWith('v2:'));
+      expect(enc, isNot(contains(token)));
+      final again = await link(f.admin, id);
+      again.expectStatus(200);
+      expect(again.json['url'], r.json['url']);
+      // The link itself works.
+      (await redeem(await pb.signUp(), token)).expectStatus(200);
+    });
+
+    /// The request log entries whose URL contains [text].
+    Future<List<dynamic>> logsWithUrl(String text) async {
+      final r = await pb.superuser.send(
+        'GET',
+        '/api/logs?perPage=200&filter=${Uri.encodeQueryComponent("data.url~'$text'")}',
+      );
+      r.expectStatus(200);
+      return r.json['items'] as List;
+    }
+
+    test('tokens do not appear in the request log', () async {
+      final f = await BandFixture.create(pb);
+      final t = await token(f);
+      final unknown = 'Unknown${DateTime.now().microsecondsSinceEpoch}';
+      final id = (await create(f.admin, f.orgId)).json['id'] as String;
+      final referer = pb.baseUrl.resolve('/invite/$t').toString();
+
+      (await pb.guest.send('GET', '/invite/$t')).expectStatus(200);
+      (await pb.guest.send(
+        'GET',
+        '/api/setding/invites/$t',
+        headers: {'Referer': referer},
+      )).expectStatus(200);
+      // Unknown tokens get the landing page too.
+      (await pb.guest.send('GET', '/invite/$unknown')).expectStatus(200);
+      expect(
+        (await pb.guest.send('GET', '/api/setding/invites/$unknown')).status,
+        404,
+      );
+      // Refused before the route runs (no account).
+      expect((await redeem(pb.guest, t)).status, 401);
+      (await redeem(await pb.signUp(), t)).expectStatus(200);
+      // The link route has a record id, which stays readable; it is
+      // requested last, so its log entry shows that the batch was written.
+      (await link(f.admin, id)).expectStatus(200);
+
+      final deadline = DateTime.now().add(const Duration(seconds: 15));
+      while ((await logsWithUrl('/api/setding/invites/$id/link')).isEmpty) {
+        expect(
+          DateTime.now().isBefore(deadline),
+          isTrue,
+          reason: 'the request log was not written',
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 250));
+      }
+      expect(await logsWithUrl(t), isEmpty);
+      expect(await logsWithUrl(unknown), isEmpty);
+      final r = await pb.superuser.send(
+        'GET',
+        '/api/logs?perPage=200&filter=${Uri.encodeQueryComponent("data.referer~'$t'")}',
+      );
+      expect(r.json['items'], isEmpty);
+      expect(await logsWithUrl('/invite/REDACTED'), isNotEmpty);
+      expect(
+        await logsWithUrl('/api/setding/invites/REDACTED/redeem'),
+        isNotEmpty,
+      );
+    });
+  });
+
   group('losing the right to invite (issue #1193)', () {
     Future<Map<String, dynamic>> invite(
       Client client,
