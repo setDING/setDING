@@ -8,6 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 with the setDING-specific bump rules of
 [ADR-0028](docs/architecture/adr/0028-versioning-scheme.md).
 
+## [0.23.0] - 2026-11-27
+
+### Added
+
+- **People without an account** in a set's lineup (ADR-0064): admins add contacts such as stand-ins to the organization, put them in a set's lineup next to the members, see them in the set view and the set list, and can send them a personal invitation that turns the contact into an account ([#1105](https://github.com/setDING/setDING/pull/1105), [#1108](https://github.com/setDING/setDING/pull/1108), [#1109](https://github.com/setDING/setDING/pull/1109), [#1110](https://github.com/setDING/setDING/pull/1110))
+- **Share links** for sets and songs (ADR-0065): *Share link* in the set and song menu; the link opens the set or song in the app, in the right band, or says that it is not available on this device. In the web client every screen has its own address, and the browser's back and forward buttons and a reload work ([#1120](https://github.com/setDING/setDING/pull/1120), [#1121](https://github.com/setDING/setDING/pull/1121), [#1124](https://github.com/setDING/setDING/pull/1124))
+- On Android and iOS, join a band by scanning the invitation's QR code ([#1104](https://github.com/setDING/setDING/pull/1104))
+- Held beats (`.`) in chord grids show as dots, so the beats of a bar can be counted ([#1092](https://github.com/setDING/setDING/pull/1092))
+- Converting a song (magic wand, *Convert all*, import) translates German section labels into English, and a German comment heading becomes the matching section ([#1088](https://github.com/setDING/setDING/pull/1088))
+- The website has a privacy policy and a legal notice ([#1119](https://github.com/setDING/setDING/pull/1119))
+- For server operators: every server bundle and the server image come with a CycloneDX SBOM; the server keeps request logs for 7 days (`SETDING_LOG_DAYS`) ([#1086](https://github.com/setDING/setDING/pull/1086), [#1119](https://github.com/setDING/setDING/pull/1119))
+
+### Changed
+
+- **Breaking for self-hosters:** the project moved to the GitHub organization [setDING](https://github.com/setDING/setDING); the server image is now `ghcr.io/setding/setding-server` (ADR-0066) ([#1128](https://github.com/setDING/setDING/pull/1128))
+- Updated libraries ([#1083](https://github.com/setDING/setDING/pull/1083))
+
+### Fixed
+
+- Intro, Interlude, Solo, Outro and Pre-Chorus sections get their own style instead of the verse style ([#1094](https://github.com/setDING/setDING/pull/1094))
+- Sets can be exported in the web client ([#1087](https://github.com/setDING/setDING/pull/1087))
+- The automatic backup works into folders that reject temporary file names, such as a Nextcloud folder on Android ([#1107](https://github.com/setDING/setDING/pull/1107))
+- The SongSelect `{footer}` directive is now `{x_ccli_footer}`, the song info menu no longer offers the CCLI number, and the editor suggests only the *colour* spelling of colour directives ([#1083](https://github.com/setDING/setDING/pull/1083), [#1089](https://github.com/setDING/setDING/pull/1089), [#1091](https://github.com/setDING/setDING/pull/1091))
+
 ## [0.22.1] - 2026-11-26
 
 ### Changed
@@ -474,6 +498,7 @@ with the setDING-specific bump rules of
 
 - First release, built on GitHub Actions for Linux, Android and Windows ([#138](https://github.com/setDING/setDING/pull/138))
 
+[0.23.0]: https://github.com/setDING/setDING/compare/v0.22.1...v0.23.0
 [0.22.1]: https://github.com/setDING/setDING/compare/v0.22.0...v0.22.1
 [0.22.0]: https://github.com/setDING/setDING/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/setDING/setDING/compare/v0.20.0...v0.21.0
