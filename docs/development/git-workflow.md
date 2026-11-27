@@ -304,7 +304,8 @@ Agents may create **proposals** for all of these (an ADR, a draft PR), just not 
   4. **Update the server:** `make server-release` waits for the tag's build, refuses
      unless it passed and the GitHub Release exists, then installs the server bundle
      published with it on production (`SERVER_PROD`, ADR-0063) and checks the version
-     (`/api/setding/config` → `serverVersion`).
+     (`/api/setding/config` → `serverVersion`). A pre-release goes to the test server
+     only ([releases.md](releases.md#pre-releases), ADR-0069).
   5. **Update the website:** `make server-site VERSION=X.Y.Z` builds the website from
      the tag and deploys it to its own server (ADR-0063 §8). Only after this step is
      the release done.

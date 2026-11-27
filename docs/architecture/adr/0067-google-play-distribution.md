@@ -134,6 +134,8 @@ Forces:
   release key (fingerprint checked), the first AAB in internal testing, the
   service account, the store listing with screenshots, a review account and the
   App content forms (answers in `docs/store/play/console.md`).
+- 2026-11-27: Pre-releases (tags with a suffix) are never uploaded to Google Play
+  (ADR-0069, #1178).
 
 ## Open points
 

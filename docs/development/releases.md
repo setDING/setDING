@@ -81,7 +81,32 @@ Android tests start is stopped at the end.
 
 The tag must equal `v` + the version in `pubspec.yaml`, otherwise the workflow fails.
 Tags with a suffix (`v1.2.0-beta.1`) become pre-releases, which Obtainium skips by
-default.
+default ([Pre-releases](#pre-releases)).
+
+## Pre-releases
+
+A pre-release tries a version on devices before Google Play and production
+(ADR-0069). It is a tag `vX.Y.Z-<pre>` such as `v1.3.0-beta.1` or `v1.3.0-rc.1`:
+
+1. Merge a `chore(release): v1.3.0-beta.1` PR like for a release: `version:
+   1.3.0-beta.1` in `app/pubspec.yaml` and a `## [1.3.0-beta.1]` section in
+   `CHANGELOG.md` (the workflow checks it). `whats_new.json` needs no entry.
+2. Tag and push it: `git tag -s v1.3.0-beta.1 -m "setDING 1.3.0-beta.1" && git push
+   origin v1.3.0-beta.1`. The Release workflow publishes a **GitHub pre-release**
+   with all assets and **uploads nothing to Google Play**.
+3. Deploy its server to the **test server**: `make server-release
+   VERSION=1.3.0-beta.1` (staging is the default for a pre-release; production
+   refuses it). Without `VERSION`, production always gets the newest final tag.
+4. Install it with Obtainium: in the app's entry, switch on **Include
+   prereleases**. The final release of the version updates it later (it has a
+   higher build number).
+
+The apps of a pre-release use **`https://api.setding.dev`** as their default
+server (`SETDING_SERVER_URL`). An installation that is already signed in keeps
+the server of its session, so updating from a release to a pre-release (and
+back) neither signs out nor switches servers; to test the pre-release server,
+choose `api.setding.dev` in the settings. Its update check and minimum version
+(ADR-0029, ADR-0036) come from that server.
 
 ### Build numbers and test builds
 
@@ -241,7 +266,7 @@ on tag builds to the internal track with the version's notes from
 `app/assets/whats_new.json` as *What's new* (de-DE and en-US like the listing in `docs/store/play/`, cut to 500
 characters, a generic text when the version has none; `tool/release/play_notes.py`).
 Manual test builds build the AAB too (when the upload key is set) but upload
-nothing; beta and itest builds are never uploaded. The AAB is not a GitHub Release
+nothing; beta and itest builds and pre-releases are never uploaded. The AAB is not a GitHub Release
 asset.
 
 ### Setting up (once, owner)

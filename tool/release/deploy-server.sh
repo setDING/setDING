@@ -4,6 +4,9 @@
 #
 #   deploy-server.sh [x.y.z]     (default: the newest release tag)
 #
+# 0. The tag (tool/release/release_tag.py, ADR-0069): production gets final
+#    releases only (default the newest final tag); staging also gets
+#    pre-releases (default the newest tag, pre-releases included).
 # 1. The tag must exist and be on origin/main.
 # 2. Waits for the tag's run of the Release workflow; refuses to deploy unless it
 #    succeeded and the GitHub Release exists, so the apps for this version can be
@@ -11,12 +14,14 @@
 # 3. Installs the server bundle published with the release (checked against
 #    its SHA256SUMS, tool/server/deploy.sh --release) and checks the version.
 #
-# Environment: SERVER (the production server) and SSH, as in the Makefile.
+# Environment: SERVER (the server), TARGET (prod or staging, default prod) and
+# SSH, as in the Makefile.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SERVER="${SERVER:?SERVER is not set}"
 SSH="${SSH:-ssh}"
+TARGET="${TARGET:-prod}"
 
 fail() { echo "server-release: $*" >&2; exit 1; }
 step() { printf '\n==> %s\n' "$*"; }
@@ -25,12 +30,7 @@ command -v gh >/dev/null || fail "the GitHub CLI (gh) is required"
 
 step "Release tag"
 git -C "$ROOT" fetch -q --tags origin
-if [ -n "${1:-}" ]; then
-  tag="v${1#v}"
-else
-  tag="$(git -C "$ROOT" tag --list 'v*' --sort=-v:refname | head -n 1)"
-fi
-[ -n "$tag" ] || fail "no release tag found"
+tag="$("$ROOT/tool/release/release_tag.py" "$TARGET" "${1:-}")" || exit 1
 git -C "$ROOT" rev-parse -q --verify "refs/tags/$tag^{commit}" >/dev/null ||
   fail "tag $tag does not exist"
 git -C "$ROOT" merge-base --is-ancestor "$tag^{commit}" origin/main ||

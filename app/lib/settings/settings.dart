@@ -4,7 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../sync/auth_providers.dart' show authProvider;
+import '../sync/auth_providers.dart' show authProvider, sessionStoreProvider;
+import '../sync/session_store.dart' show sessionServer;
 import '../sync/sync_backend.dart' show defaultServerUrl;
 import '../data/database.dart' show chordViewOf, localOwnerId;
 import '../data/person_name.dart' show NameFormat;
@@ -969,10 +970,15 @@ final sharedPreferencesProvider = Provider<SharedPreferences>(
 /// The server URL (a device setting). Separate from [settingsProvider]:
 /// the backend depends on it, and the personal settings depend on the
 /// signed-in user from that backend.
+///
+/// Without a chosen server, a stored session keeps its own server: an app
+/// updated to a build with another default (a pre-release uses the staging
+/// server, ADR-0069) stays signed in where it was instead of signing out.
 class ServerUrlNotifier extends Notifier<String> {
   @override
   String build() =>
       ref.watch(sharedPreferencesProvider).getString('serverUrl') ??
+      sessionServer(ref.watch(sessionStoreProvider).current) ??
       initialServerUrl();
 
   Future<void> set(String url) async {
