@@ -192,8 +192,19 @@ class SyncEngine {
         pulled += r.$1;
         conflicts += r.$2;
         pulled += await _attachments.pull(org, logChangesFor: log);
-        // After the songs: a report belongs to its song (ADR-0060).
-        pulled += await _reports.pull(org);
+        // After the songs: a report belongs to its song (ADR-0060). Which
+        // reports the user reads depends on their roles (#1194).
+        pulled += await _reports.pull(
+          org,
+          userId: user.id,
+          seesAll: ReportSync.seesAll(
+            orgs.where((o) => o.id == org).firstOrNull?.role,
+            [
+              for (final b in visible)
+                if (b.organizationId == org && !b.substitute) b.role,
+            ],
+          ),
+        );
         // Before the sets, whose lineups name them (ADR-0064).
         pulled += await _contacts.pull(org);
       }

@@ -20,6 +20,7 @@ import 'package:setding/sync/sync_engine.dart';
 import 'fake_backend.dart';
 
 const _ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
+const _bob = AuthUser(id: 'bob', email: 'bob@example.test', name: 'Bob');
 
 final _png = Uint8List.fromList(List.generate(64, (i) => i));
 
@@ -371,6 +372,114 @@ void main() {
       await review.reopen(r);
       expect((await localReport(r)).resolvedBy, isNull);
     });
+  });
+
+  // The reports a person reads depend on their roles (ADR-0060): after a
+  // promotion the older reports of others arrive, after a demotion they
+  // leave the device (#1194).
+  group('reports after a role change (#1194)', () {
+    late AppDatabase bobDb;
+    late SyncEngine bobEngine;
+    late String song;
+
+    setUp(() async {
+      song = await synced('A');
+      for (final (id, author) in [('r-ann', 'ann'), ('r-bob', 'bob')]) {
+        server.putReport(
+          RemoteSongReport(
+            id: id,
+            songId: song,
+            organizationId: 'o1',
+            authorId: author,
+            category: 'chords',
+          ),
+        );
+      }
+      server.addMember('b1', _bob, BandRole.member);
+      // Bob's device.
+      server.user = _bob;
+      bobDb = AppDatabase(NativeDatabase.memory());
+      final bobBands = BandService(bobDb, server);
+      bobEngine = SyncEngine(
+        bobDb,
+        server,
+        bobBands,
+        copies: BandCopyService(bobDb, storage),
+        storage: storage,
+      );
+      await bobEngine.sync();
+    });
+    tearDown(() => bobDb.close());
+
+    Future<Set<String>> bobsReports() async => {
+      for (final r in await bobDb.select(bobDb.songReports).get()) r.id,
+    };
+    FakeMember<BandRole> bandMembership() =>
+        server.members.singleWhere((m) => m.user.id == 'bob');
+    FakeMember<OrgRole> orgMembership() => server.orgMembers.singleWhere(
+      (m) => m.scopeId == 'o1' && m.user.id == 'bob',
+    );
+
+    test('a member reads only their own reports, and an unchanged role '
+        'pulls only what changed', () async {
+      expect(await bobsReports(), {'r-bob'});
+      server.reportPullsSince.clear();
+      await bobEngine.sync();
+      expect(server.reportPullsSince.single, greaterThan(0));
+    });
+
+    test('a new set planner gets the older reports of others', () async {
+      bandMembership().role = BandRole.planner;
+      await bobEngine.sync();
+      expect(await bobsReports(), {'r-ann', 'r-bob'});
+    });
+
+    test('a new librarian gets the older reports of others', () async {
+      orgMembership().role = OrgRole.librarian;
+      await bobEngine.sync();
+      expect(await bobsReports(), {'r-ann', 'r-bob'});
+    });
+
+    test('after a demotion the reports of others leave the device, the own '
+        'ones stay, also those not on the server yet', () async {
+      orgMembership().role = OrgRole.librarian;
+      await bobEngine.sync();
+      expect(await bobsReports(), {'r-ann', 'r-bob'});
+      // Offline: a new report of Bob's, and a change of Ann's report.
+      server.failWith = BackendErrorKind.network;
+      final bobReview = SongReviewRepository(
+        bobDb,
+        storage,
+        userId: 'bob',
+        backend: server,
+      );
+      final mine = await bobReview.report(
+        song,
+        category: SongReportCategory.key,
+      );
+      await bobReview.resolve('r-ann', resolution: 'Done');
+      await bobEngine.sync();
+      server.failWith = null;
+
+      orgMembership().role = OrgRole.member;
+      await bobEngine.sync();
+      expect(await bobsReports(), {'r-bob', mine});
+      expect(server.reports, contains(mine), reason: 'pushed');
+      expect(server.reports['r-ann']!.status, 'open', reason: 'not pushed');
+      expect(await bobDb.select(bobDb.syncOutbox).get(), isEmpty);
+    });
+
+    test(
+      'leaving the planner role in a band removes the reports of others',
+      () async {
+        bandMembership().role = BandRole.planner;
+        await bobEngine.sync();
+        expect(await bobsReports(), {'r-ann', 'r-bob'});
+        bandMembership().role = BandRole.member;
+        await bobEngine.sync();
+        expect(await bobsReports(), {'r-bob'});
+      },
+    );
   });
 
   group('removal and archives', () {

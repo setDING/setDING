@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:drift/drift.dart';
 
@@ -26,13 +27,42 @@ class ReportSync {
   /// Where screenshots are stored; without it, none are uploaded.
   final AttachmentStorage? storage;
 
-  Future<int> pull(String orgId) async {
-    final since = await store.cursor(orgId, SyncCollection.songReports);
+  /// Whether a person with [orgRole] in an organization and [bandRoles]
+  /// in its bands reads all of its reports, like the server's list rule
+  /// (ADR-0060): librarians, organization admins, band leaders and set
+  /// planners; everyone else only their own.
+  static bool seesAll(OrgRole? orgRole, Iterable<BandRole?> bandRoles) =>
+      orgRole == OrgRole.admin ||
+      orgRole == OrgRole.librarian ||
+      bandRoles.any((r) => r == BandRole.admin || r == BandRole.planner);
+
+  /// Pulls the reports of [orgId] that [userId] may read; [seesAll] as
+  /// [ReportSync.seesAll] for the user's current roles. When it differs
+  /// from the last pull (a promotion or demotion), the reports are pulled
+  /// from the start and those the user can no longer read leave the
+  /// device, except the user's own changes not on the server yet (#1194).
+  Future<int> pull(
+    String orgId, {
+    required String userId,
+    required bool seesAll,
+  }) async {
+    final scope = seesAll ? _allReports : _ownReports;
+    final rescan =
+        await store.cursor(orgId, SyncCollection.songReportsScope) != scope;
+    final since = rescan
+        ? 0
+        : await store.cursor(orgId, SyncCollection.songReports);
     final remote = await backend.pullSongReports(orgId, since);
-    if (remote.isEmpty) return 0;
+    if (remote.isEmpty && !rescan) return 0;
     final removedFiles = <String>[];
     await db.transaction(() async {
       final ids = [for (final r in remote) r.id];
+      if (rescan) {
+        removedFiles.addAll(await _removeUnreadable(orgId, userId, ids));
+        await store.setCursor(orgId, SyncCollection.songReportsScope, scope);
+        await store.setCursor(orgId, SyncCollection.songReports, 0);
+      }
+      if (remote.isEmpty) return;
       final locals = await SyncStore.byId(
         ids,
         (chunk) =>
@@ -85,6 +115,54 @@ class ReportSync {
       if (await storage?.exists(f) ?? false) await storage?.delete(f);
     }
     return remote.length;
+  }
+
+  /// Values of the [SyncCollection.songReportsScope] cursor.
+  static const _ownReports = 1;
+  static const _allReports = 2;
+
+  /// Removes the reports of [orgId] on the server that a full pull did not
+  /// return ([readable]): the user can no longer read them. The user's own
+  /// pending changes stay and are pushed; pending changes of others'
+  /// reports would be refused and are dropped. Returns their screenshots.
+  Future<List<String>> _removeUnreadable(
+    String orgId,
+    String userId,
+    List<String> readable,
+  ) async {
+    final keep = readable.toSet();
+    final locals =
+        await (db.select(db.songReports)..where(
+              (r) =>
+                  r.libraryId.equals(orgId) & r.revision.isBiggerThanValue(0),
+            ))
+            .get();
+    final gone = [
+      for (final r in locals)
+        if (!keep.contains(r.id)) r,
+    ];
+    if (gone.isEmpty) return const [];
+    final dirty = await store.dirty(SyncCollection.songReports, [
+      for (final r in gone) r.id,
+    ]);
+    final remove = [
+      for (final r in gone)
+        if (!(r.authorId == userId && dirty.contains(r.id))) r,
+    ];
+    final ids = [for (final r in remove) r.id];
+    // In chunks: SQLite limits the variables of a statement.
+    for (var i = 0; i < ids.length; i += 500) {
+      final chunk = ids.sublist(i, math.min(i + 500, ids.length));
+      await (db.delete(db.songReports)..where((r) => r.id.isIn(chunk))).go();
+      await (db.delete(db.syncOutbox)..where(
+            (o) =>
+                o.collection.equals(SyncCollection.songReports) &
+                o.recordId.isIn(chunk),
+          ))
+          .go();
+    }
+    _log.info('Removed ${ids.length} reports of $orgId no longer readable');
+    return [for (final r in remove) ?r.screenshotFile];
   }
 
   Future<PushResult> push(OutboxEntry entry, String userId) async {
