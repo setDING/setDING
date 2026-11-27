@@ -82,6 +82,8 @@ job_sbom() { dart_package tool/sbom; }
 job_changelog() {
   cd "$ROOT/tool/release"
   python3 -m unittest -q test_changelog
+  # Google Play release notes from whats_new.json (ADR-0067).
+  python3 -m unittest -q test_play_notes
   ./changelog.py check --version pubspec
 }
 

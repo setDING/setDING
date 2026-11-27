@@ -56,8 +56,8 @@ Forces:
   API** with a service account (JSON key as the repository secret
   `PLAY_SERVICE_ACCOUNT_JSON`, access limited to the setDING app and release
   management) to the **internal testing** track, with the version's
-  `CHANGELOG.md` section as release notes (shortened to Play's 500 characters, with
-  a link to the GitHub release). Promotion to the closed or production track is
+  user notes in `app/assets/whats_new.json` (ADR-0041) as release notes (de-DE
+  and en-US, the listing's languages, cut to Play's 500 characters). Promotion to the closed or production track is
   done by the owner in the Play Console. Manual test builds and the beta and itest
   builds (`app.setding.beta`, `app.setding.itest`) are never uploaded.
 - **Build number:** stays the workflow's run number (ADR-0021); it grows with every
@@ -117,11 +117,22 @@ Forces:
   by a screenshot test (with the App Store sizes too) and composed with a
   headline in a drawn device frame
   (`tool/store-screenshots.sh`), rendered on demand and not checked in.
+- 2026-11-27: Implementation (#1139): the Play release notes come from the user
+  notes in `app/assets/whats_new.json` (ADR-0041), de-DE and en-US (the languages of
+  the store listing in `docs/store/play/`; the German text keeps the Swiss spelling), instead of the
+  English `CHANGELOG.md` section (owner decision): they are written for users and
+  match what the app shows after the update; a version without notes gets a
+  generic text (`tool/release/play_notes.py`). The upload key is created with
+  `make android-upload-keystore`; the AAB is built in the `android` job after the
+  APK, the `play` job runs after the GitHub Release with
+  `r0adkll/upload-google-play` (MIT, pinned to a commit because it receives the
+  service account key). `PLAY_RELEASE_STATUS=draft` covers the time while the
+  app is still a draft in the Play Console.
 
 ## Open points
 
 - Personal or organization developer account (closed-test requirement).
-- Implementation: workflow, upload key and releases guide #1139, update-check
+- Implementation: workflow, upload key and releases guide #1139 (done), update-check
   hint for Play installs #1140, website installation page #1141, Play Console
   setup by the owner #1142.
 - iOS (App Store) stays open (ADR-0021).

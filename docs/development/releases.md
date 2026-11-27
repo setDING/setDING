@@ -46,6 +46,11 @@ Android tests start is stopped at the end.
    | `<file>.cdx.json` | CycloneDX SBOM of each file above ([SBOM](#sbom), ADR-0037) |
    | `SHA256SUMS` | Checksums of the files above |
 
+   After the GitHub Release, the job `play` uploads the same build as an AAB to
+   the **internal track** of Google Play ([Google Play](#google-play), ADR-0067);
+   a failing `play` job does not undo the GitHub Release. Promote the release in
+   the Play Console once it was checked on a device.
+
    After the GitHub Release, the job `server-image` pushes the server image
    `ghcr.io/setding/setding-server:X.Y.Z` for amd64 and arm64 (final releases also
    as `X.Y` and `latest`), built from the same tested bundles.
@@ -222,6 +227,74 @@ such an APK cannot be updated by a release APK (uninstall first).
    versions and offers the update.
 
 An app installed earlier with `make apk` (debug key) must be uninstalled first.
+
+## Google Play
+
+Google Play delivers the same app `app.setding` as the APK of the GitHub Release
+(ADR-0067). Play App Signing re-signs the AAB with the **release key**, so Play
+installs and Obtainium installs update each other and the App Links keep one
+fingerprint (`SETDING_ANDROID_CERT_SHA256`).
+
+The `android` job builds the AAB `setding-X.Y.Z-android.aab` (arm64, same build
+number) after the APK, signed with the **upload key**; the `play` job uploads it
+on tag builds to the internal track with the version's notes from
+`app/assets/whats_new.json` as *What's new* (de-DE and en-US like the listing in `docs/store/play/`, cut to 500
+characters, a generic text when the version has none; `tool/release/play_notes.py`).
+Manual test builds build the AAB too (when the upload key is set) but upload
+nothing; beta and itest builds are never uploaded. The AAB is not a GitHub Release
+asset.
+
+### Setting up (once, owner)
+
+1. **Upload key:**
+
+   ```bash
+   make android-upload-keystore
+   ```
+
+   writes `~/.local/share/setding/play-upload.jks` (override with
+   `ANDROID_UPLOAD_KEYSTORE=…`), `upload-key.properties` and
+   `upload-certificate.pem` next to it, and sets the secrets
+   `PLAY_UPLOAD_KEYSTORE_BASE64`, `PLAY_UPLOAD_KEYSTORE_PASSWORD`,
+   `PLAY_UPLOAD_KEY_ALIAS` and `PLAY_UPLOAD_KEY_PASSWORD`. Back up the keystore
+   and its properties; Google support can reset a lost upload key.
+2. **Create the app** in the Play Console with the package name `app.setding`.
+3. **Play App Signing with the release key** (*Test and release → App integrity →
+   Play App Signing*, choose to use your own key, *Export and upload a key from
+   Java keystore*): download `pepk.jar` and Google's encryption key, then
+
+   ```bash
+   java -jar pepk.jar --keystore=$HOME/.local/share/setding/android-release.jks \
+     --alias=setding --output=setding-release-key.zip --include-cert \
+     --rsa-aes-encryption --encryption-key-path=encryption_public_key.pem
+   ```
+
+   and upload `setding-release-key.zip` together with `upload-certificate.pem`.
+   Never let Google generate the app signing key: Play and Obtainium installs
+   would no longer update each other. Afterwards the app signing certificate's
+   SHA-256 in *App integrity* must equal the fingerprint of the release key.
+4. **First release by hand:** run a test build with the upload key
+   (`gh workflow run release.yml --ref main`), download the `play` artifact and
+   upload the AAB to the internal track in the Play Console. The API cannot create
+   the app's first release.
+5. **Service account:** in Google Cloud, create a service account with a JSON key
+   in a project linked to the Play developer account; in the Play Console
+   (*Users and permissions*) invite its address with access to setDING only and
+   the permission to release to testing tracks. Store the key:
+
+   ```bash
+   gh secret set PLAY_SERVICE_ACCOUNT_JSON < service-account.json
+   ```
+
+   then delete the local file (or keep it with the other keys).
+6. While the app is still a **draft** in the Play Console (before its first
+   review), Play only accepts draft releases: set
+   `gh variable set PLAY_RELEASE_STATUS --body draft` and delete the variable
+   (`gh variable delete PLAY_RELEASE_STATUS`) once the app is reviewed.
+
+Personal developer accounts must also run a closed test with at least 12 testers
+for 14 days before they may publish to production; see #1142 for the listing and
+policy forms.
 
 ## Testing a local build next to a release (Android)
 

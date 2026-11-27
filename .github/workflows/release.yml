@@ -15,6 +15,9 @@
 # the GitHub Release) and as a multi-platform image on ghcr.io; both are tested
 # (also the update from the previous release) before anything is published,
 # and the image is pushed only after the GitHub Release exists.
+# Google Play (ADR-0067) gets an AAB of the same build, signed with the upload
+# key, uploaded to the internal track after the GitHub Release; the owner
+# promotes it in the Play Console. The AAB is not a GitHub Release asset.
 name: Release
 
 on:
@@ -176,6 +179,53 @@ jobs:
         run: |
           apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)"
           "$apksigner" verify --print-certs setding-*-android.apk | grep -E 'SHA-256|DN'
+
+      # Google Play (ADR-0067): the same build as an AAB, signed with the upload
+      # key (`make android-upload-keystore`); Play App Signing re-signs it with
+      # the release key, so Play and Obtainium installs update each other.
+      # key.properties is replaced, so this comes after everything that needs
+      # the release key. Without the upload key there is no AAB and the play
+      # job fails, without holding up the GitHub Release.
+      - name: Play upload key
+        id: upload-key
+        env:
+          PLAY_UPLOAD_KEYSTORE_BASE64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_BASE64 }}
+          PLAY_UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEYSTORE_PASSWORD }}
+          PLAY_UPLOAD_KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          PLAY_UPLOAD_KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+        run: |
+          if [ -z "$PLAY_UPLOAD_KEYSTORE_BASE64" ]; then
+            echo "::warning::No Play upload key in the secrets ('make android-upload-keystore'); no AAB for Google Play"
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "$PLAY_UPLOAD_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          cat > app/android/key.properties <<EOF
+          storeFile=$RUNNER_TEMP/upload.jks
+          storePassword=$PLAY_UPLOAD_KEYSTORE_PASSWORD
+          keyAlias=$PLAY_UPLOAD_KEY_ALIAS
+          keyPassword=$PLAY_UPLOAD_KEY_PASSWORD
+          EOF
+          echo "present=true" >> "$GITHUB_OUTPUT"
+
+      - name: Build AAB
+        if: steps.upload-key.outputs.present == 'true'
+        working-directory: app
+        run: |
+          flutter build appbundle --release --target-platform android-arm64 \
+            --build-number "$GITHUB_RUN_NUMBER"
+          cp build/app/outputs/bundle/release/app-release.aab \
+            "$GITHUB_WORKSPACE/${{ needs.version.outputs.name }}-android.aab"
+          keytool -printcert -jarfile "$GITHUB_WORKSPACE/${{ needs.version.outputs.name }}-android.aab" |
+            grep -E 'Owner|SHA256'
+
+      - name: Upload AAB
+        if: steps.upload-key.outputs.present == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: play
+          path: ${{ needs.version.outputs.name }}-android.aab
+          if-no-files-found: error
 
       - name: Upload
         uses: actions/upload-artifact@v7
@@ -412,6 +462,8 @@ jobs:
           VERSION: ${{ needs.version.outputs.version }}
         run: |
           tool/release/changelog.py notes "$VERSION" > release-notes.md
+          # The AAB goes to Google Play only (play job).
+          rm -f dist/*.aab
           cd dist
           sha256sum -- * > SHA256SUMS
           prerelease=()
@@ -419,6 +471,53 @@ jobs:
           gh release create "$GITHUB_REF_NAME" \
             --repo "$GITHUB_REPOSITORY" --title "setDING $VERSION" \
             --notes-file ../release-notes.md --verify-tag "${prerelease[@]}" -- *
+
+  # Google Play (ADR-0067): uploads the AAB to the internal track once the
+  # GitHub Release exists; the owner promotes it in the Play Console. The
+  # release notes are the version's user notes (whats_new.json, ADR-0041).
+  # Needs the service account key PLAY_SERVICE_ACCOUNT_JSON; the variable
+  # PLAY_RELEASE_STATUS may set `draft` (required while the app itself is
+  # still a draft in the Play Console), default `completed`. The first AAB
+  # of the app is uploaded by hand (docs/development/releases.md).
+  play:
+    if: github.ref_type == 'tag'
+    needs: [version, android, publish]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Download the AAB
+        uses: actions/download-artifact@v8
+        with:
+          name: play
+          path: dist-play
+
+      - name: Release notes
+        run: tool/release/play_notes.py "${{ needs.version.outputs.version }}" play-notes
+
+      - name: Service account
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo "::error::The PLAY_SERVICE_ACCOUNT_JSON secret is missing (docs/development/releases.md#google-play)"
+            exit 1
+          fi
+
+      # Pinned to a commit: a third-party action that receives the service
+      # account key (v1.1.5).
+      - name: Upload to Google Play (internal track)
+        uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: app.setding
+          releaseFiles: dist-play/${{ needs.version.outputs.name }}-android.aab
+          releaseName: ${{ needs.version.outputs.version }}
+          track: internal
+          status: ${{ vars.PLAY_RELEASE_STATUS || 'completed' }}
+          whatsNewDirectory: play-notes
 
   # The server image, built for amd64 and arm64 from the tested bundles of this
   # release and pushed to ghcr.io once the GitHub Release exists. Final
