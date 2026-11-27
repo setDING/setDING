@@ -95,6 +95,8 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
 - 2026-11-19: Release notes from `CHANGELOG.md` (#542): the repository keeps a changelog in the Keep a Changelog 1.1.0 format, backfilled from v0.1.0 to v0.14.0 with the changes relevant to users. The release PR writes the version's section (drafted with `make changelog`); `make check` requires a section for the version in `pubspec.yaml`, and the `publish` job uses that section as the release notes instead of GitHub's generated notes, so changelog and GitHub Releases always match. The earlier releases were edited to their changelog sections.
 
 - 2026-11-24: Server artifacts (ADR-0063, #1052): the job `server` builds and tests the server bundles (amd64, arm64 under QEMU) and their images with `tool/server-dist/release-test.sh`, including the update from the previous release; `publish` waits for it and attaches the bundles; the job `server-image` pushes the multi-platform image to ghcr.io (`packages: write`) after the GitHub Release. The bundles have no SBOM yet (#1062).
+- 2026-11-27: The owner created a Google Play developer account; ADR-0067 (proposed, #1137) adds Google Play next to Obtainium with the same release key (Play App Signing) and an AAB uploaded by this workflow. The Play row in the alternatives reflects the situation of 2026-11-16.
+
 ## Open points
 
 - Owner creates the release key (`make android-keystore`) and backs it up.
