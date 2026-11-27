@@ -58,7 +58,7 @@ Every SBOM carries in `metadata.component`:
 | `type` | `application` |
 | `name` | `setDING` |
 | `version` | the release version from the tag (`vX.Y.Z` → `X.Y.Z`), which the release workflow already checks against `app/pubspec.yaml` |
-| `purl` | `pkg:github/tafli/setDING@vX.Y.Z` |
+| `purl` | `pkg:github/setDING/setDING@vX.Y.Z` |
 | `bom-ref` | unique per asset (contains the platform) |
 | `supplier` | the setDING project with `https://setding.app` |
 | `licenses` | `MIT` |

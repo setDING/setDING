@@ -45,7 +45,7 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
   with it and falls back to the debug key when the file is missing (local
   `make apk`). A tag build without the secrets fails rather than publishing an APK
   with a throwaway key.
-- **Obtainium:** users add `https://github.com/tafli/setDING` as an app source; the
+- **Obtainium:** users add `https://github.com/setDING/setDING` as an app source; the
   release contains exactly one APK, so no filter is needed.
 
 ## Alternatives considered
@@ -88,7 +88,7 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
   (#298). For Android this is a different app: installs of the earlier test
   releases (up to v0.4.0) cannot be updated to it; uninstall them and add the app
   to Obtainium again. Not live yet, so no migration.
-- 2026-11-17: App renamed to **setDING** (#318): artifacts `setding-<version>-…`, application ID `app.setding` (a new app for Android and Obtainium; test installs of RealChord are removed by hand), Obtainium source `https://github.com/tafli/setDING`. The release key stays.
+- 2026-11-17: App renamed to **setDING** (#318): artifacts `setding-<version>-…`, application ID `app.setding` (a new app for Android and Obtainium; test installs of RealChord are removed by hand), Obtainium source `https://github.com/setDING/setDING`. The release key stays.
 - 2026-11-17: Build numbers (#345): `pubspec.yaml` no longer carries a build number (it was bumped by hand with every release and said nothing). The run number stays the build number, shared by releases and manual test builds, whose files are named `setding-<version>-build<N>-…`. After the release build passed, `make server-release` updates the server from the tag.
 - 2026-11-17: Faster Android build (#407): the release APK is built for arm64 only instead of a universal APK (arm, arm64, x64), and Gradle is cached with `gradle/actions/setup-gradle`. Agreed with the owner: practically all current Android tablets are arm64. Split APKs were rejected because they still compile every ABI.
 - 2026-11-18: Windows installer and code signing moved out of the open points: ADR-0035 (proposed, #494) adds an Inno Setup installer next to the zip, from which the installed app updates itself.

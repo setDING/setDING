@@ -9,7 +9,7 @@ from pathlib import Path
 import changelog
 from changelog import ChangelogError, draft, parse, release_notes
 
-URL = "https://github.com/tafli/setDING"
+URL = "https://github.com/setDING/setDING"
 
 VALID = f"""# Changelog
 

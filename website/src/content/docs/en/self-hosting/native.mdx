@@ -19,13 +19,13 @@ setDING as a systemd service as described here. The commands run as `root`.
 ## Install
 
 1. Download the bundle for your processor (`amd64` or `arm64`) and the checksums
-   from the [GitHub releases](https://github.com/tafli/setDING/releases/latest) and
+   from the [GitHub releases](https://github.com/setDING/setDING/releases/latest) and
    check it:
 
    ```bash
    v=0.22.0; a=amd64
-   curl -fLO "https://github.com/tafli/setDING/releases/download/v$v/setding-server-$v-linux-$a.tar.gz"
-   curl -fLO "https://github.com/tafli/setDING/releases/download/v$v/SHA256SUMS"
+   curl -fLO "https://github.com/setDING/setDING/releases/download/v$v/setding-server-$v-linux-$a.tar.gz"
+   curl -fLO "https://github.com/setDING/setDING/releases/download/v$v/SHA256SUMS"
    sha256sum --ignore-missing -c SHA256SUMS
    ```
 

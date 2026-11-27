@@ -10,7 +10,7 @@ import 'auth_providers.dart';
 const _log = Log('update');
 
 /// Where new versions of the installed apps are published (ADR-0021).
-const releasesUrl = 'https://github.com/tafli/setDING/releases';
+const releasesUrl = 'https://github.com/setDING/setDING/releases';
 
 /// The release page of [version].
 Uri releasePageUrl(String version) =>

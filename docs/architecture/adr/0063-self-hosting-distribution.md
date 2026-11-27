@@ -77,7 +77,7 @@ the compose file, the unit is an example in the docs, not a file in the release.
 Configuration through environment variables (an `EnvironmentFile`), as in the
 image. The owner's production server runs this way (section 7).
 
-**b) The Docker image** `ghcr.io/tafli/setding-server:X.Y.Z`
+**b) The Docker image** `ghcr.io/setding/setding-server:X.Y.Z`
 (multi-arch, also tagged `X.Y` and `latest` for final releases), built from the
 bundle:
 

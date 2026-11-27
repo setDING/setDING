@@ -13,7 +13,7 @@ ARG TARGETARCH
 ARG VERSION=unknown
 LABEL org.opencontainers.image.title="setDING server" \
       org.opencontainers.image.description="PocketBase backend and web client of setDING" \
-      org.opencontainers.image.source="https://github.com/tafli/setDING" \
+      org.opencontainers.image.source="https://github.com/setDING/setDING" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.version="${VERSION}"
 

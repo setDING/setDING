@@ -239,7 +239,7 @@ Map<String, Object?> buildImageBom({
             'externalReferences': [
               {
                 'type': 'vcs',
-                'url': 'https://github.com/tafli/setDING/tree/main/tool/sbom',
+                'url': 'https://github.com/setDING/setDING/tree/main/tool/sbom',
               },
             ],
           },
@@ -265,10 +265,10 @@ Map<String, Object?> buildImageBom({
         ],
         'externalReferences': [
           {'type': 'website', 'url': website},
-          {'type': 'vcs', 'url': 'https://github.com/tafli/setDING'},
+          {'type': 'vcs', 'url': 'https://github.com/setDING/setDING'},
           {
             'type': 'distribution',
-            'url': 'https://github.com/tafli/setDING/releases/tag/$tag',
+            'url': 'https://github.com/setDING/setDING/releases/tag/$tag',
           },
         ],
         'properties': [

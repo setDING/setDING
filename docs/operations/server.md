@@ -387,7 +387,7 @@ restores a backup (Settings → Backups), and restarts the server itself.
 Production moves from the LXC (installation from before the bundles: `/opt/pocketbase`,
 `/var/lib/pocketbase`, `/etc/setding/pocketbase.env`, `pocketbase.service`) to the VPS;
 the LXC then becomes the test server. Plan and decisions:
-[#1055](https://github.com/tafli/setDING/issues/1055).
+[#1055](https://github.com/setDING/setDING/issues/1055).
 
 1. **VPS installed:** `make server-release` (or, before the first release with
    bundles, `make server-install TARGET=prod FORCE=1`); `make server-status`.

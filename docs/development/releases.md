@@ -45,7 +45,7 @@ Android tests start is stopped at the end.
    | `SHA256SUMS` | Checksums of the files above |
 
    After the GitHub Release, the job `server-image` pushes the server image
-   `ghcr.io/tafli/setding-server:X.Y.Z` for amd64 and arm64 (final releases also
+   `ghcr.io/setding/setding-server:X.Y.Z` for amd64 and arm64 (final releases also
    as `X.Y` and `latest`), built from the same tested bundles.
 
    **The build must pass.** Watch it with `gh run watch`; if a job fails, no release
@@ -121,7 +121,7 @@ PRs would conflict in it):
    tests, CI and build changes, `chore(release)`). Website changes count when they
    are new user documentation.
 3. Add it below `## [Unreleased]` (if any) as `## [X.Y.Z] - YYYY-MM-DD` (release
-   date), with the link `[X.Y.Z]: https://github.com/tafli/setDING/compare/vPREV...vX.Y.Z`
+   date), with the link `[X.Y.Z]: https://github.com/setDING/setDING/compare/vPREV...vX.Y.Z`
    at the end of the file.
 
 Categories, in this order, only those with entries: *Update required* (setDING-specific,
@@ -215,7 +215,7 @@ such an APK cannot be updated by a release APK (uninstall first).
 
 1. Install [Obtainium](https://github.com/ImranR98/Obtainium) (from its GitHub
    releases or F-Droid).
-2. In Obtainium: **Add app** → source URL `https://github.com/tafli/setDING` → **Add**.
+2. In Obtainium: **Add app** → source URL `https://github.com/setDING/setDING` → **Add**.
 3. Install setDING from there. Obtainium checks the GitHub Releases for new
    versions and offers the update.
 
@@ -319,7 +319,7 @@ and Flutter. The `server-image` job writes the image's SBOM with `tool/sbom.sh
 generate-image` (both bundles' SBOMs and the distroless base, identified by the
 image digest), checks and validates it and attests it to the image on ghcr.io
 (`actions/attest-sbom`); check it with
-`gh attestation verify oci://ghcr.io/tafli/setding-server:X.Y.Z --owner tafli
+`gh attestation verify oci://ghcr.io/setding/setding-server:X.Y.Z --owner setDING
 --predicate-type https://cyclonedx.org/bom`. The `server` job needs Go and deps.dev
 in addition.
 

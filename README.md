@@ -12,7 +12,7 @@ in?". With setDING the band leader puts the set together once, and every member
 has it on their own tablet: the right songs, in the right order, in the right key.
 On stage you play from a clean, large display and turn pages with your foot.
 
-[**Download the latest release →**](https://github.com/tafli/setDING/releases/latest)
+[**Download the latest release →**](https://github.com/setDING/setDING/releases/latest)
 
 ![Live mode: a song in three columns with chords, a personal note and chord diagrams](docs/screenshots/live.png)
 
@@ -76,9 +76,9 @@ On stage you play from a clean, large display and turn pages with your foot.
 
 | Platform | How |
 |---|---|
-| **Android** | Install [Obtainium](https://github.com/ImranR98/Obtainium), tap *Add app* and enter `https://github.com/tafli/setDING`. Obtainium installs setDING and keeps it up to date. |
-| **Windows** | Download `setding-<version>-windows-x64.zip` from the [releases](https://github.com/tafli/setDING/releases/latest), unpack it and start `setding.exe`. |
-| **Linux** | Download `setding-<version>-linux-x64.tar.gz` from the [releases](https://github.com/tafli/setDING/releases/latest), unpack it and start `setding`. |
+| **Android** | Install [Obtainium](https://github.com/ImranR98/Obtainium), tap *Add app* and enter `https://github.com/setDING/setDING`. Obtainium installs setDING and keeps it up to date. |
+| **Windows** | Download `setding-<version>-windows-x64.zip` from the [releases](https://github.com/setDING/setDING/releases/latest), unpack it and start `setding.exe`. |
+| **Linux** | Download `setding-<version>-linux-x64.tar.gz` from the [releases](https://github.com/setDING/setDING/releases/latest), unpack it and start `setding`. |
 | **iOS** | Coming later. |
 
 The app speaks **English and German** (Swiss Standard German).

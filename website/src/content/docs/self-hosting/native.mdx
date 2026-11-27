@@ -19,13 +19,13 @@ setDING als systemd-Dienst ein, wie hier beschrieben. Die Befehle laufen als `ro
 ## Installieren
 
 1. Lade das Paket für deinen Prozessor (`amd64` oder `arm64`) und die Prüfsummen bei
-   den [Releases auf GitHub](https://github.com/tafli/setDING/releases/latest) und
+   den [Releases auf GitHub](https://github.com/setDING/setDING/releases/latest) und
    prüfe es:
 
    ```bash
    v=0.22.0; a=amd64
-   curl -fLO "https://github.com/tafli/setDING/releases/download/v$v/setding-server-$v-linux-$a.tar.gz"
-   curl -fLO "https://github.com/tafli/setDING/releases/download/v$v/SHA256SUMS"
+   curl -fLO "https://github.com/setDING/setDING/releases/download/v$v/setding-server-$v-linux-$a.tar.gz"
+   curl -fLO "https://github.com/setDING/setDING/releases/download/v$v/SHA256SUMS"
    sha256sum --ignore-missing -c SHA256SUMS
    ```
 
