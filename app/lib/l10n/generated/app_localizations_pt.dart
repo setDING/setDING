@@ -756,6 +756,81 @@ class AppLocalizationsPt extends AppLocalizations {
   String get projectionStartFailed => 'Não foi possível iniciar a projeção.';
 
   @override
+  String get settingsHeadingProjection => 'Projeção';
+
+  @override
+  String get settingsProjectionHint =>
+      'Como a letra aparece no navegador do projetor. Para este dispositivo.';
+
+  @override
+  String get settingsProjectionColours => 'Cores';
+
+  @override
+  String get projectionThemeDark => 'Branco sobre preto';
+
+  @override
+  String get projectionThemeLight => 'Preto sobre branco';
+
+  @override
+  String get settingsProjectionFont => 'Tipo de letra';
+
+  @override
+  String get projectionFontSans => 'Sem serifa';
+
+  @override
+  String get projectionFontSerif => 'Com serifa';
+
+  @override
+  String get settingsProjectionAlign => 'Alinhamento';
+
+  @override
+  String get projectionAlignCenter => 'Centrado';
+
+  @override
+  String get projectionAlignLeft => 'À esquerda';
+
+  @override
+  String get settingsProjectionLines => 'Linhas por diapositivo';
+
+  @override
+  String get settingsProjectionLinesHint =>
+      'As secções mais longas são distribuídas por vários diapositivos. Para o oráculo, 2 a 4.';
+
+  @override
+  String get settingsProjectionCopyright => 'Copyright';
+
+  @override
+  String get projectionCopyrightEvery => 'Em cada diapositivo';
+
+  @override
+  String get projectionCopyrightFirstAndLast =>
+      'No primeiro e no último diapositivo';
+
+  @override
+  String get settingsProjectionSecondLanguage => 'Segunda língua';
+
+  @override
+  String get settingsProjectionSecondLanguageHint =>
+      'Se uma música tiver uma versão nesta língua, é projetada ao lado.';
+
+  @override
+  String get projectionSecondLanguageOff => 'Nenhuma';
+
+  @override
+  String get settingsProjectionMarkers => 'Marcadores como texto';
+
+  @override
+  String get settingsProjectionMarkersHint =>
+      'Mostra o texto de um marcador (p. ex. Oração) em vez de um diapositivo preto.';
+
+  @override
+  String get settingsProjectionPreview => 'Mostrar o diapositivo seguinte';
+
+  @override
+  String get settingsProjectionPreviewHint =>
+      'Em pequeno sob a letra, para um monitor de palco.';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Página $page/$count';
   }

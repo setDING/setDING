@@ -154,6 +154,15 @@ void main() {
 
   /// The live settings with the page turner tile, switching on *I use a
   /// page turner* (#930) when it is off.
+  /// Scrolls [finder] to the middle of the settings, clear of the app bar
+  /// at the top, however long the page is.
+  Future<void> centre(WidgetTester tester, Finder finder) async {
+    await tester.runAsync(
+      () => Scrollable.ensureVisible(tester.element(finder), alignment: 0.5),
+    );
+    await tester.pumpAndSettle();
+  }
+
   Future<void> openLiveSettings(WidgetTester tester) async {
     await openTab(tester, HomeTab.settings);
     await tester.tap(find.byKey(const Key('settings-category-live')));
@@ -161,13 +170,11 @@ void main() {
     final tile = find.byKey(const Key('settings-page-turner'));
     if (tile.evaluate().isEmpty) {
       final use = find.byKey(const Key('settings-page-turner-use'));
-      await tester.ensureVisible(use);
-      await tester.pumpAndSettle();
+      await centre(tester, use);
       await tester.tap(use);
       await tester.pumpAndSettle();
     }
-    await tester.ensureVisible(tile);
-    await tester.pumpAndSettle();
+    await centre(tester, tile);
   }
 
   final tile = find.byKey(const Key('settings-page-turner'));
@@ -426,7 +433,7 @@ void main() {
       // test of #930).
       await openLiveSettings(tester);
       final use = find.byKey(const Key('settings-page-turner-use'));
-      await tester.ensureVisible(use);
+      await centre(tester, use);
       await tester.tap(use);
       await tester.pumpAndSettle();
       await tester.tap(use);
@@ -481,6 +488,7 @@ void main() {
 
       await openLiveSettings(tester);
       final use = find.byKey(const Key('settings-page-turner-use'));
+      await centre(tester, use);
       await tester.tap(use);
       await tester.pumpAndSettle();
       expect(app.prefs.getBool(PageTurnerUseNotifier.key), isFalse);

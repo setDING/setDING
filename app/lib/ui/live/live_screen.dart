@@ -470,6 +470,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final lang = Localizations.localeOf(context).languageCode;
     final projection = _projection ??= ProjectionController(
       ref.read(projectionHostProvider)(),
+      options: ProjectionOptions.of(ref.read(settingsProvider)),
     )..addListener(_onProjection);
     try {
       // Small, read once per start: not kept in the asset cache.
@@ -496,13 +497,49 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     if (mounted) setState(() {});
   }
 
-  /// Tells the projection what live mode shows now (ADR-0068 §6).
+  /// Tells the projection what live mode shows now (ADR-0068 §6), and
+  /// adds the song's version in the second language once it is found
+  /// (§9).
   void _projectItem(int index) {
     final projection = _projection;
     if (projection == null || !projection.running) return;
+    final item = _projectionItem(_items[index]);
     projection
-      ..show(_projectionItem(_items[index]))
+      ..show(item)
       ..followSection(_songPages[index]?.section);
+    final song = _items[index].song;
+    final language = ref.read(settingsProvider).projectionSecondLanguage;
+    if (item is! ProjectionSong ||
+        song == null ||
+        language.isEmpty ||
+        song.language == language) {
+      return;
+    }
+    ref.read(songRepositoryProvider).languageVersions(song.id).then((versions) {
+      final version = versions.where((v) => v.language == language).firstOrNull;
+      if (version == null || !mounted) return;
+      final second = parseChordProCached(
+        version.chordproSource,
+        selectors: ref.read(selectorsProvider),
+      );
+      // Paired by position in its own played order (ADR-0068 §9).
+      projection.pairWith(
+        item.song,
+        second,
+        sequence: parseSequence(second.metaValue('x_sequence') ?? ''),
+      );
+    });
+  }
+
+  /// The projection settings changed (ADR-0068 §11): the look at once, a
+  /// different second language with the item on stage.
+  void _onSettings(AppSettings? previous, AppSettings next) {
+    final projection = _projection;
+    if (projection == null) return;
+    projection.options = ProjectionOptions.of(next);
+    if (previous?.projectionSecondLanguage != next.projectionSecondLanguage) {
+      _projectItem(_index);
+    }
   }
 
   /// The page of the song on stage changed: the projection follows the
@@ -880,6 +917,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // The projection follows its settings (ADR-0068 §11).
+    ref.listen(settingsProvider, _onSettings);
     // The current song's grouping and subdivisions of the click (#698).
     final currentSong = _items[_index].song;
     if (currentSong != null) {

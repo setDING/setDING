@@ -753,6 +753,80 @@ class AppLocalizationsEn extends AppLocalizations {
   String get projectionStartFailed => 'The projection could not be started.';
 
   @override
+  String get settingsHeadingProjection => 'Projection';
+
+  @override
+  String get settingsProjectionHint =>
+      'How the lyrics appear in the browser at the projector. For this device.';
+
+  @override
+  String get settingsProjectionColours => 'Colours';
+
+  @override
+  String get projectionThemeDark => 'White on black';
+
+  @override
+  String get projectionThemeLight => 'Black on white';
+
+  @override
+  String get settingsProjectionFont => 'Font';
+
+  @override
+  String get projectionFontSans => 'Sans serif';
+
+  @override
+  String get projectionFontSerif => 'Serif';
+
+  @override
+  String get settingsProjectionAlign => 'Alignment';
+
+  @override
+  String get projectionAlignCenter => 'Centred';
+
+  @override
+  String get projectionAlignLeft => 'Left';
+
+  @override
+  String get settingsProjectionLines => 'Lines per slide';
+
+  @override
+  String get settingsProjectionLinesHint =>
+      'Longer sections are spread over several slides. For the lower third 2 to 4.';
+
+  @override
+  String get settingsProjectionCopyright => 'Copyright';
+
+  @override
+  String get projectionCopyrightEvery => 'On every slide';
+
+  @override
+  String get projectionCopyrightFirstAndLast => 'On the first and last slide';
+
+  @override
+  String get settingsProjectionSecondLanguage => 'Second language';
+
+  @override
+  String get settingsProjectionSecondLanguageHint =>
+      'When a song has a version in this language, it is projected beside it.';
+
+  @override
+  String get projectionSecondLanguageOff => 'None';
+
+  @override
+  String get settingsProjectionMarkers => 'Markers as text';
+
+  @override
+  String get settingsProjectionMarkersHint =>
+      'Shows the text of a marker (e.g. Prayer) instead of a black slide.';
+
+  @override
+  String get settingsProjectionPreview => 'Show the next slide';
+
+  @override
+  String get settingsProjectionPreviewHint =>
+      'Small below the lyrics, for a stage monitor.';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Page $page/$count';
   }

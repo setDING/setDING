@@ -1378,6 +1378,144 @@ abstract class AppLocalizations {
   /// **'Die Projektion konnte nicht gestartet werden.'**
   String get projectionStartFailed;
 
+  /// No description provided for @settingsHeadingProjection.
+  ///
+  /// In de, this message translates to:
+  /// **'Projektion'**
+  String get settingsHeadingProjection;
+
+  /// No description provided for @settingsProjectionHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie der Liedtext im Browser am Beamer erscheint. Gilt für dieses Gerät.'**
+  String get settingsProjectionHint;
+
+  /// No description provided for @settingsProjectionColours.
+  ///
+  /// In de, this message translates to:
+  /// **'Farben'**
+  String get settingsProjectionColours;
+
+  /// No description provided for @projectionThemeDark.
+  ///
+  /// In de, this message translates to:
+  /// **'Weiss auf Schwarz'**
+  String get projectionThemeDark;
+
+  /// No description provided for @projectionThemeLight.
+  ///
+  /// In de, this message translates to:
+  /// **'Schwarz auf Weiss'**
+  String get projectionThemeLight;
+
+  /// No description provided for @settingsProjectionFont.
+  ///
+  /// In de, this message translates to:
+  /// **'Schrift'**
+  String get settingsProjectionFont;
+
+  /// No description provided for @projectionFontSans.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Serifen'**
+  String get projectionFontSans;
+
+  /// No description provided for @projectionFontSerif.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Serifen'**
+  String get projectionFontSerif;
+
+  /// No description provided for @settingsProjectionAlign.
+  ///
+  /// In de, this message translates to:
+  /// **'Ausrichtung'**
+  String get settingsProjectionAlign;
+
+  /// No description provided for @projectionAlignCenter.
+  ///
+  /// In de, this message translates to:
+  /// **'Zentriert'**
+  String get projectionAlignCenter;
+
+  /// No description provided for @projectionAlignLeft.
+  ///
+  /// In de, this message translates to:
+  /// **'Links'**
+  String get projectionAlignLeft;
+
+  /// No description provided for @settingsProjectionLines.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeilen pro Folie'**
+  String get settingsProjectionLines;
+
+  /// No description provided for @settingsProjectionLinesHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Längere Abschnitte werden auf mehrere Folien verteilt. Für die Bauchbinde 2 bis 4.'**
+  String get settingsProjectionLinesHint;
+
+  /// No description provided for @settingsProjectionCopyright.
+  ///
+  /// In de, this message translates to:
+  /// **'Copyright'**
+  String get settingsProjectionCopyright;
+
+  /// No description provided for @projectionCopyrightEvery.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf jeder Folie'**
+  String get projectionCopyrightEvery;
+
+  /// No description provided for @projectionCopyrightFirstAndLast.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf der ersten und letzten Folie'**
+  String get projectionCopyrightFirstAndLast;
+
+  /// No description provided for @settingsProjectionSecondLanguage.
+  ///
+  /// In de, this message translates to:
+  /// **'Zweite Sprache'**
+  String get settingsProjectionSecondLanguage;
+
+  /// No description provided for @settingsProjectionSecondLanguageHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Hat ein Song eine Version in dieser Sprache, wird sie daneben projiziert.'**
+  String get settingsProjectionSecondLanguageHint;
+
+  /// No description provided for @projectionSecondLanguageOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine'**
+  String get projectionSecondLanguageOff;
+
+  /// No description provided for @settingsProjectionMarkers.
+  ///
+  /// In de, this message translates to:
+  /// **'Marker als Text'**
+  String get settingsProjectionMarkers;
+
+  /// No description provided for @settingsProjectionMarkersHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt den Text eines Markers (z.B. Gebet) statt einer schwarzen Folie.'**
+  String get settingsProjectionMarkersHint;
+
+  /// No description provided for @settingsProjectionPreview.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächste Folie zeigen'**
+  String get settingsProjectionPreview;
+
+  /// No description provided for @settingsProjectionPreviewHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Klein unter dem Text, für einen Bühnenmonitor.'**
+  String get settingsProjectionPreviewHint;
+
   /// No description provided for @liveSongPage.
   ///
   /// In de, this message translates to:

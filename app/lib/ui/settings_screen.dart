@@ -9,6 +9,8 @@ import 'package:go_router/go_router.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../providers.dart';
 import '../settings/settings.dart';
+import '../projection/projection_controller.dart'
+    show projectionSupportedProvider;
 import '../sync/auth_providers.dart';
 import '../sync/update_check.dart';
 import '../update/app_menu_entry.dart';
@@ -25,6 +27,7 @@ import 'settings/latency_calibration.dart';
 import 'settings/midi_settings.dart';
 import 'live/page_turner.dart' show pageTurnerInUseProvider;
 import 'settings/page_turner_settings.dart';
+import 'settings/projection_settings.dart';
 import 'settings/settings_layout.dart';
 import 'settings/song_display_settings.dart';
 import 'theme.dart';
@@ -774,6 +777,9 @@ class _CategoryContent extends ConsumerWidget {
             ],
           ),
           if (s.playClick) _clickDeviceSection(l10n, s, notifier),
+          // The lyrics projection (ADR-0068), native apps only.
+          if (ref.watch(projectionSupportedProvider))
+            const ProjectionSettings(),
         ]),
       ],
       // MIDI program changes to a keyboard (ADR-0039).

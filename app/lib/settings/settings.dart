@@ -9,6 +9,7 @@ import '../sync/sync_backend.dart' show defaultServerUrl;
 import '../data/database.dart' show chordViewOf, localOwnerId;
 import '../data/person_name.dart' show NameFormat;
 import '../midi/midi_profile.dart';
+import '../projection/projection_state.dart';
 import 'display_options.dart';
 import 'song_display.dart';
 import 'user_settings_store.dart';
@@ -166,6 +167,14 @@ class AppSettings {
     this.midiChannel = 1,
     this.midiPreview = false,
     this.midiTakeOver = false,
+    this.projectionTheme = ProjectionTheme.dark,
+    this.projectionFont = ProjectionFont.sans,
+    this.projectionAlign = ProjectionAlign.center,
+    this.projectionLines = 8,
+    this.projectionCopyright = ProjectionCopyright.everySlide,
+    this.projectionMarkersAsText = false,
+    this.projectionSecondLanguage = '',
+    this.projectionPreview = false,
   });
 
   final LanguageMode language;
@@ -328,6 +337,26 @@ class AppSettings {
   /// The MIDI channel 1–16, the keyboard's global channel.
   final int midiChannel;
 
+  /// The lyrics projection (ADR-0068 §11): device settings, as the
+  /// projector belongs to the place, not to the person.
+  final ProjectionTheme projectionTheme;
+  final ProjectionFont projectionFont;
+  final ProjectionAlign projectionAlign;
+
+  /// Lines of text per slide (one of [projectionLineChoices]).
+  final int projectionLines;
+  final ProjectionCopyright projectionCopyright;
+
+  /// A set marker shows its text instead of a black slide.
+  final bool projectionMarkersAsText;
+
+  /// A song language code (ADR-0053) projected beside the song when it has
+  /// a version in it; empty for none.
+  final String projectionSecondLanguage;
+
+  /// The next slide below the current one, for a confidence monitor.
+  final bool projectionPreview;
+
   /// The live mode's program picker sends each choice to the keyboard at
   /// once, to hear it before saving (#607); off by default.
   final bool midiPreview;
@@ -477,6 +506,14 @@ class AppSettings {
     int? midiChannel,
     bool? midiPreview,
     bool? midiTakeOver,
+    ProjectionTheme? projectionTheme,
+    ProjectionFont? projectionFont,
+    ProjectionAlign? projectionAlign,
+    int? projectionLines,
+    ProjectionCopyright? projectionCopyright,
+    bool? projectionMarkersAsText,
+    String? projectionSecondLanguage,
+    bool? projectionPreview,
   }) => AppSettings(
     language: language ?? this.language,
     notation: notation ?? this.notation,
@@ -531,6 +568,16 @@ class AppSettings {
     midiChannel: midiChannel ?? this.midiChannel,
     midiPreview: midiPreview ?? this.midiPreview,
     midiTakeOver: midiTakeOver ?? this.midiTakeOver,
+    projectionTheme: projectionTheme ?? this.projectionTheme,
+    projectionFont: projectionFont ?? this.projectionFont,
+    projectionAlign: projectionAlign ?? this.projectionAlign,
+    projectionLines: projectionLines ?? this.projectionLines,
+    projectionCopyright: projectionCopyright ?? this.projectionCopyright,
+    projectionMarkersAsText:
+        projectionMarkersAsText ?? this.projectionMarkersAsText,
+    projectionSecondLanguage:
+        projectionSecondLanguage ?? this.projectionSecondLanguage,
+    projectionPreview: projectionPreview ?? this.projectionPreview,
   );
 
   /// Which settings follow the person (synced with the account) and which
@@ -606,6 +653,15 @@ class AppSettings {
     'midiChannel': SettingSyncScope.device,
     'midiPreview': SettingSyncScope.device,
     'midiTakeOver': SettingSyncScope.device,
+    // The lyrics projection (ADR-0068): the projector of the place.
+    'projectionTheme': SettingSyncScope.device,
+    'projectionFont': SettingSyncScope.device,
+    'projectionAlign': SettingSyncScope.device,
+    'projectionLines': SettingSyncScope.device,
+    'projectionCopyright': SettingSyncScope.device,
+    'projectionMarkersAsText': SettingSyncScope.device,
+    'projectionSecondLanguage': SettingSyncScope.device,
+    'projectionPreview': SettingSyncScope.device,
   };
 
   /// The keys of [scope].
@@ -669,6 +725,14 @@ class AppSettings {
     'midiChannel': midiChannel,
     'midiPreview': midiPreview,
     'midiTakeOver': midiTakeOver,
+    'projectionTheme': projectionTheme.name,
+    'projectionFont': projectionFont.name,
+    'projectionAlign': projectionAlign.name,
+    'projectionLines': projectionLines,
+    'projectionCopyright': projectionCopyright.name,
+    'projectionMarkersAsText': projectionMarkersAsText,
+    'projectionSecondLanguage': projectionSecondLanguage,
+    'projectionPreview': projectionPreview,
   };
 
   /// Settings from JSON values; a missing key, a value of the wrong type or
@@ -798,6 +862,39 @@ class AppSettings {
         16,
       ),
       midiPreview: flag('midiPreview', d.midiPreview),
+      projectionTheme: pick(
+        ProjectionTheme.values,
+        'projectionTheme',
+        d.projectionTheme,
+      ),
+      projectionFont: pick(
+        ProjectionFont.values,
+        'projectionFont',
+        d.projectionFont,
+      ),
+      projectionAlign: pick(
+        ProjectionAlign.values,
+        'projectionAlign',
+        d.projectionAlign,
+      ),
+      projectionLines: switch (number('projectionLines')?.toInt()) {
+        final int v when projectionLineChoices.contains(v) => v,
+        _ => d.projectionLines,
+      },
+      projectionCopyright: pick(
+        ProjectionCopyright.values,
+        'projectionCopyright',
+        d.projectionCopyright,
+      ),
+      projectionMarkersAsText: flag(
+        'projectionMarkersAsText',
+        d.projectionMarkersAsText,
+      ),
+      projectionSecondLanguage: text(
+        'projectionSecondLanguage',
+        d.projectionSecondLanguage,
+      ),
+      projectionPreview: flag('projectionPreview', d.projectionPreview),
       midiTakeOver: flag('midiTakeOver', d.midiTakeOver),
       songDisplay: switch (json['songDisplay']) {
         final String v => SongDisplay.fromJsonString(v),

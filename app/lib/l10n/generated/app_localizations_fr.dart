@@ -757,6 +757,81 @@ class AppLocalizationsFr extends AppLocalizations {
   String get projectionStartFailed => 'La projection n’a pas pu démarrer.';
 
   @override
+  String get settingsHeadingProjection => 'Projection';
+
+  @override
+  String get settingsProjectionHint =>
+      'L’aspect des paroles dans le navigateur du projecteur. Pour cet appareil.';
+
+  @override
+  String get settingsProjectionColours => 'Couleurs';
+
+  @override
+  String get projectionThemeDark => 'Blanc sur noir';
+
+  @override
+  String get projectionThemeLight => 'Noir sur blanc';
+
+  @override
+  String get settingsProjectionFont => 'Police';
+
+  @override
+  String get projectionFontSans => 'Sans empattement';
+
+  @override
+  String get projectionFontSerif => 'Avec empattement';
+
+  @override
+  String get settingsProjectionAlign => 'Alignement';
+
+  @override
+  String get projectionAlignCenter => 'Centré';
+
+  @override
+  String get projectionAlignLeft => 'À gauche';
+
+  @override
+  String get settingsProjectionLines => 'Lignes par diapositive';
+
+  @override
+  String get settingsProjectionLinesHint =>
+      'Les sections plus longues sont réparties sur plusieurs diapositives. Pour le bandeau, 2 à 4.';
+
+  @override
+  String get settingsProjectionCopyright => 'Copyright';
+
+  @override
+  String get projectionCopyrightEvery => 'Sur chaque diapositive';
+
+  @override
+  String get projectionCopyrightFirstAndLast =>
+      'Sur la première et la dernière diapositive';
+
+  @override
+  String get settingsProjectionSecondLanguage => 'Deuxième langue';
+
+  @override
+  String get settingsProjectionSecondLanguageHint =>
+      'Si un morceau a une version dans cette langue, elle est projetée à côté.';
+
+  @override
+  String get projectionSecondLanguageOff => 'Aucune';
+
+  @override
+  String get settingsProjectionMarkers => 'Marqueurs en texte';
+
+  @override
+  String get settingsProjectionMarkersHint =>
+      'Affiche le texte d’un marqueur (p. ex. Prière) au lieu d’une diapositive noire.';
+
+  @override
+  String get settingsProjectionPreview => 'Afficher la diapositive suivante';
+
+  @override
+  String get settingsProjectionPreviewHint =>
+      'En petit sous les paroles, pour un retour de scène.';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Page $page/$count';
   }

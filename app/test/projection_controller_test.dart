@@ -188,6 +188,38 @@ Chorus line
     expect(projection.running, isFalse);
   });
 
+  test('copyright on the first and last slide only', () {
+    projection.options = const ProjectionOptions(
+      copyright: ProjectionCopyright.firstAndLast,
+    );
+    projection.show(item(song));
+    expect(host.last['copyright'], 'Public domain');
+    projection.next();
+    expect(host.last.containsKey('copyright'), isFalse);
+    projection.next();
+    projection.next();
+    expect(host.last['copyright'], 'Public domain');
+  });
+
+  test('a second language found later keeps the slide and the manual mode', () {
+    final english = parseChordPro(
+      '{start_of_verse}\nFirst EN\n{end_of_verse}\n'
+      '{start_of_chorus}\nChorus EN\n{end_of_chorus}\n',
+    );
+    projection.show(item(song));
+    projection.next();
+    projection.pairWith(song, english);
+    expect(projection.slide, 1);
+    expect(projection.manual, isTrue);
+    expect(host.last['second'], ['Chorus EN']);
+
+    // Too late: another song is shown by now.
+    final other = parseChordPro('Other');
+    projection.show(item(other));
+    projection.pairWith(song, english);
+    expect(host.last.containsKey('second'), isFalse);
+  });
+
   test('the song page reports the first section of the shown page', () {
     final pages = SongPageController();
     addTearDown(pages.dispose);

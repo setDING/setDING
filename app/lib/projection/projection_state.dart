@@ -124,3 +124,9 @@ class ProjectionStyle {
     'align': align.name,
   };
 }
+
+/// Where the copyright is shown on the slides of a song (ADR-0068 §8).
+enum ProjectionCopyright { everySlide, firstAndLast }
+
+/// The choices of *lines per slide* in the projection settings.
+const projectionLineChoices = [2, 4, 6, 8, 10, 12];
