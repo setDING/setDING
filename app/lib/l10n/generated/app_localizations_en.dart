@@ -848,6 +848,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'The address stays the same on this device, so projector and OBS keep it. A new address locks out old links.';
 
   @override
+  String get settingsProjectionShowLabel => 'Show the section';
+
+  @override
+  String get settingsProjectionShowLabelHint =>
+      'Small above the lyrics, e.g. “Verse 1” or “Chorus”.';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Page $page/$count';
   }

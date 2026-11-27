@@ -853,6 +853,13 @@ class AppLocalizationsPt extends AppLocalizations {
       'O endereço mantém-se neste dispositivo, para que o projetor e o OBS o guardem. Um novo endereço bloqueia as ligações antigas.';
 
   @override
+  String get settingsProjectionShowLabel => 'Mostrar a secção';
+
+  @override
+  String get settingsProjectionShowLabelHint =>
+      'Em pequeno sobre a letra, p. ex. «Estrofe 1» ou «Refrão».';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Página $page/$count';
   }

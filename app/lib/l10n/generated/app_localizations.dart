@@ -1552,6 +1552,18 @@ abstract class AppLocalizations {
   /// **'Die Adresse bleibt auf diesem Gerät gleich, damit Beamer und OBS sie behalten. Eine neue Adresse sperrt alte Links.'**
   String get settingsProjectionAddressHint;
 
+  /// No description provided for @settingsProjectionShowLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Abschnitt anzeigen'**
+  String get settingsProjectionShowLabel;
+
+  /// No description provided for @settingsProjectionShowLabelHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Klein über dem Text, z.B. «Strophe 1» oder «Refrain».'**
+  String get settingsProjectionShowLabelHint;
+
   /// No description provided for @liveSongPage.
   ///
   /// In de, this message translates to:

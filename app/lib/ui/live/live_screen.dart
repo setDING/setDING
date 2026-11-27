@@ -472,6 +472,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final projection = _projection ??= ProjectionController(
       ref.read(projectionHostProvider)(),
       options: ProjectionOptions.of(ref.read(settingsProvider)),
+      // Sections without a label get the name of their kind (#1185).
+      labeler: sectionLabeler(l10n),
     )..addListener(_onProjection);
     try {
       // Small, read once per start: not kept in the asset cache.

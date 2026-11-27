@@ -241,6 +241,8 @@
   "projectionRenewed": "Nouvelle adresse créée. L’ancienne ne fonctionne plus.",
   "settingsProjectionAddress": "Nouvelle adresse de projection",
   "settingsProjectionAddressHint": "L’adresse reste la même sur cet appareil, pour que le projecteur et OBS la gardent. Une nouvelle adresse bloque les anciens liens.",
+  "settingsProjectionShowLabel": "Afficher la section",
+  "settingsProjectionShowLabelHint": "En petit au-dessus des paroles, p. ex. « Couplet 1 » ou « Refrain ».",
   "liveSongPage": "Page {page}/{count}",
   "livePosition": "{current} / {total}",
   "settingsSectionGeneral": "Général",

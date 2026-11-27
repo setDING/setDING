@@ -101,6 +101,7 @@ class ProjectionOptions {
     this.markersAsText = false,
     this.preview = false,
     this.copyright = ProjectionCopyright.everySlide,
+    this.showLabel = true,
     this.style = const ProjectionStyle(),
   });
 
@@ -110,6 +111,7 @@ class ProjectionOptions {
     markersAsText: s.projectionMarkersAsText,
     preview: s.projectionPreview,
     copyright: s.projectionCopyright,
+    showLabel: s.projectionShowLabel,
     style: ProjectionStyle(
       theme: s.projectionTheme,
       font: s.projectionFont,
@@ -119,6 +121,9 @@ class ProjectionOptions {
 
   /// On every slide of a song, or on its first and last one only.
   final ProjectionCopyright copyright;
+
+  /// The section (*Verse 1*, *Chorus*) small above the lyrics (#1185).
+  final bool showLabel;
 
   final int linesPerSlide;
   final bool markersAsText;
@@ -137,9 +142,15 @@ class ProjectionController extends ChangeNotifier {
   ProjectionController(
     this._host, {
     ProjectionOptions options = const ProjectionOptions(),
-  }) : _options = options; // ignore: prefer_initializing_formals
+    String? Function(SectionKind kind)? labeler,
+  }) : _options = options, // ignore: prefer_initializing_formals
+       _labeler = labeler; // ignore: prefer_initializing_formals
 
   final ProjectionHost _host;
+
+  /// The name of a section kind in the app's language, for sections
+  /// without a label of their own, as in live mode (#1185).
+  final String? Function(SectionKind kind)? _labeler;
   ProjectionOptions _options;
 
   ProjectionItem? _item;
@@ -389,6 +400,8 @@ class ProjectionController extends ChangeNotifier {
           title: title ?? song.title,
           copyright: copyright,
           next: _options.preview && canNext ? _slides[_slide + 1] : null,
+          showLabel: _options.showLabel,
+          defaultLabel: _labeler?.call(_slides[_slide].source.section.kind),
           style: style,
         );
     }

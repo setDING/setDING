@@ -18,6 +18,8 @@ void main() {
     'projectionMarkersAsText',
     'projectionSecondLanguage',
     'projectionPreview',
+    'projectionTurnsSlides',
+    'projectionShowLabel',
   ];
 
   test('defaults: dark, sans, centred, 8 lines, no extras', () {
@@ -32,6 +34,12 @@ void main() {
       'align': 'center',
     });
     expect(const AppSettings().projectionSecondLanguage, '');
+    expect(options.showLabel, isTrue);
+    expect(
+      ProjectionOptions.of(AppSettings.fromJson({'projectionShowLabel': false}))
+          .showLabel,
+      isFalse,
+    );
   });
 
   test('stored and read back; device settings', () {

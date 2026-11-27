@@ -241,6 +241,8 @@
   "projectionRenewed": "Nueva dirección creada. La anterior ya no funciona.",
   "settingsProjectionAddress": "Nueva dirección de proyección",
   "settingsProjectionAddressHint": "La dirección se mantiene en este dispositivo para que el proyector y OBS la conserven. Una nueva dirección bloquea los enlaces antiguos.",
+  "settingsProjectionShowLabel": "Mostrar la sección",
+  "settingsProjectionShowLabelHint": "En pequeño sobre la letra, p. ej. «Estrofa 1» o «Estribillo».",
   "liveSongPage": "Página {page}/{count}",
   "livePosition": "{current} / {total}",
   "settingsSectionGeneral": "General",

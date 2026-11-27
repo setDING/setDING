@@ -59,6 +59,9 @@ void main() {
     expect(template, contains("new EventSource(base + '/events')"));
     expect(template, contains('lower-third'));
     expect(template, contains("addEventListener('state'"));
+    // The section label (#1185).
+    expect(template, contains('<div id="label"></div>'));
+    expect(template, contains('state.label'));
   });
 
   test('the server serves the filled page with its stream', () async {
