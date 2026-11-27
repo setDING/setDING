@@ -1,6 +1,6 @@
 # ADR-0066: GitHub organization setDING
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-27
 
 ## Context
@@ -72,6 +72,7 @@ repository came up at the same time.
 
 - 2026-11-27: Proposed (#1127): transfer to the organization `setDING`, server
   image under `ghcr.io/setding`, website stays in this repository.
+- 2026-11-27: Accepted by the owner (#1127).
 
 ## Open points
 

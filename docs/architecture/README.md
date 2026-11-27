@@ -409,7 +409,7 @@ See "Open points" in the individual ADRs. The most important:
 57. How do others host the backend themselves, and how is it tested? → ADR-0063 (accepted, #1048): a server bundle and a distroless Docker image per release, both supported (native with systemd or Docker), no installer and no proxy in the package, a "Self-hosting" chapter with proxy requirements and tested examples (systemd unit, compose file); both artifacts tested automatically before a release is published; the owner's servers run the published bundle, the website stays separate. Open: signing the image, arm64 test depth, off-host backups for production
 58. How can a set name people who do not use setDING? → ADR-0064 (accepted, #1095, #1096): contacts of the organization (no account, no access) in the lineup next to its people, created by set editors, deleted by organization admins, an optional mail address only for set editors and *Notify lineup*, linked to the person's account by a personal invitation (mail from the device, link or QR code, sign-up prefilled). Open: purging deleted contacts' names, merging duplicates, roles
 59. How does the browser's back button stay in the app, and how can a set or a song be shared as a link? → ADR-0065 (accepted, #1111): `go_router`, a path per screen by record id, path URLs on web with `index.html` served for app paths, share links on the web hostname opening the installed app through App Links / Universal Links. Open: Apple Team ID, search and filters in the URL, links to a song inside a set
-60. Should the project leave the personal GitHub account, and should the website get its own repository? → ADR-0066 (proposed, #1127): transfer to the organization `setDING`, server image under `ghcr.io/setding`, the website stays in this repository. Open: teams and `CODEOWNERS`, organization profile README
+60. Should the project leave the personal GitHub account, and should the website get its own repository? → ADR-0066 (accepted, #1127): transfer to the organization `setDING`, server image under `ghcr.io/setding`, the website stays in this repository. Open: teams and `CODEOWNERS`, organization profile README
 
 ## 10. ADR index
 
@@ -479,6 +479,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0063](adr/0063-self-hosting-distribution.md) | Self-hosting distribution of the backend | Accepted |
 | [0064](adr/0064-lineup-people-without-account.md) | People without an account in a set's lineup | Accepted |
 | [0065](adr/0065-url-routing-and-deep-links.md) | URL routing and deep links | Accepted |
-| [0066](adr/0066-github-organization.md) | GitHub organization setDING | Proposed |
+| [0066](adr/0066-github-organization.md) | GitHub organization setDING | Accepted |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.
