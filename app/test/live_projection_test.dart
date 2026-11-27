@@ -121,6 +121,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(lines(), ['Its chorus']);
     expect(find.byKey(const Key('projection-follow')), findsOneWidget);
+    // The bar names the projected section above the position (#1189).
+    expect(
+      tester.widget<Text>(find.byKey(const Key('projection-section'))).data,
+      'Chorus',
+    );
+    expect(find.text('2/2'), findsOneWidget);
 
     // Blank wins until switched off.
     await tester.tap(find.byKey(const Key('projection-blank')));
