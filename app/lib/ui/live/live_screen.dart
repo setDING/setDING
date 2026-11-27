@@ -7,7 +7,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pdfrx/pdfrx.dart';
 
 import '../../platform/stage_wake_lock.dart';
 import '../../projection/projection_controller.dart';
@@ -25,7 +24,6 @@ import '../songs/song_reports.dart' show reportMistake;
 import '../annotations/annotation_editor.dart';
 import '../annotations/annotation_toolbar.dart';
 import '../render/render_cache.dart';
-import '../theme.dart';
 import '../widgets/dialogs.dart';
 import 'live_midi_sheet.dart';
 import 'live_preparation.dart';
@@ -34,14 +32,12 @@ import 'live_beat.dart';
 import 'page_turner.dart';
 import 'live_theme.dart';
 import 'set_progress_bar.dart';
-import 'pdf_spread_view.dart';
 import 'projection_bar.dart';
-import 'live_chordpro_page.dart';
 import 'live_control_bar.dart';
 import 'live_item_page.dart';
 import 'live_projection.dart';
+import 'live_stage_pages.dart';
 import 'live_item.dart';
-import 'song_page_controller.dart';
 
 export 'live_item.dart' show LiveItem;
 export 'song_page_controller.dart' show SongPageController;
@@ -184,15 +180,18 @@ class LiveScreen extends ConsumerStatefulWidget {
 }
 
 class _LiveScreenState extends ConsumerState<LiveScreen> {
-  late final PageController _pages = PageController(
-    initialPage: widget.initialIndex,
-  );
   late int _index = widget.initialIndex;
-  final _scroll = <int, ScrollController>{};
-  final _pdf = <int, PdfViewerController>{};
-  final _spread = <int, PdfSpreadController>{};
-  final _fit = <int, LiveFitController>{};
-  final _songPages = <int, SongPageController>{};
+
+  /// Where each item stands and how turns move on (ADR-0007).
+  late final LiveStagePages _stage = LiveStagePages(
+    items: _items,
+    initialIndex: widget.initialIndex,
+    current: () => _index,
+    preparation: _preparation,
+    step: () => _step,
+    turnSlide: _turnSlide,
+    onSongPage: _followSongPage,
+  );
 
   /// What the person sees, for the screenshot of a report (ADR-0060).
   final _view = GlobalKey();
@@ -327,17 +326,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       ..removeListener(_onWakeLockChanged)
       ..release();
     _setFullScreen(false);
-    _pages.dispose();
-    _progress.dispose();
-    for (final c in _scroll.values) {
-      c.dispose();
-    }
-    for (final c in _spread.values) {
-      c.dispose();
-    }
-    for (final c in _songPages.values) {
-      c.dispose();
-    }
+    _stage.dispose();
     _preparation.dispose();
     _projection
       ..removeListener(_onProjection)
@@ -359,30 +348,6 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     );
   }
 
-  // Every position of a song (scroll offset, page, PDF page or spread)
-  // moves the progress bar.
-  ScrollController _scrollFor(int index) => _scroll.putIfAbsent(
-    index,
-    () => ScrollController()..addListener(_scheduleProgress),
-  );
-  PdfViewerController _pdfFor(int index) => _pdf.putIfAbsent(index, () {
-    final controller = PdfViewerController()..addListener(_scheduleProgress);
-    controller.visibleRenderState.addListener(_scheduleProgress);
-    return controller;
-  });
-  PdfSpreadController _spreadFor(int index) => _spread.putIfAbsent(
-    index,
-    () => PdfSpreadController()..addListener(_scheduleProgress),
-  );
-  LiveFitController _fitFor(int index) =>
-      _fit.putIfAbsent(index, LiveFitController.new);
-  SongPageController _songPageFor(int index) => _songPages.putIfAbsent(
-    index,
-    () => SongPageController()
-      ..addListener(_scheduleProgress)
-      ..addListener(() => _followSongPage(index)),
-  );
-
   /// The lyrics projection (ADR-0068).
   late final LiveProjection _projection = LiveProjection(
     host: ref.read(projectionHostProvider),
@@ -395,7 +360,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         ref.read(songRepositoryProvider).languageVersions(songId),
     parse: (chordpro) =>
         parseChordProCached(chordpro, selectors: ref.read(selectorsProvider)),
-    section: (index) => _songPages[index]?.section,
+    section: (index) => _stage.songPage(index)?.section,
   )..addListener(_onProjection);
 
   /// Starts the projection and shows its links.
@@ -428,66 +393,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   /// section at its top.
   void _followSongPage(int index) {
     if (index != _index) return;
-    _projection.followSection(_songPages[index]?.section);
-  }
-
-  /// Where the set and the current song stand, for the progress bar
-  /// (ADR-0007).
-  late final _progress = ValueNotifier<StageProgress>((
-    index: _index,
-    pages: 1,
-    page: 0,
-    scroll: null,
-  ));
-  bool _progressScheduled = false;
-
-  /// Updates [_progress] after the frame, once the song is laid out (the
-  /// scroll extent and the PDF pages are known only then).
-  void _scheduleProgress() {
-    if (_progressScheduled) return;
-    _progressScheduled = true;
-    WidgetsBinding.instance
-      ..addPostFrameCallback((_) {
-        _progressScheduled = false;
-        if (mounted) _progress.value = _currentProgress();
-      })
-      ..ensureVisualUpdate();
-  }
-
-  /// The position within the current item, in the order [_next] turns.
-  StageProgress _currentProgress() {
-    StageProgress pages(int count, int page) =>
-        (index: _index, pages: count, page: page, scroll: null);
-    if (_items[_index].song == null) return pages(1, 0);
-    final sc = _scroll[_index];
-    if (sc != null && sc.hasClients && sc.position.hasContentDimensions) {
-      final pos = sc.position;
-      if (pos.maxScrollExtent > 2) {
-        // Seen so far: up to the bottom of the screen, in steps of 1 %.
-        final seen =
-            (pos.pixels + pos.viewportDimension) /
-            (pos.maxScrollExtent + pos.viewportDimension);
-        return (
-          index: _index,
-          pages: 1,
-          page: 0,
-          scroll: (seen.clamp(0.0, 1.0) * 100).round() / 100,
-        );
-      }
-    }
-    final songPages = _songPages[_index];
-    if (songPages != null && songPages.count > 1) {
-      return pages(songPages.count, songPages.page);
-    }
-    final spread = _spread[_index];
-    if (spread != null && spread.isReady) {
-      return pages((spread.pageCount + 1) ~/ 2, (spread.firstPage - 1) ~/ 2);
-    }
-    final pdf = _pdf[_index];
-    if (pdf != null && pdf.isReady) {
-      return pages(pdf.pageCount, (pdf.pageNumber ?? 1) - 1);
-    }
-    return pages(1, 0);
+    _projection.followSection(_stage.songPage(index)?.section);
   }
 
   double get _step =>
@@ -497,77 +403,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   /// moves the projected slide first; true when it did. Live mode shows the
   /// page of the slide's section.
   bool _turnSlide({required bool forward}) =>
-      _projection.turnSlide(forward: forward, pages: _songPages[_index]);
-
-  void _next() {
-    if (_turnSlide(forward: true)) return;
-    // Small screens show no song (ADR-0026): every turn is a song.
-    if (_compact) {
-      if (_index < _items.length - 1) _jumpTo(_index + 1);
-      return;
-    }
-    final sc = _scroll[_index];
-    if (sc != null && sc.hasClients) {
-      final pos = sc.position;
-      if (pos.pixels < pos.maxScrollExtent - 2) {
-        sc.animateTo(
-          math.min(
-            pos.pixels + pos.viewportDimension * _step,
-            pos.maxScrollExtent,
-          ),
-          duration: shortAnimation,
-          curve: Curves.easeOut,
-        );
-        return;
-      }
-    }
-    if (_songPages[_index]?.next() ?? false) return;
-    if (_spread[_index]?.next() ?? false) return;
-    final pdf = _pdf[_index];
-    if (pdf != null && pdf.isReady) {
-      final page = pdf.pageNumber ?? 1;
-      if (page < pdf.pageCount) {
-        pdf.goToPage(pageNumber: page + 1);
-        return;
-      }
-    }
-    if (_index < _items.length - 1) {
-      // The next song starts at its first page. It is built already, unless
-      // the turns are faster than the preparation.
-      _songPages[_index + 1]?.first();
-      _preparation.complete(_index + 1);
-      _pages.nextPage(duration: pageAnimation, curve: Curves.easeOut);
-    }
-  }
-
-  void _previous() {
-    if (_turnSlide(forward: false)) return;
-    if (_compact) {
-      if (_index > 0) _jumpTo(_index - 1);
-      return;
-    }
-    final sc = _scroll[_index];
-    if (sc != null && sc.hasClients && sc.position.pixels > 2) {
-      final pos = sc.position;
-      sc.animateTo(
-        math.max(pos.pixels - pos.viewportDimension * _step, 0),
-        duration: shortAnimation,
-        curve: Curves.easeOut,
-      );
-      return;
-    }
-    if (_songPages[_index]?.previous() ?? false) return;
-    if (_spread[_index]?.previous() ?? false) return;
-    final pdf = _pdf[_index];
-    if (pdf != null && pdf.isReady && (pdf.pageNumber ?? 1) > 1) {
-      pdf.goToPage(pageNumber: pdf.pageNumber! - 1);
-      return;
-    }
-    if (_index > 0) {
-      _preparation.complete(_index - 1);
-      _pages.previousPage(duration: pageAnimation, curve: Curves.easeOut);
-    }
-  }
+      _projection.turnSlide(forward: forward, pages: _stage.songPage(_index));
 
   /// Page turner and keyboard (ADR-0007). An early handler of the focus
   /// manager: it sees every key before the focused widget, so the keys work
@@ -610,14 +446,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         final pending = _longPress?.isActive ?? false;
         _longPress?.cancel();
         _longPress = null;
-        if (pending && !_longPressed) _next();
+        if (pending && !_longPressed) _stage.next();
       }
       return KeyEventResult.handled;
     }
     if (next || _previousKeys.contains(key)) {
       // One press turns once. A held key (key repeat) does not turn again,
       // so it never races through the pages and songs of the set.
-      if (event is KeyDownEvent) next ? _next() : _previous();
+      if (event is KeyDownEvent) next ? _stage.next() : _stage.previous();
       return KeyEventResult.handled;
     }
     if (spaceBeat || _beatKeys.contains(key)) {
@@ -658,19 +494,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   /// Width of the whole stage, for the tap zones.
   double _stageWidth = 0;
 
-  /// Whether a turn goes to the next song, never scrolls (drummer mode,
-  /// ADR-0026): on phones, and in the drum panel while it shows the set
-  /// (#974).
-  bool _compact = false;
-
   /// The tap zones are thirds of the whole stage (ADR-0007), also beside the
   /// panel of the wide song map (ADR-0026, #363).
   void _onStageTap(double x) {
     final width = _stageWidth > 0 ? _stageWidth : _width;
     if (x < width * 0.3) {
-      _previous();
+      _stage.previous();
     } else if (x > width * 0.7) {
-      _next();
+      _stage.next();
     } else {
       setState(() => _controls = !_controls);
     }
@@ -686,9 +517,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final distance = _swipe;
     _swipe = 0;
     if (velocity.abs() > 300 ? velocity < 0 : distance < -_width * 0.2) {
-      _next();
+      _stage.next();
     } else if (velocity.abs() > 300 ? velocity > 0 : distance > _width * 0.2) {
-      _previous();
+      _stage.previous();
     }
   }
 
@@ -725,7 +556,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         ),
       ),
     );
-    if (target != null) _jumpTo(target);
+    if (target != null) _stage.jumpTo(target);
   }
 
   /// The keyboard program of the current song (#607); [context] is below
@@ -744,14 +575,6 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       ],
       sendAgain: _midi.sendAgain,
     );
-  }
-
-  /// Turns to item [target] of the set at once (set overview, set list of
-  /// the wide song map).
-  void _jumpTo(int target) {
-    if (target == _index) return;
-    _preparation.complete(target);
-    _pages.jumpToPage(target);
   }
 
   /// Changes the key of the current set item. It is stored on the set item,
@@ -779,7 +602,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   Future<void> _fitToPage() async {
     final scale = ref.read(settingsProvider).autoFit
         ? 1.0
-        : _fitFor(_index).fontScale?.call();
+        : _stage.fitFor(_index).fontScale?.call();
     if (scale == null) return;
     await _adjust((o) => o.copyWith(fontScale: scale));
   }
@@ -822,7 +645,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final showProgress = ref.watch(
       settingsProvider.select((s) => s.setProgress),
     );
-    if (showProgress) _scheduleProgress();
+    if (showProgress) _stage.scheduleProgress();
     final showSongMap = ref.watch(
       settingsProvider.select((s) => s.showSongMap),
     );
@@ -858,9 +681,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                 // the page and have their own long presses.
                 enabled: !_controls && !_drawing,
                 markers: [for (final item in items) item.song == null],
-                progress: _progress,
+                progress: _stage.progress,
                 labelOf: (i) => _nextLabel(i, l10n),
-                onJump: _jumpTo,
+                onJump: _stage.jumpTo,
                 child: LayoutBuilder(
                   builder: (context, outer) {
                     // Phones (ADR-0026): every turn is a song.
@@ -888,7 +711,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                     // On tablets the pedal scrolls the song map and turns at
                     // its end (#974); on phones and beside the set it turns
                     // songs.
-                    _compact = phone || (compact && !compactMap);
+                    _stage.compact = phone || (compact && !compactMap);
                     final compactLandscapeStage =
                         outer.maxWidth > outer.maxHeight;
                     // The divider after the panel is one pixel wide; on a
@@ -924,13 +747,13 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                             // scroll further or no longer scroll at all.
                             child: NotificationListener<ScrollMetricsNotification>(
                               onNotification: (_) {
-                                if (showProgress) _scheduleProgress();
+                                if (showProgress) _stage.scheduleProgress();
                                 return false;
                               },
                               child: RepaintBoundary(
                                 key: _view,
                                 child: PageView.builder(
-                                  controller: _pages,
+                                  controller: _stage.pageView,
                                   physics: const NeverScrollableScrollPhysics(),
                                   // The direct neighbours are built ahead (one
                                   // page of cache on each side): the next song is
@@ -944,11 +767,13 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                   onPageChanged: (i) => setState(() {
                                     // A song turned to from the front starts at
                                     // its first page.
-                                    if (i > _index) _songPageFor(i).first();
+                                    if (i > _index) {
+                                      _stage.songPageFor(i).first();
+                                    }
                                     // Small screens turn songs only: the song
                                     // map of each starts at the top (#952).
-                                    if (_compact) {
-                                      final sc = _scroll[i];
+                                    if (_stage.compact) {
+                                      final sc = _stage.scroll(i);
                                       if (sc != null && sc.hasClients) {
                                         sc.jumpTo(0);
                                       }
@@ -976,11 +801,16 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                           child: LiveItemPage(
                                             item: items[i],
                                             index: i,
-                                            scrollController: _scrollFor(i),
-                                            pdfController: _pdfFor(i),
-                                            spreadController: _spreadFor(i),
-                                            fitController: _fitFor(i),
-                                            songPageController: _songPageFor(i),
+                                            scrollController: _stage.scrollFor(
+                                              i,
+                                            ),
+                                            pdfController: _stage.pdfFor(i),
+                                            spreadController: _stage.spreadFor(
+                                              i,
+                                            ),
+                                            fitController: _stage.fitFor(i),
+                                            songPageController: _stage
+                                                .songPageFor(i),
                                             preparation: _preparation[i],
                                             onTap: _onTap,
                                             annotations: _annotations,
@@ -1015,7 +845,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                       child: DrumPanel(
                                         items: items,
                                         current: _index,
-                                        onSelect: _jumpTo,
+                                        onSelect: _stage.jumpTo,
                                         direction: compactLandscapeStage
                                             ? Axis.horizontal
                                             : Axis.vertical,
@@ -1049,7 +879,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                         child: DrumPanel(
                                           items: items,
                                           current: _index,
-                                          onSelect: _jumpTo,
+                                          onSelect: _stage.jumpTo,
                                         ),
                                       ),
                                     ),
@@ -1136,7 +966,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                   ref,
                                   songId: song.id,
                                   location: SongReportLocation(
-                                    page: _songPageFor(_index).page + 1,
+                                    page: _stage.songPageFor(_index).page + 1,
                                   ),
                                   captureKey: _view,
                                 ),
@@ -1264,9 +1094,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                       const SizedBox(width: 12),
                     ],
                     ListenableBuilder(
-                      listenable: _songPageFor(_index),
+                      listenable: _stage.songPageFor(_index),
                       builder: (context, _) {
-                        final pages = _songPageFor(_index);
+                        final pages = _stage.songPageFor(_index);
                         if (pages.count <= 1) return const SizedBox.shrink();
                         return Padding(
                           padding: const EdgeInsets.only(right: 16),
