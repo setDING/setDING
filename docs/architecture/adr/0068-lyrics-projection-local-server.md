@@ -75,14 +75,20 @@ Forces:
    chorus that is recalled appears again. Chords, chord diagrams, comments for the
    band, tabs and grids are left out; personal overlays (ADR-0006) do not change the
    projection, except the language version chosen for the set item (ADR-0053). The
-   page fits each slide to the screen (largest font that fits, a long section split
-   into two slides), white text on black by default.
+   page fits each slide to the screen (largest font that fits), white text on black
+   by default. A section longer than the *lines per slide* setting (default 8) is
+   split into several slides of about equal length.
 
-6. **Following live mode.** By default the projection follows the musician: a new
-   song in live mode shows its first slide, and the slide follows the section at the
-   top of the visible page. A small projection bar in live mode allows *previous
-   slide*, *next slide* and *Blank* (black screen) without leaving the song; it is
-   hidden when the projection is off, so live mode does not change for anyone else.
+6. **Following live mode, automatic and manual.** By default the projection
+   follows the musician: a new song in live mode shows its first slide, and the
+   slide follows the section at the top of the visible page (the first slide of a
+   split section). A small projection bar in live mode allows *previous slide*,
+   *next slide* and *Blank* (black screen) without leaving the song. As soon as the
+   bar's *previous* or *next* is used in a song, that song stays **manual** until
+   the next song, so the automatic follow never undoes a hand-picked slide; a
+   button in the bar returns to *follow*. The bar is hidden when the projection is
+   off, so live mode does not change for anyone else. Advancing from another device
+   (a control page in the browser) is not part of the first version.
 
 7. **Set markers and blank.** A set marker (ADR-0047) shows a black slide by
    default; a setting per projection can show the marker's text instead (for
@@ -93,13 +99,31 @@ Forces:
    without `{copyright}` is projected without one; the app shows a hint in the
    projection bar so the band can add it. CCLI fields are not shown.
 
-9. **Settings.** Projection settings are **device settings** (ADR-0027):
-   font, colours (black/white or white/black), alignment, copyright placement,
-   markers as text, next-slide preview on the page (for a confidence monitor, off
+9. **Two languages.** A projection setting *Second language* (off by default)
+   names a language. When the song of the set item has a linked language version
+   in it (`work_id`, ADR-0053), each slide shows both versions: side by side on a
+   landscape screen, one above the other on a portrait screen, the second in a
+   lighter colour. The sections are paired by their position in the played order
+   of each version; a section the second version does not have shows the first
+   language alone. A song without a version in the second language is projected
+   in one language. The version chosen for the set item always comes first.
+
+10. **Lower third for livestreams.** Besides the full-screen page the server serves
+    a **lower-third layout** at its own path (`/p/<token>/lower-third`): the current
+    slide in a band at the bottom of the screen (at most a quarter of its height),
+    on a **transparent background**, meant as a browser source in OBS or similar
+    software. It uses the same state stream and slides; the copyright is shown in
+    a small line beside the text. The QR dialog offers both links. A band using it
+    sets *lines per slide* to 2–4, so the slides fit the band.
+
+11. **Settings.** Projection settings are **device settings** (ADR-0027):
+   font, colours (black/white or white/black), alignment, lines per slide,
+   copyright placement, markers as text, second language, next-slide preview on the page (for a confidence monitor, off
    by default). The page has no settings of its own besides full screen.
 
-10. **Limits documented, not hidden.** The website page (both languages, with a
-    screenshot of the projection bar, the QR dialog and the projected page) explains
+12. **Limits documented, not hidden.** The website page (both languages, with a
+    screenshot of the projection bar, the QR dialog, the projected page in one and
+    two languages and the lower third) explains
     the hotspot workaround for client isolation, the Windows firewall prompt and
     that iOS projects only while setDING is in the foreground (which live mode keeps
     with its wakelock). Keeping the server alive on Android while another app is in
@@ -130,24 +154,26 @@ Forces:
   about a missing copyright matter more.
 - Follow-up issues once accepted: slide model in `packages/chordpro`, server and
   state stream in the app, projection bar and QR dialog in live mode, projection
-  settings, the web page asset, website page with screenshots, Android and iOS
-  manual tests.
+  settings, the web page asset (full screen and lower third), pairing two language
+  versions, website page with screenshots, Android and iOS manual tests.
 
 ## Decision log
 
 - 2026-11-27: Proposed (#1164). The owner decided that showing `{copyright}` is
   enough for the licence; CCLI fields are not projected.
+- 2026-11-27: Owner decisions on the open points: the projection follows live mode
+  automatically and a song becomes manual once its slides are advanced by hand
+  (§6); a control page in the browser comes later; two languages side by side
+  (§9) and the lower third for livestreams (§10) are part of the first version;
+  following on the audience's phones and the Android foreground service stay open.
 
 ## Open points
 
-- Should the slide follow the visible page automatically, or should someone always
-  advance it by hand (projection bar or a second person)? Proposed: follow by
-  default, manual as soon as the projection bar is used for a song.
 - A control page in the browser (e.g. at the mixing desk) that advances the slides
-  instead of the tablet: needs a second, writing token. Not in the first version.
-- Two language versions side by side on one slide (ADR-0053), for multilingual
-  services.
-- A lower-third layout with a transparent background for OBS livestreams.
+  instead of the tablet: needs a second, writing token. Later, its own decision.
+- Pairing the sections of two language versions by position fails when the
+  versions are structured differently; a later option could pair them by section
+  type and number.
 - Audience members following the lyrics on their own phone through the same link
   (load: many clients on one tablet).
 - A confidence monitor for the band with chords (would show more than the lyrics;
