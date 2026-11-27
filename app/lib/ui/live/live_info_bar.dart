@@ -1,3 +1,4 @@
+import 'package:chordpro/chordpro.dart' as cp show ChordNotation, Key;
 import 'package:material_ui/material_ui.dart';
 
 import '../../data/database.dart';
@@ -5,6 +6,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../midi/midi_connection.dart';
 import 'live_beat.dart';
 import 'live_control_bar.dart';
+import 'live_item.dart';
 import 'song_page_controller.dart';
 
 /// The line below the stage (ADR-0007): what comes next, the notices (web,
@@ -200,4 +202,31 @@ class LiveInfoBar extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The label of [item], at [index] of the set, in the info bar and the
+/// progress bar: its title and key and, for the drums, the tempo and time
+/// signature (ADR-0026).
+String liveItemLabel(
+  LiveItem item,
+  AppLocalizations l10n, {
+  required LiveBeat beat,
+  required int index,
+  required cp.ChordNotation notation,
+}) {
+  final key = item.song?.songKey;
+  final title = item.title(l10n);
+  // For the drums the next song's tempo and time signature (ADR-0026).
+  final tempo = beat.settings.showSongMap ? beat.tempoOf(index) : null;
+  final beatText = tempo == null
+      ? ''
+      : ' · ${l10n.bpm(tempo)} · ${beat.meterOf(index)}';
+  if (key == null) return '$title$beatText';
+  final parsed = cp.Key.tryParse(key);
+  final shown = parsed == null
+      ? key
+      : parsed
+            .transpose(item.bandTranspose + item.setTranspose)
+            .format(notation);
+  return '$title ($shown)$beatText';
 }
