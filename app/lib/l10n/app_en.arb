@@ -782,6 +782,16 @@
   "settingsServer": "Server",
   "settingsServerHint": "Changing it signs you out.",
   "settingsServerInvalid": "The address must start with http:// or https://.",
+  "settingsServerHttpTitle": "Unencrypted connection?",
+  "settingsServerHttpMessage": "{host} is not a local server. With http:// your password and your data go over the network unencrypted, and others can read them. Use https:// if the server supports it.",
+  "@settingsServerHttpMessage": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsServerHttpUse": "Use anyway",
   "bandLocal": "On this device",
   "bandLocalHint": "Only on this device, not synced.",
   "bandSwitch": "Switch band",

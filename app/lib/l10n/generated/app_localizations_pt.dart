@@ -2129,6 +2129,17 @@ class AppLocalizationsPt extends AppLocalizations {
       'O endereço tem de começar por http:// ou https://.';
 
   @override
+  String get settingsServerHttpTitle => 'Ligação não encriptada?';
+
+  @override
+  String settingsServerHttpMessage(String host) {
+    return '$host não é um servidor local. Com http://, a tua palavra-passe e os teus dados passam pela rede sem encriptação e outros podem lê-los. Usa https:// se o servidor o suportar.';
+  }
+
+  @override
+  String get settingsServerHttpUse => 'Usar mesmo assim';
+
+  @override
   String get bandLocal => 'Neste dispositivo';
 
   @override

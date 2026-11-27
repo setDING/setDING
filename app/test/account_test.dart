@@ -423,6 +423,125 @@ void main() {
     await app.dispose(tester);
   });
 
+  // Issue #1199: plain http to a public server asks first.
+  Future<void> enterServer(WidgetTester tester, String url) async {
+    await tester.tap(find.textContaining(defaultServerUrl));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, url);
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('warns before plain http to a public server, cancel keeps it', (
+    tester,
+  ) async {
+    final app = await pumpSettings(tester, user: _ann);
+    await enterServer(tester, 'http://chords.example.com');
+    expect(find.text('Unencrypted connection?'), findsOneWidget);
+    expect(
+      find.textContaining('chords.example.com is not a local server'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(app.backend.user, _ann);
+    expect(app.prefs.getString('serverUrl'), isNull);
+    expect(find.textContaining(defaultServerUrl), findsOneWidget);
+    await app.dispose(tester);
+  });
+
+  testWidgets('saves plain http to a public server after confirmation', (
+    tester,
+  ) async {
+    final app = await pumpSettings(tester, user: _ann);
+    await enterServer(tester, 'http://chords.example.com/');
+    await tester.tap(find.text('Use anyway'));
+    await tester.pumpAndSettle();
+    expect(app.backend.user, isNull);
+    expect(app.prefs.getString('serverUrl'), 'http://chords.example.com');
+    await app.dispose(tester);
+  });
+
+  testWidgets('does not warn for https or a LAN server', (tester) async {
+    final app = await pumpSettings(tester, user: _ann);
+    await enterServer(tester, 'http://192.168.1.20:8090');
+    expect(find.text('Unencrypted connection?'), findsNothing);
+    expect(app.prefs.getString('serverUrl'), 'http://192.168.1.20:8090');
+    await tester.tap(find.textContaining('http://192.168.1.20:8090'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byType(TextField).last,
+      'https://chords.example.com',
+    );
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    expect(find.text('Unencrypted connection?'), findsNothing);
+    expect(app.prefs.getString('serverUrl'), 'https://chords.example.com');
+    await app.dispose(tester);
+  });
+
+  test('plain http is local only for loopback, LAN and local names', () {
+    for (final host in [
+      'localhost',
+      'LOCALHOST',
+      'api.localhost',
+      'band.local',
+      'setding.test',
+      'setding.test.',
+      '127.0.0.1',
+      '127.8.9.10',
+      '10.0.0.1',
+      '10.255.255.255',
+      '172.16.0.1',
+      '172.31.255.254',
+      '192.168.0.10',
+      '169.254.1.1',
+      '[::1]',
+      '::1',
+      'fe80::1',
+      'fe80::1%eth0',
+      'febf::1',
+      'fc00::1',
+      'fd12:3456::1',
+      '::ffff:192.168.1.2',
+    ]) {
+      expect(isLocalHost(host), isTrue, reason: host);
+    }
+    for (final host in [
+      'api.setding.app',
+      'example.com',
+      'local',
+      'mylocal',
+      'test.example.com',
+      'localhost.example.com',
+      '8.8.8.8',
+      '11.0.0.1',
+      '172.15.0.1',
+      '172.32.0.1',
+      '192.169.0.1',
+      '169.253.1.1',
+      '128.0.0.1',
+      '2001:db8::1',
+      'fec0::1',
+      '::ffff:8.8.8.8',
+      '::',
+      '',
+    ]) {
+      expect(isLocalHost(host), isFalse, reason: host);
+    }
+  });
+
+  test('finds the host of an insecure server URL', () {
+    expect(
+      insecureServerHost('http://chords.example.com:8090'),
+      'chords.example.com',
+    );
+    expect(insecureServerHost('https://chords.example.com'), isNull);
+    expect(insecureServerHost('http://localhost:8090'), isNull);
+    expect(insecureServerHost('http://[fd00::5]:8090'), isNull);
+    expect(insecureServerHost('http://[2001:db8::1]:8090'), '2001:db8::1');
+  });
+
   test('normalizes server URLs', () {
     expect(
       normalizeServerUrl(' https://api.setding.app// '),

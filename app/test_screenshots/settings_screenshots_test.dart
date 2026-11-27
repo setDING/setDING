@@ -197,6 +197,33 @@ void main() {
     });
   }
 
+  // The warning before plain http to a server that is not local (#1199).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('http server warning $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: const SettingsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await openSettingsCategory(tester, SettingsCategory.account);
+      await tester.tap(find.textContaining(defaultServerUrl));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(TextField).last,
+        'http://chords.example.com',
+      );
+      await tester.tap(find.text(lang == 'de' ? 'Speichern' : 'Save'));
+      await shot(tester, '${lang}_35f_http_server_warning');
+      await app.dispose(tester);
+    });
+  }
+
   // First name, last name and nickname (ADR-0062, #1039): signing up,
   // changing the name and how other people's names are shown.
   for (final (lang, dark) in [('de', false), ('en', true)]) {

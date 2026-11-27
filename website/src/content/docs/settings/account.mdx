@@ -1,6 +1,6 @@
 ---
 title: Konto und Synchronisation
-description: Anmelden, Konto erstellen, Name und Passwort ändern, synchronisieren, abmelden und Konto löschen.
+description: Anmelden, Konto erstellen, Name und Passwort ändern, synchronisieren, abmelden, Server wählen und Konto löschen.
 sidebar:
   order: 4
 ---
@@ -13,6 +13,7 @@ import changePassword from '../../../../../docs/screenshots/change_password_de.p
 import deleteAccount from '../../../../../docs/screenshots/delete_account_de.png';
 import signUp from '../../../../../docs/screenshots/sign_up_de.png';
 import changeName from '../../../../../docs/screenshots/change_name_de.png';
+import httpServerWarning from '../../../../../docs/screenshots/http_server_warning_de.png';
 
 setDING funktioniert auch ohne Konto, aber nur auf deinem Gerät. Mit einem Konto
 teilst du Songs und Sets mit deiner Band, und deine persönlichen Anpassungen und
@@ -112,6 +113,20 @@ Server Vor- und Nachname schon übernommen.
 bleiben erhalten.
 
 Wechselst du im Feld **Server** den Server, wirst du abgemeldet.
+
+## Server
+
+Unter **Server** steht die Adresse deines setDING-Servers. Sie beginnt mit
+`https://`; dann ist die Verbindung verschlüsselt. Nur für einen Server im eigenen
+Netz (zum Beispiel `localhost`, `192.168.…`, `10.…` oder ein Name auf `.local`)
+reicht auch `http://`.
+
+Gibst du für einen anderen Server `http://` ein, fragt setDING mit
+**Unverschlüsselte Verbindung?** nach: Dein Passwort und deine Daten gingen dann
+unverschlüsselt durchs Netz. Mit **Abbrechen** bleibt die bisherige Adresse,
+**Trotzdem verwenden** speichert die neue. Verwende wenn möglich `https://`.
+
+<Image src={httpServerWarning} alt="Die Warnung «Unverschlüsselte Verbindung?» mit «Abbrechen» und «Trotzdem verwenden»" />
 
 ## Konto löschen
 

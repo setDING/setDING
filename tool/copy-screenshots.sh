@@ -83,6 +83,7 @@ map=(
   change_name 35c_change_name
   sign_up 35d_sign_up
   name_format 35e_name_format
+  http_server_warning 35f_http_server_warning
   delete_account 36_delete_account
   song_export 37_song_export
   song_import 37b_song_import

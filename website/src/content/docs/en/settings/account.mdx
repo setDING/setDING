@@ -1,6 +1,6 @@
 ---
 title: Account and sync
-description: Sign in, create an account, change your name and password, sync, sign out and delete your account.
+description: Sign in, create an account, change your name and password, sync, sign out, choose the server and delete your account.
 sidebar:
   order: 4
 ---
@@ -13,6 +13,7 @@ import changePassword from '../../../../../../docs/screenshots/change_password.p
 import deleteAccount from '../../../../../../docs/screenshots/delete_account.png';
 import signUp from '../../../../../../docs/screenshots/sign_up.png';
 import changeName from '../../../../../../docs/screenshots/change_name.png';
+import httpServerWarning from '../../../../../../docs/screenshots/http_server_warning.png';
 
 setDING works without an account too, but only on your device. With an account you
 share songs and sets with your band, and your personal adjustments and settings are
@@ -105,6 +106,19 @@ server has taken first and last name already.
 **Sign out** ends the sign-in on this device. Songs and sets on the device are kept.
 
 Changing the **Server** field signs you out.
+
+## Server
+
+**Server** holds the address of your setDING server. It starts with `https://`; then
+the connection is encrypted. Only for a server in your own network (for example
+`localhost`, `192.168.…`, `10.…` or a name ending in `.local`) is `http://` enough.
+
+If you enter `http://` for any other server, setDING asks **Unencrypted
+connection?**: your password and your data would go over the network unencrypted.
+**Cancel** keeps the previous address, **Use anyway** saves the new one. Use
+`https://` whenever you can.
+
+<Image src={httpServerWarning} alt="The “Unencrypted connection?” warning with “Cancel” and “Use anyway”" />
 
 ## Delete your account
 
