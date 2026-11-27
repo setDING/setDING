@@ -51,7 +51,7 @@ The owner decided the main questions on 2026-11-21 (#780): deleting is refused w
 
 **Stays with the organization:** songs, attachments, sets, arrangements and play history (ADR-0017, ADR-0046). They are shared content, not personal data of the account.
 
-**The account itself** (email, name, password hash, avatar) is deleted. It remains in the server backups for up to 14 days (ADR-0014); the app's confirmation and the website say so.
+**The account itself** (email, names, password hash) is deleted. It remains in the server backups for up to 14 days (ADR-0014); the app's confirmation and the website say so.
 
 ### 4. App
 
