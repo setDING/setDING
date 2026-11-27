@@ -380,6 +380,25 @@
   "@projectionFullScreen": {
     "description": "Button on the projected lyrics page (in the browser) that switches to full screen."
   },
+  "projectionStart": "Liedtext projizieren",
+  "projectionTitle": "Liedtext projizieren",
+  "projectionHint": "Öffne diese Adresse im Browser eines Geräts im selben Netzwerk (Beamer-Laptop, Fernseher, OBS). Der Text folgt dem Live-Modus.",
+  "projectionLowerThird": "Bauchbinde (OBS)",
+  "projectionNoNetwork": "Kein Netzwerk gefunden. Verbinde dieses Gerät mit einem WLAN oder schalte seinen Hotspot ein.",
+  "projectionStop": "Projektion beenden",
+  "projectionLinks": "Projektion: Adressen",
+  "projectionCopyLink": "Adresse kopieren",
+  "projectionLinkCopied": "Adresse kopiert",
+  "projectionPrevious": "Vorherige Folie",
+  "projectionNext": "Nächste Folie",
+  "projectionFollow": "Wieder dem Live-Modus folgen",
+  "projectionBlank": "Projektion schwarz",
+  "projectionUnblank": "Liedtext wieder zeigen",
+  "projectionNoCopyright": "Dieser Song hat kein Copyright und wird ohne projiziert.",
+  "projectionStartFailed": "Die Projektion konnte nicht gestartet werden.",
+  "@projectionNoCopyright": {
+    "description": "Hint in live mode: the song has no {copyright} directive. The braces are quoted so they are shown literally."
+  },
   "liveSongPage": "Seite {page}/{count}",
   "@liveSongPage": {
     "placeholders": {

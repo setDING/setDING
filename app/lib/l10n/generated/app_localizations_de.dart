@@ -706,6 +706,58 @@ class AppLocalizationsDe extends AppLocalizations {
   String get projectionFullScreen => 'Vollbild';
 
   @override
+  String get projectionStart => 'Liedtext projizieren';
+
+  @override
+  String get projectionTitle => 'Liedtext projizieren';
+
+  @override
+  String get projectionHint =>
+      'Öffne diese Adresse im Browser eines Geräts im selben Netzwerk (Beamer-Laptop, Fernseher, OBS). Der Text folgt dem Live-Modus.';
+
+  @override
+  String get projectionLowerThird => 'Bauchbinde (OBS)';
+
+  @override
+  String get projectionNoNetwork =>
+      'Kein Netzwerk gefunden. Verbinde dieses Gerät mit einem WLAN oder schalte seinen Hotspot ein.';
+
+  @override
+  String get projectionStop => 'Projektion beenden';
+
+  @override
+  String get projectionLinks => 'Projektion: Adressen';
+
+  @override
+  String get projectionCopyLink => 'Adresse kopieren';
+
+  @override
+  String get projectionLinkCopied => 'Adresse kopiert';
+
+  @override
+  String get projectionPrevious => 'Vorherige Folie';
+
+  @override
+  String get projectionNext => 'Nächste Folie';
+
+  @override
+  String get projectionFollow => 'Wieder dem Live-Modus folgen';
+
+  @override
+  String get projectionBlank => 'Projektion schwarz';
+
+  @override
+  String get projectionUnblank => 'Liedtext wieder zeigen';
+
+  @override
+  String get projectionNoCopyright =>
+      'Dieser Song hat kein Copyright und wird ohne projiziert.';
+
+  @override
+  String get projectionStartFailed =>
+      'Die Projektion konnte nicht gestartet werden.';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Seite $page/$count';
   }

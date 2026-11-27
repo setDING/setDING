@@ -193,6 +193,17 @@ Forces:
   red dot shows a lost connection while the last slide stays. The browser's
   Screen Wake Lock needs HTTPS and is not available over the local `http://`
   link, so the projector computer must not go to sleep by itself.
+- 2026-11-27: Live mode (#1169): a *Project lyrics* button in the controls
+  (native apps only) starts the server and opens a bottom sheet with the QR
+  code, both links per address (copyable) and *Stop projection*; the
+  projection bar sits at the top right of the stage while projecting. Following
+  live mode uses the **first section on the shown page** of a paged song
+  (`SongPageController.section`); a song that fits one page, scrolls or is a
+  PDF is followed per song only (its first slide), so within such a song the
+  slides are advanced with the bar. A repeated section is found after the
+  current slide first. `ProjectionController` holds the follow/manual logic;
+  the projection settings (#1170) are `ProjectionOptions`, with the defaults
+  until then (8 lines, markers blank, no preview, no second language).
 
 ## Open points
 
