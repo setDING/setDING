@@ -1,0 +1,42 @@
+Quem lidera a banda prepara o set uma única vez, e cada membro tem-no no tablet, no telemóvel ou no computador – as músicas certas, pela ordem certa, no tom certo. Em qualquer palco, mesmo sem Wi-Fi.
+
+FEITO PARA O PALCO
+• Modo ao vivo em ecrã inteiro; o ecrã fica ligado durante todo o concerto
+• Vira as páginas com um toque, um deslizar ou um pedal Bluetooth
+• O teu teclado muda para o som certo em cada música via MIDI
+• Funciona totalmente offline
+
+SETS PARTILHADOS POR TODA A BANDA
+• Arrasta músicas para um set, acrescenta pausas e notas
+• Define o tom e a estrutura de cada música
+• Cada membro recebe o set automaticamente no seu dispositivo
+• O setDING mostra o que ainda falta para um concerto sem rede
+• Escolhe quem toca um set, incluindo substitutos de outras bandas
+
+TAMBÉM PARA BATERISTAS
+Andamento, compasso e estrutura da música em vez de acordes, uma contagem inicial e um click preciso nos in-ears.
+
+CADA MÚSICO À SUA MANEIRA
+• Transpõe com um toque, define o capotraste, muda o tamanho da letra
+• Notação B ou H, números Nashville e numeração romana
+• Indicações só para o teu instrumento ou a tua voz
+• Notas à mão livre diretamente na partitura
+Nada disto muda a música para o resto da banda.
+
+AS TUAS MÚSICAS, O TEU FORMATO
+• Músicas no formato aberto ChordPro
+• Importa-as uma a uma ou num ZIP, anexa partituras em PDF
+• Melodias em ABC ou LilyPond, versões de uma música em várias línguas
+• Editor integrado com pré-visualização ao vivo
+• Assinala erros diretamente na música, com uma captura de ecrã anotada
+
+PARA BANDAS, ESCOLAS E IGREJAS
+Várias bandas de uma organização partilham uma única biblioteca de músicas. Convida membros com uma ligação ou um código QR. As funções decidem quem cuida das músicas e quem planeia os sets.
+
+OS TEUS DADOS SÃO TEUS
+• Sem conta, tudo fica no teu dispositivo
+• Sem anúncios, sem rastreio, sem análises
+• Servidores na Suíça – ou aloja o servidor tu mesmo, com ou sem Docker
+• Gratuito e de código aberto com licença MIT
+
+Guia e mais: https://setding.app/en/
