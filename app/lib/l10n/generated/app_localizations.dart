@@ -3412,6 +3412,18 @@ abstract class AppLocalizations {
   /// **'Auf Android aktualisierst du sie in Obtainium, sonst lädst du die neue Version bei den setDING-Releases auf GitHub herunter.'**
   String get updateRequiredHowTo;
 
+  /// No description provided for @updateHowToGooglePlay.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktualisiere sie in Google Play.'**
+  String get updateHowToGooglePlay;
+
+  /// No description provided for @updateOpenGooglePlay.
+  ///
+  /// In de, this message translates to:
+  /// **'In Google Play öffnen'**
+  String get updateOpenGooglePlay;
+
   /// No description provided for @updateRequiredReload.
   ///
   /// In de, this message translates to:

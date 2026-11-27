@@ -16,6 +16,7 @@ import 'data/play_history.dart';
 import 'data/song_repository.dart';
 import 'data/trash.dart';
 import 'platform/app_menu_entry.dart';
+import 'platform/install_source.dart';
 import 'providers.dart';
 import 'settings/settings.dart';
 import 'sync/auth_providers.dart';
@@ -97,6 +98,7 @@ Future<void> main() async {
   // and theme are known from the first frame.
   final userSettings = await UserSettingsStore.open(db, prefs);
 
+  final fromGooglePlay = await detectGooglePlayInstall();
   await SplashScreen.waitForMinimum(splash);
   runApp(
     ProviderScope(
@@ -111,6 +113,8 @@ Future<void> main() async {
         updateCheckEnabledProvider.overrideWithValue(
           !kIsWeb && kReleaseMode && !info.packageName.endsWith('.beta'),
         ),
+        // Play installs update in Google Play (ADR-0067).
+        installedFromGooglePlayProvider.overrideWithValue(fromGooglePlay),
       ],
       child: const SetdingApp(),
     ),

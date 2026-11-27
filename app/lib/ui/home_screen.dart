@@ -216,7 +216,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               key: null,
               label: l10n.updateAvailableDetails,
               onPressed: () => launchUrl(
-                releasePageUrl(version),
+                updatePageUrl(
+                  version,
+                  googlePlay: ref.read(installedFromGooglePlayProvider),
+                ),
                 mode: LaunchMode.externalApplication,
               ),
             ),

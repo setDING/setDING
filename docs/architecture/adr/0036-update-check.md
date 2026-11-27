@@ -74,6 +74,15 @@ a banner in the middle of a set is not acceptable (ADR-0007).
 - 2026-11-18: Proposed (#498), implemented in #499.
 - 2026-11-18: Accepted by the owner.
 - 2026-11-19: Release notes in the app moved to ADR-0041 (#544).
+- 2026-11-27: Google Play installs (ADR-0067, #1140): the app asks Android
+  which store installed it (`app.setding/install_source`,
+  `getInstallSourceInfo`); for Google Play (`com.android.vending`) the tile
+  says to update in Google Play, the tile and the SnackBar's *Details* open
+  the Play listing instead of the GitHub release, and the "Please update"
+  banner (ADR-0029) offers *Open in Google Play* instead of copying the
+  download link. The check itself is unchanged: the server's
+  `latestClientVersion` may name a version Play does not offer yet (review,
+  manual promotion), which is why it stays a hint.
 
 ## Open points
 

@@ -1931,6 +1931,12 @@ class AppLocalizationsIt extends AppLocalizations {
       'Su Android aggiornala in Obtainium; altrimenti scarica la nuova versione dalle release di setDING su GitHub.';
 
   @override
+  String get updateHowToGooglePlay => 'Aggiornala in Google Play.';
+
+  @override
+  String get updateOpenGooglePlay => 'Apri in Google Play';
+
+  @override
   String get updateRequiredReload => 'Ricarica';
 
   @override

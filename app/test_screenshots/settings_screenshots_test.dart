@@ -13,7 +13,9 @@ import 'package:setding/ui/bands/organization_screen.dart';
 import 'package:setding/platform/input_devices.dart';
 import 'package:setding/ui/live/page_turner.dart';
 import 'package:setding/ui/settings_screen.dart';
+import 'package:setding/sync/auth_providers.dart';
 import 'package:setding/sync/sync_backend.dart';
+import 'package:setding/sync/update_check.dart';
 import 'package:setding/update/app_menu_entry.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -390,6 +392,47 @@ void main() {
       await tester.ensureVisible(find.byKey(const Key('app-menu-entry')));
       await tester.pumpAndSettle();
       await shot(tester, '${lang}_52_settings_app_menu_entry');
+      await app.dispose(tester);
+    });
+  }
+
+  // The update hint of a Google Play install (ADR-0067) under *Storage &
+  // info*: update in Google Play, not in Obtainium.
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('settings update google play $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {
+          'language': lang,
+          'themeMode': dark ? 'dark' : 'light',
+          'updateCheck.latest': '0.24.0',
+          'updateCheck.notified': '0.24.0',
+          'updateCheck.checkedAt': DateTime.now().millisecondsSinceEpoch,
+        },
+      );
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: const SettingsScreen(),
+            extra: [
+              clientVersionProvider.overrideWithValue('0.23.1'),
+              updateCheckEnabledProvider.overrideWithValue(true),
+              installedFromGooglePlayProvider.overrideWithValue(true),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await openSettingsCategory(tester, SettingsCategory.about);
+      final tile = find.byKey(const Key('update-available'));
+      await tester.ensureVisible(tile);
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(of: tile, matching: find.textContaining('Google Play')),
+        findsOneWidget,
+      );
+      await shot(tester, '${lang}_62_settings_update_google_play');
       await app.dispose(tester);
     });
   }

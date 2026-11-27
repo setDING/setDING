@@ -19,6 +19,7 @@ class MainActivity : FlutterActivity() {
         val messenger = flutterEngine.dartExecutor.binaryMessenger
         backupFolder = BackupFolderChannel(this, messenger)
         inputDevices = InputDevicesChannel(this, messenger)
+        InstallSourceChannel(this, messenger)
     }
 
     /** Tells which device a key came from, then passes the key on unchanged. */
