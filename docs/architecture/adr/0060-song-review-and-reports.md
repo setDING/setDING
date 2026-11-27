@@ -107,7 +107,11 @@ The record ID is a UUID created on the device, so a report written offline is
 created exactly once. Records are **append-mostly**: the author writes the
 report, the resolver writes the resolution; two people never edit the same
 field, so last writer wins per record is enough. The delta pull follows the
-organization like songs.
+organization like songs. Which reports a person reads depends on their roles,
+so the device remembers per organization whether it pulled all reports or only
+the own ones; when a role change alters that, the reports are pulled again
+from the start and those the person can no longer read leave the device
+(#1194).
 
 Reports are kept as **history** (owner decision): a resolved report stays with
 the song, folded away. Deleting a song moves its reports to the trash with it and
@@ -312,6 +316,16 @@ Older clients that import songs do not set *to review*.
 - 2026-11-23: Website page *Songs prüfen und Fehler melden* / *Checking songs
   and reporting mistakes* (`songs/review.mdx`, both languages) with five
   screenshots (#992). All implementation issues of this ADR are done.
+- 2026-11-27: Reports after a role change (#1194): the delta cursor alone
+  missed the older reports of others after a promotion and kept them after a
+  demotion. `ReportSync` stores the read scope per organization (cursor
+  `song_reports_scope`: own or all, as the server's list rule); when it
+  changes, the next sync pulls the organization's reports from revision 0 and
+  removes the synced reports the server no longer returns (the user's own
+  pending changes stay). No other synced collection has a role-dependent
+  record filter within its scope: songs, attachments and contacts are read by
+  every organization member, sets and arrangements per band, overlays,
+  annotations and settings per user, and the plays are replaced as a whole.
 
 ## Open points
 

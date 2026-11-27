@@ -967,14 +967,48 @@ class FakeSyncBackend implements SyncBackend {
   /// asApprover, screenshot uploaded).
   final reportPushes = <(RemoteSongReport, bool, bool, bool, bool)>[];
 
+  /// The `since` of each [pullSongReports] call.
+  final reportPullsSince = <int>[];
+
+  /// Whether the signed-in user reads every report of [orgId], like the
+  /// server's list rule (ADR-0060): librarians, organization admins, and
+  /// leaders and set planners of one of its bands; others only their own.
+  bool _seesAllReports(String orgId) =>
+      orgMembers.any(
+        (m) =>
+            m.scopeId == orgId &&
+            m.user.id == user!.id &&
+            m.role != OrgRole.member,
+      ) ||
+      members.any(
+        (m) =>
+            m.user.id == user!.id &&
+            (m.role == BandRole.admin || m.role == BandRole.planner) &&
+            bands[m.scopeId]?.organizationId == orgId &&
+            bands[m.scopeId]?.deletedAt == null,
+      );
+
   @override
   Future<List<RemoteSongReport>> pullSongReports(
     String organizationId,
     int since,
   ) async {
     _requireUser();
+    reportPullsSince.add(since);
+    final uid = user!.id;
+    if (!orgMembers.any(
+      (m) => m.scopeId == organizationId && m.user.id == uid,
+    )) {
+      return const [];
+    }
+    final all = _seesAllReports(organizationId);
     return reports.values
-        .where((r) => r.organizationId == organizationId && r.revision > since)
+        .where(
+          (r) =>
+              r.organizationId == organizationId &&
+              r.revision > since &&
+              (all || r.authorId == uid),
+        )
         .toList()
       ..sort((a, b) => a.revision.compareTo(b.revision));
   }

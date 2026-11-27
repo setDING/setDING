@@ -19,6 +19,12 @@ abstract final class SyncCollection {
   /// Mistake reports (ADR-0060); the outbox record ID is the report ID.
   static const songReports = 'song_reports';
 
+  /// Which mistake reports of an organization the last pull could read
+  /// (ADR-0060): no outbox, only a cursor per organization holding 1 for
+  /// the user's own reports and 2 for all. When it changes with the user's
+  /// roles, the reports are pulled again from the start (#1194).
+  static const songReportsScope = 'song_reports_scope';
+
   /// People without an account (ADR-0064); the outbox record ID is the
   /// contact ID.
   static const contacts = 'contacts';
