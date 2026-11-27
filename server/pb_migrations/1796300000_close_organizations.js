@@ -83,12 +83,21 @@ function changes() {
   return list;
 }
 
+/// [rule] with the first [from] replaced by [to]; throws if [rule] does not
+/// contain [from], so a migration never silently leaves a rule unchanged
+/// (issue #1201).
+function replaceInRule(rule, from, to) {
+  const i = rule === null ? -1 : rule.indexOf(from);
+  if (i < 0) throw new Error(`Rule does not contain: ${from}`);
+  return rule.slice(0, i) + to + rule.slice(i + from.length);
+}
+
 migrate(
   (app) => {
     const orgs = app.findCollectionByNameOrId("organizations");
     orgs.fields.add(new DateField({ name: "deleted_at" }));
     orgs.fields.add(new BoolField({ name: "purged" }));
-    orgs.updateRule = orgs.updateRule.replace(LOCK, ORG_UPDATE);
+    orgs.updateRule = replaceInRule(orgs.updateRule, LOCK, ORG_UPDATE);
     orgs.deleteRule =
       `@request.auth.collectionName = "users" && deleted = false && ${orgAdmin("id")}`;
     app.save(orgs);
@@ -104,14 +113,14 @@ migrate(
     for (const [name, rule, suffix] of changes()) {
       const collection = app.findCollectionByNameOrId(name);
       if (collection[rule] === null) continue;
-      collection[rule] = collection[rule].replace(suffix, "");
+      collection[rule] = replaceInRule(collection[rule], suffix, "");
       app.save(collection);
     }
 
     const orgs = app.findCollectionByNameOrId("organizations");
     orgs.fields.removeByName("deleted_at");
     orgs.fields.removeByName("purged");
-    orgs.updateRule = orgs.updateRule.replace(ORG_UPDATE, LOCK);
+    orgs.updateRule = replaceInRule(orgs.updateRule, ORG_UPDATE, LOCK);
     orgs.deleteRule = null;
     app.save(orgs);
   },

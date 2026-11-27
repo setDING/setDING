@@ -27,6 +27,10 @@ migrate(
     const bands = app.findCollectionByNameOrId("bands");
     bands.fields.removeByName("stale_after_months");
     const rule = bands.updateRule;
+    // Only the wrapping of the up migration is undone (issue #1201).
+    if (!rule.startsWith("(") || !rule.endsWith(`)${PLANNER_UPDATE}`)) {
+      throw new Error(`Rule does not end with: )${PLANNER_UPDATE}`);
+    }
     bands.updateRule = rule.slice(1, rule.length - PLANNER_UPDATE.length - 1);
     app.save(bands);
   },

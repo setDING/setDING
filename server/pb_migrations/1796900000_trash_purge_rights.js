@@ -8,18 +8,24 @@
 const DELETED = "@request.body.deleted:changed = false";
 const PURGED = `${DELETED} && @request.body.purged:changed = false`;
 
+/// [rule] with the first [from] replaced by [to]; throws if [rule] does not
+/// contain [from], so a migration never silently leaves a rule unchanged
+/// (issue #1201).
+function replaceInRule(rule, from, to) {
+  const i = rule === null ? -1 : rule.indexOf(from);
+  if (i < 0) throw new Error(`Rule does not contain: ${from}`);
+  return rule.slice(0, i) + to + rule.slice(i + from.length);
+}
+
 migrate(
   (app) => {
     const songs = app.findCollectionByNameOrId("songs");
-    if (!songs.updateRule.includes(DELETED)) {
-      throw new Error("Unexpected update rule of songs.");
-    }
-    songs.updateRule = songs.updateRule.replace(DELETED, PURGED);
+    songs.updateRule = replaceInRule(songs.updateRule, DELETED, PURGED);
     app.save(songs);
   },
   (app) => {
     const songs = app.findCollectionByNameOrId("songs");
-    songs.updateRule = songs.updateRule.replace(PURGED, DELETED);
+    songs.updateRule = replaceInRule(songs.updateRule, PURGED, DELETED);
     app.save(songs);
   },
 );
