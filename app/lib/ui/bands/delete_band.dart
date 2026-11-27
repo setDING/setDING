@@ -1,8 +1,8 @@
-import 'package:drift/drift.dart' hide Column;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/band_view.dart';
+import '../../data/set_repository.dart' show countBandSets;
 import '../../data/trash.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
@@ -25,16 +25,7 @@ Future<void> deleteBand(
   required int members,
 }) async {
   final l10n = AppLocalizations.of(context);
-  final db = ref.read(databaseProvider);
-  final sets =
-      await (db.selectOnly(db.setlists)
-            ..addColumns([db.setlists.id.count()])
-            ..where(
-              db.setlists.bandId.equals(band.id) &
-                  db.setlists.deleted.equals(false),
-            ))
-          .map((r) => r.read(db.setlists.id.count()) ?? 0)
-          .getSingle();
+  final sets = await countBandSets(ref.read(databaseProvider), band.id);
   int? invites;
   try {
     final now = DateTime.now();

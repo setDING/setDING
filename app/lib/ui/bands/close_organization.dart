@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart' hide Column;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -27,16 +26,9 @@ Future<void> closeOrganization(
   required int bands,
 }) async {
   final l10n = AppLocalizations.of(context);
-  final db = ref.read(databaseProvider);
-  final songs =
-      await (db.selectOnly(db.songs)
-            ..addColumns([db.songs.id.count()])
-            ..where(
-              db.songs.libraryId.equals(org.id) &
-                  db.songs.deleted.equals(false),
-            ))
-          .map((r) => r.read(db.songs.id.count()) ?? 0)
-          .getSingle();
+  final songs = await ref
+      .read(librarySongRepositoryProvider(org.id))
+      .countSongs();
   if (!context.mounted) return;
   final ok = await showDialog<bool>(
     context: context,

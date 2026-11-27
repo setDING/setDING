@@ -27,14 +27,7 @@ Future<void> exportSongs(
   List<String> songIds,
 ) async {
   if (songIds.isEmpty) return;
-  final db = ref.read(databaseProvider);
-  final byId = {
-    for (final s in await (db.select(
-      db.songs,
-    )..where((s) => s.id.isIn(songIds))).get())
-      s.id: s,
-  };
-  final songs = [for (final id in songIds) ?byId[id]];
+  final songs = await ref.read(songRepositoryProvider).songsByIds(songIds);
   if (songs.isEmpty || !context.mounted) return;
   final web = ref.read(webClientProvider);
   final formats = [

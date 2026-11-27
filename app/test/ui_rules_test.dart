@@ -253,6 +253,24 @@ void main() {
     }
     expect(offenders, isEmpty);
   });
+  test('screens query the database only through lib/data (#1204)', () {
+    // A query goes into a repository or service in lib/data/, where its
+    // tests reach it (ui-design.md section 12). Also across a line break,
+    // as `db\n    .customSelect(`.
+    final query = RegExp(
+      r'\b(db|database|_db)\s*\.\s*(select|selectOnly|update|into|delete|'
+      r'custom[A-Za-z]*|transaction|batch)\s*[(<]',
+    );
+    final offenders = <String>[];
+    for (final f in files) {
+      final source = f.readAsStringSync();
+      for (final m in query.allMatches(source)) {
+        final line = '\n'.allMatches(source.substring(0, m.start)).length;
+        offenders.add('${f.path}:${line + 1}: ${m[0]}');
+      }
+    }
+    expect(offenders, isEmpty);
+  });
 }
 
 /// The index after the parenthesis closing the one at [open] in [source].

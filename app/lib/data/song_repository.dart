@@ -124,6 +124,11 @@ typedef SearchHit = ({String title, String? artist, String? lyrics});
 String overlayOwnerFor(String libraryId, String? userId) =>
     libraryId == localBandId || userId == null ? localOwnerId : userId;
 
+/// The song [id] on this device, in any library and deleted ones too: a
+/// link opens it whichever library it is in (ADR-0065 §3).
+Stream<SongEntry?> watchAnySong(AppDatabase db, String id) =>
+    (db.select(db.songs)..where((s) => s.id.equals(id))).watchSingleOrNull();
+
 /// Gives [userId] the adjustments of the local owner for songs of
 /// organizations, once per device after the upgrade to schema 8 (ADR-0020);
 /// returns how many were taken over. Adjustments of the local library stay
@@ -484,6 +489,31 @@ class SongRepository {
       (db.select(db.songs)
             ..where((s) => s.id.equals(id) & s.deleted.equals(false)))
           .watchSingleOrNull();
+
+  /// The songs [ids] in that order, from any library and deleted ones too;
+  /// ids not on this device are left out.
+  Future<List<SongEntry>> songsByIds(List<String> ids) async {
+    final byId = {
+      for (final s in await (db.select(
+        db.songs,
+      )..where((s) => s.id.isIn(ids))).get())
+        s.id: s,
+    };
+    return [for (final id in ids) ?byId[id]];
+  }
+
+  /// How many songs of [libraryId] are not in the trash.
+  Future<int> countSongs() {
+    final count = db.songs.id.count();
+    return (db.selectOnly(db.songs)
+          ..addColumns([count])
+          ..where(
+            db.songs.libraryId.equals(libraryId) &
+                db.songs.deleted.equals(false),
+          ))
+        .map((r) => r.read(count) ?? 0)
+        .getSingle();
+  }
 
   Future<SongEntry?> getSong(String id) => (db.select(
     db.songs,

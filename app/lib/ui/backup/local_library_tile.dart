@@ -1,30 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import 'package:drift/drift.dart' show BooleanExpressionOperators;
-
-import '../../data/database.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../../sync/auth_providers.dart' show authProvider;
 import '../settings/settings_layout.dart';
 import '../widgets/dialogs.dart';
-
-/// The songs and sets of the local library (not in the trash).
-Future<({int songs, int sets})> localLibraryCounts(AppDatabase db) async {
-  final songs =
-      await (db.select(db.songs)..where(
-            (s) => s.libraryId.equals(localBandId) & s.deleted.equals(false),
-          ))
-          .get();
-  final sets =
-      await (db.select(db.setlists)..where(
-            (s) => s.bandId.equals(localBandId) & s.deleted.equals(false),
-          ))
-          .get();
-  return (songs: songs.length, sets: sets.length);
-}
 
 /// *Show the local library* (ADR-0054 section 3): people who play only in
 /// organizations can hide "On this device" while signed in, also when it is
@@ -53,9 +35,9 @@ class ShowLocalLibraryTile extends ConsumerWidget {
                   .read(settingsProvider.notifier)
                   .update((s) => s.copyWith(showLocalLibrary: on));
               if (on) return;
-              final counts = await localLibraryCounts(
-                ref.read(databaseProvider),
-              );
+              final counts = await ref
+                  .read(backupServiceProvider)
+                  .localCounts();
               final auto = ref.read(autoBackupProvider).enabled;
               showMessageOn(
                 messenger,

@@ -12,6 +12,7 @@ import 'package:uuid/uuid.dart';
 import 'arrangement_repository.dart';
 import 'attachment_storage.dart';
 import 'database.dart';
+import 'demo_song.dart' show demoSongSource;
 import 'marker_icons.dart';
 import 'import_export.dart' show archiveExtension, safeFileName, sourceWithMeta;
 import 'outbox.dart';
@@ -977,6 +978,31 @@ class BackupService {
   });
 
   // Replacing the local library (ADR-0054 section 2) -------------------------
+
+  /// The oldest change to the local library after [since] (all changes
+  /// when null) that is not in the trash, or null when there is none. The
+  /// demo song alone does not count.
+  Future<DateTime?> oldestLocalChange({DateTime? since}) async {
+    final after = Variable<DateTime>(since ?? DateTime(1970));
+    final row = await db
+        .customSelect(
+          'SELECT MIN(t) AS oldest FROM ('
+          'SELECT updated_at AS t FROM songs WHERE library_id = ? AND '
+          'deleted = 0 AND updated_at > ? AND chordpro_source <> ? '
+          'UNION ALL SELECT updated_at AS t FROM setlists WHERE band_id = ? '
+          'AND deleted = 0 AND updated_at > ?)',
+          variables: [
+            Variable.withString(localBandId),
+            after,
+            Variable.withString(demoSongSource),
+            Variable.withString(localBandId),
+            after,
+          ],
+          readsFrom: {db.songs, db.setlists},
+        )
+        .getSingle();
+    return row.readNullable<DateTime>('oldest');
+  }
 
   /// Whether [contents] is the archive of a local library: only those can
   /// replace the local library.
