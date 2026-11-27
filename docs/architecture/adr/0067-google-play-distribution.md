@@ -117,6 +117,7 @@ Forces:
 - Personal or organization developer account (closed-test requirement).
 - Store listing texts and graphics (feature graphic 1024×500, phone and tablet
   screenshots).
-- Implementation issues: workflow and upload key, update-check hint for Play
-  installs, website installation page, releases guide.
+- Implementation: workflow, upload key and releases guide #1139, update-check
+  hint for Play installs #1140, website installation page #1141, Play Console
+  setup by the owner #1142.
 - iOS (App Store) stays open (ADR-0021).
