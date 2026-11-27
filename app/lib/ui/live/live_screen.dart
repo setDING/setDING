@@ -5,6 +5,7 @@ import 'package:chordpro/chordpro.dart' hide Key;
 import 'package:drift/drift.dart' show Value;
 import 'package:chordpro/chordpro.dart' as cp show Key;
 import 'package:flutter/gestures.dart' show Drag;
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +14,8 @@ import 'package:pdfrx/pdfrx.dart';
 
 import '../../data/annotation.dart' show LayoutFingerprint, textHash;
 import '../../platform/stage_wake_lock.dart';
+import '../../projection/projection_controller.dart';
+import '../../projection/projection_page.dart';
 import '../../sync/sync_controller.dart';
 import '../../data/attachment_lookup.dart';
 import '../../data/attachment_storage.dart';
@@ -53,6 +56,7 @@ import 'song_map_view.dart';
 import 'live_theme.dart';
 import 'set_progress_bar.dart';
 import 'pdf_spread_view.dart';
+import 'projection_bar.dart';
 
 /// One entry of the live sequence.
 class LiveItem {
@@ -412,6 +416,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       c.dispose();
     }
     _preparation.dispose();
+    _projection
+      ?..removeListener(_onProjection)
+      ..dispose();
     _midi.dispose();
     _beat.dispose();
     _annotations
@@ -448,8 +455,83 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       _fit.putIfAbsent(index, _FitController.new);
   SongPageController _songPageFor(int index) => _songPages.putIfAbsent(
     index,
-    () => SongPageController()..addListener(_scheduleProgress),
+    () => SongPageController()
+      ..addListener(_scheduleProgress)
+      ..addListener(() => _followSongPage(index)),
   );
+
+  /// The lyrics projection (ADR-0068); null until it is started.
+  ProjectionController? _projection;
+
+  /// Starts the projection and shows its links.
+  Future<void> _startProjection(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final lang = Localizations.localeOf(context).languageCode;
+    final projection = _projection ??= ProjectionController(
+      ref.read(projectionHostProvider)(),
+    )..addListener(_onProjection);
+    try {
+      // Small, read once per start: not kept in the asset cache.
+      final template = await rootBundle.loadString(
+        projectionPageAsset,
+        cache: false,
+      );
+      await projection.start(
+        projectionPage(
+          template,
+          lang: lang,
+          fullScreen: l10n.projectionFullScreen,
+        ),
+      );
+    } catch (_) {
+      showMessageOn(messenger, l10n.projectionStartFailed);
+      return;
+    }
+    _projectItem(_index);
+    if (context.mounted) await showProjectionSheet(context, projection);
+  }
+
+  void _onProjection() {
+    if (mounted) setState(() {});
+  }
+
+  /// Tells the projection what live mode shows now (ADR-0068 §6).
+  void _projectItem(int index) {
+    final projection = _projection;
+    if (projection == null || !projection.running) return;
+    projection
+      ..show(_projectionItem(_items[index]))
+      ..followSection(_songPages[index]?.section);
+  }
+
+  /// The page of the song on stage changed: the projection follows the
+  /// section at its top.
+  void _followSongPage(int index) {
+    if (index != _index) return;
+    _projection?.followSection(_songPages[index]?.section);
+  }
+
+  ProjectionItem? _projectionItem(LiveItem item) {
+    final song = item.song;
+    if (song == null) {
+      return ProjectionMarker(item.title(AppLocalizations.of(context)));
+    }
+    final parsed = parseChordProCached(
+      song.chordproSource,
+      selectors: ref.read(selectorsProvider),
+    );
+    // The sequence as in live mode: set item, band arrangement, song.
+    final sequence =
+        item.setSequence ??
+        item.arrangement?.sequence ??
+        parsed.metaValue('x_sequence');
+    return ProjectionSong(
+      parsed,
+      sequence: parseSequence(sequence ?? ''),
+      title: item.title(AppLocalizations.of(context)),
+    );
+  }
 
   /// Where the set and the current song stand, for the progress bar
   /// (ADR-0007).
@@ -962,6 +1044,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                     }
                                     _index = i;
                                     _preparation.focus(i);
+                                    // The projection follows (ADR-0068).
+                                    _projectItem(i);
                                     // Only another set item sends its
                                     // keyboard program, never a page within a
                                     // song or a prepared neighbour (ADR-0039).
@@ -1062,6 +1146,20 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                         // Beat of the drummer mode (ADR-0026); take no taps.
                         const Positioned.fill(child: EdgeFlash()),
                         const Positioned.fill(child: CountInOverlay()),
+                        // The projection bar while projecting (ADR-0068).
+                        if (_projection case final projection?
+                            when projection.running)
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: SafeArea(
+                              child: ProjectionBar(
+                                controller: projection,
+                                onShowLinks: () =>
+                                    showProjectionSheet(context, projection),
+                              ),
+                            ),
+                          ),
                         // Drawing mode (ADR-0032): the tools instead of the
                         // controls, until "Done".
                         if (_drawing)
@@ -1131,6 +1229,13 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                               onEditProgram:
                                   midi.enabled && items[_index].song != null
                                   ? () => _editProgram(context)
+                                  : null,
+                              // Native apps only (ADR-0068); while on, the
+                              // projection bar has its links.
+                              onProject:
+                                  ref.watch(projectionSupportedProvider) &&
+                                      !(_projection?.running ?? false)
+                                  ? () => _startProjection(context)
                                   : null,
                             ),
                           ),
@@ -1383,6 +1488,7 @@ class _ControlBar extends ConsumerWidget {
     this.onReport,
     this.onSendProgram,
     this.onEditProgram,
+    this.onProject,
   });
 
   final LiveItem item;
@@ -1410,6 +1516,9 @@ class _ControlBar extends ConsumerWidget {
   /// Opens the keyboard program of the song (#607), on a tap of the
   /// keyboard symbol; null hides it.
   final VoidCallback? onEditProgram;
+
+  /// Starts the lyrics projection (ADR-0068); null hides the button.
+  final VoidCallback? onProject;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1485,6 +1594,14 @@ class _ControlBar extends ConsumerWidget {
     final verseChords = overlay?.verseChords ?? VerseChords.all;
     final stackedChoruses = overlay?.stackedChoruses ?? false;
     final extraButtons = <Widget>[
+      // With the extra buttons: on phones they get the row above.
+      if (onProject case final project?)
+        IconButton(
+          key: const Key('live-project'),
+          tooltip: l10n.projectionStart,
+          icon: const Icon(Icons.cast),
+          onPressed: project,
+        ),
       if (adjust != null &&
           parsed != null &&
           verseChordsOffered(parsed, verseChords, stackedChoruses))
@@ -2248,7 +2365,10 @@ class _ChordProPage extends ConsumerWidget {
                     songPageController.attach(1);
                     return _scrolling(size, options(fit.layout));
                   }
-                  songPageController.attach(pages.ends.length);
+                  songPageController.attach(
+                    pages.ends.length,
+                    sections: _firstSections(fit.layout, pages.ends),
+                  );
                   // All pages of the song are built (and prepared ahead),
                   // so turning a page of the song only shows another one.
                   // Fits: no scrolling. FittedBox only shrinks, as a safety
@@ -2453,6 +2573,7 @@ const _maxSongPages = 4;
 class SongPageController extends ChangeNotifier {
   int _page = 0;
   int _count = 1;
+  List<int?> _sections = const [];
 
   /// Shown page, 0-based.
   int get page => _page;
@@ -2460,10 +2581,18 @@ class SongPageController extends ChangeNotifier {
   /// Number of pages; 1 when the song is not split.
   int get count => _count;
 
-  /// Sets the number of pages while the page is built; listeners (the page
-  /// indicator) are told after the frame.
-  void attach(int count) {
-    final changed = count != _count || _page >= count;
+  /// The source line of the first section on the shown page, which the
+  /// lyrics projection follows (ADR-0068 §6); null when unknown (a PDF, a
+  /// song that scrolls).
+  int? get section => _page < _sections.length ? _sections[_page] : null;
+
+  /// Sets the number of pages while the page is built, and the source line
+  /// of the first section on each ([sections]); listeners (the page
+  /// indicator, the projection) are told after the frame.
+  void attach(int count, {List<int?> sections = const []}) {
+    final changed =
+        count != _count || _page >= count || !listEquals(sections, _sections);
+    _sections = sections;
     _count = math.max(1, count);
     _page = math.min(_page, _count - 1);
     if (changed) {
@@ -2501,6 +2630,24 @@ class SongPageController extends ChangeNotifier {
     notifyListeners();
     return true;
   }
+}
+
+/// The source line of the first section on each page of a song split at
+/// [ends] (block indices), for the lyrics projection (ADR-0068 §6).
+List<int?> _firstSections(SongLayout? layout, List<int> ends) {
+  final blocks = layout?.blocks;
+  if (blocks == null) return const [];
+  return [
+    for (var page = 0; page < ends.length; page++)
+      () {
+        for (var b = page == 0 ? 0 : ends[page - 1]; b < ends[page]; b++) {
+          if (blocks[b].shownSection case final section?) {
+            return sourceLineOf(section);
+          }
+        }
+        return null;
+      }(),
+  ];
 }
 
 /// Range of the personal font scale (ADR-0006).

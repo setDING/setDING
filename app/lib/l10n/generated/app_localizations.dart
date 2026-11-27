@@ -1282,6 +1282,102 @@ abstract class AppLocalizations {
   /// **'Vollbild'**
   String get projectionFullScreen;
 
+  /// No description provided for @projectionStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Liedtext projizieren'**
+  String get projectionStart;
+
+  /// No description provided for @projectionTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Liedtext projizieren'**
+  String get projectionTitle;
+
+  /// No description provided for @projectionHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Öffne diese Adresse im Browser eines Geräts im selben Netzwerk (Beamer-Laptop, Fernseher, OBS). Der Text folgt dem Live-Modus.'**
+  String get projectionHint;
+
+  /// No description provided for @projectionLowerThird.
+  ///
+  /// In de, this message translates to:
+  /// **'Bauchbinde (OBS)'**
+  String get projectionLowerThird;
+
+  /// No description provided for @projectionNoNetwork.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Netzwerk gefunden. Verbinde dieses Gerät mit einem WLAN oder schalte seinen Hotspot ein.'**
+  String get projectionNoNetwork;
+
+  /// No description provided for @projectionStop.
+  ///
+  /// In de, this message translates to:
+  /// **'Projektion beenden'**
+  String get projectionStop;
+
+  /// No description provided for @projectionLinks.
+  ///
+  /// In de, this message translates to:
+  /// **'Projektion: Adressen'**
+  String get projectionLinks;
+
+  /// No description provided for @projectionCopyLink.
+  ///
+  /// In de, this message translates to:
+  /// **'Adresse kopieren'**
+  String get projectionCopyLink;
+
+  /// No description provided for @projectionLinkCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Adresse kopiert'**
+  String get projectionLinkCopied;
+
+  /// No description provided for @projectionPrevious.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorherige Folie'**
+  String get projectionPrevious;
+
+  /// No description provided for @projectionNext.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächste Folie'**
+  String get projectionNext;
+
+  /// No description provided for @projectionFollow.
+  ///
+  /// In de, this message translates to:
+  /// **'Wieder dem Live-Modus folgen'**
+  String get projectionFollow;
+
+  /// No description provided for @projectionBlank.
+  ///
+  /// In de, this message translates to:
+  /// **'Projektion schwarz'**
+  String get projectionBlank;
+
+  /// No description provided for @projectionUnblank.
+  ///
+  /// In de, this message translates to:
+  /// **'Liedtext wieder zeigen'**
+  String get projectionUnblank;
+
+  /// Hint in live mode: the song has no {copyright} directive. The braces are quoted so they are shown literally.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser Song hat kein Copyright und wird ohne projiziert.'**
+  String get projectionNoCopyright;
+
+  /// No description provided for @projectionStartFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Projektion konnte nicht gestartet werden.'**
+  String get projectionStartFailed;
+
   /// No description provided for @liveSongPage.
   ///
   /// In de, this message translates to:
