@@ -57,6 +57,7 @@ class Song {
   String? get capo => metaValue('capo');
   String? get time => metaValue('time');
   String? get duration => metaValue('duration');
+  String? get copyright => metaValue('copyright');
   String? get sortTitle => metaValue('sorttitle');
   String? get sortArtist => metaValue('sortartist');
   List<String> get tags => meta['tag'] ?? const [];
