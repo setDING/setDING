@@ -18,6 +18,7 @@ Pre-release to try the lyrics projection on devices before the final 0.24.0 (ins
 - Projection settings: colours, font, alignment, lines per slide, copyright on every or on the first and last slide, a second language from the song's language versions, set markers as text, a preview of the next slide, and the section (*Verse 1*, *Chorus*) small above the lyrics ([#1177](https://github.com/setDING/setDING/pull/1177), [#1186](https://github.com/setDING/setDING/pull/1186))
 - A lower-third page with a transparent background for livestreams in OBS ([#1175](https://github.com/setDING/setDING/pull/1175))
 - *Turning pages moves the slides*: the page turner first moves through the slides of a song, then to the next song ([#1182](https://github.com/setDING/setDING/pull/1182))
+- The projection bar names the projected section above the slide position, e.g. *Chorus* over *3/8* ([#1190](https://github.com/setDING/setDING/pull/1190))
 - The projection address stays the same on a device; *New address* locks out old links ([#1184](https://github.com/setDING/setDING/pull/1184))
 - Installs from Google Play are pointed to Google Play for updates ([#1151](https://github.com/setDING/setDING/pull/1151))
 - Pre-releases through Obtainium and the test server ([#1179](https://github.com/setDING/setDING/pull/1179))
