@@ -4,6 +4,7 @@ import '../platform/web_client.dart';
 import '../settings/settings.dart';
 import '../sync/auth_providers.dart';
 import '../sync/band_service.dart';
+import 'band_copy.dart';
 import 'band_view.dart';
 import 'contact_repository.dart';
 import 'database.dart';
@@ -338,3 +339,12 @@ final bandMembersProvider = StreamProvider.autoDispose
             ),
           );
     });
+
+/// Copies songs and sets into other libraries and bands (ADR-0017).
+final bandCopyProvider = Provider<BandCopyService>(
+  (ref) => BandCopyService(
+    ref.watch(databaseProvider),
+    ref.watch(attachmentStorageProvider),
+    userId: ref.watch(authProvider.select((u) => u?.id)),
+  ),
+);
