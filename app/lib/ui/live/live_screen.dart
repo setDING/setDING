@@ -34,27 +34,16 @@ import 'live_theme.dart';
 import 'set_progress_bar.dart';
 import 'projection_bar.dart';
 import 'live_control_bar.dart';
+import 'live_info_bar.dart';
 import 'live_item_page.dart';
+import 'live_keys.dart';
 import 'live_projection.dart';
 import 'live_stage_pages.dart';
 import 'live_item.dart';
 
 export 'live_item.dart' show LiveItem;
+export 'live_keys.dart' show beatLongPress;
 export 'song_page_controller.dart' show SongPageController;
-
-/// Keys that turn forward / back, exactly like the right / left tap zones
-/// (ADR-0007); see [pageTurnNextKeys]. Like the tap zones, the arrows
-/// up/down scroll a song that does not fit before turning.
-final _nextKeys = pageTurnNextKeys;
-final _previousKeys = pageTurnPreviousKeys;
-
-/// Keys that start and stop the beat (ADR-0026); Space too when
-/// [AppSettings.spaceStartsBeat] is on (#969).
-final _beatKeys = {LogicalKeyboardKey.enter, LogicalKeyboardKey.numpadEnter};
-
-/// A forward key held this long starts or stops the beat instead of
-/// turning (ADR-0026).
-const beatLongPress = Duration(milliseconds: 600);
 
 /// Performance mode (ADR-0007): full screen, screen stays on, page turning
 /// by tap, swipe, page turner or keyboard. The items are loaded once when
@@ -291,7 +280,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     );
     _setFullScreen(true);
     _sync.pause();
-    FocusManager.instance.addEarlyKeyEventHandler(_onKey);
+    FocusManager.instance.addEarlyKeyEventHandler(_keys.handle);
     _preparation.focus(_index);
     // Created with the screen: it reads providers, which dispose must not.
     _projection;
@@ -318,8 +307,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
 
   @override
   void dispose() {
-    FocusManager.instance.removeEarlyKeyEventHandler(_onKey);
-    _longPress?.cancel();
+    FocusManager.instance.removeEarlyKeyEventHandler(_keys.handle);
+    _keys.dispose();
     _sync.resume();
     _lifecycle.dispose();
     _wakeLock
@@ -405,82 +394,30 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   bool _turnSlide({required bool forward}) =>
       _projection.turnSlide(forward: forward, pages: _stage.songPage(_index));
 
-  /// Page turner and keyboard (ADR-0007). An early handler of the focus
-  /// manager: it sees every key before the focused widget, so the keys work
-  /// whichever widget of live mode has the focus (a button of the control
-  /// bar, the PDF viewer) or none, and Space never presses a focused button.
-  KeyEventResult _onKey(KeyEvent event) {
+  /// Page turner and keyboard (ADR-0007).
+  late final LiveKeys _keys = LiveKeys(
     // Dialogs, sheets and menus opened from live mode are routes on top of
     // it: their keys, text fields included, stay theirs.
-    if (!mounted || !(_route?.isCurrent ?? true)) {
-      return KeyEventResult.ignored;
-    }
-    final focus = FocusManager.instance.primaryFocus?.context;
-    if (focus?.findAncestorStateOfType<EditableTextState>() != null) {
-      return KeyEventResult.ignored;
-    }
-    final key = event.logicalKey;
-    // Space starts and stops the beat instead of turning, when chosen
-    // (#969).
-    final spaceBeat =
-        key == LogicalKeyboardKey.space &&
-        ref.read(settingsProvider).spaceStartsBeat;
-    final next = !spaceBeat && _nextKeys.contains(key);
+    active: () => mounted && (_route?.isCurrent ?? true),
+    spaceStartsBeat: () => ref.read(settingsProvider).spaceStartsBeat,
     // For the readiness tile of the overview (#911).
-    if (event is KeyDownEvent && !spaceBeat && isPageTurnKey(key)) {
-      ref.read(pageTurnerProvider.notifier).used();
-    }
-    if (next && _beat.canBeat(_index)) {
-      // With a beat, a forward key held for [beatLongPress] starts or stops
-      // it and does not turn (ADR-0026); a shorter press turns when it is
-      // released. Key repeat is ignored as before.
-      if (event is KeyDownEvent) {
-        _longPress?.cancel();
-        _longPressed = false;
-        final index = _index;
-        _longPress = Timer(beatLongPress, () {
-          _longPressed = true;
-          if (mounted) _beat.toggle(index);
-        });
-      } else if (event is KeyUpEvent) {
-        final pending = _longPress?.isActive ?? false;
-        _longPress?.cancel();
-        _longPress = null;
-        if (pending && !_longPressed) _stage.next();
+    onPageTurnKey: () => ref.read(pageTurnerProvider.notifier).used(),
+    current: () => _index,
+    canBeat: _beat.canBeat,
+    toggleBeat: _beat.toggle,
+    next: _stage.next,
+    previous: _stage.previous,
+    escape: () {
+      if (_annotations.active) {
+        _annotations.active = false;
+      } else {
+        Navigator.maybePop(context);
       }
-      return KeyEventResult.handled;
-    }
-    if (next || _previousKeys.contains(key)) {
-      // One press turns once. A held key (key repeat) does not turn again,
-      // so it never races through the pages and songs of the set.
-      if (event is KeyDownEvent) next ? _stage.next() : _stage.previous();
-      return KeyEventResult.handled;
-    }
-    if (spaceBeat || _beatKeys.contains(key)) {
-      if (event is KeyDownEvent && _beat.canBeat(_index)) {
-        _beat.toggle(_index);
-      }
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.escape) {
-      if (event is KeyDownEvent) {
-        if (_annotations.active) {
-          _annotations.active = false;
-        } else {
-          Navigator.maybePop(context);
-        }
-      }
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
-  }
+    },
+  );
 
   /// The pages of the set, kept when the wide song map's panel comes or goes.
   final _pageAreaKey = GlobalKey();
-
-  /// Long press of a forward key (ADR-0026).
-  Timer? _longPress;
-  bool _longPressed = false;
 
   /// Width of the page area, for the tap zones.
   double _width = 0;
@@ -641,7 +578,6 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final l10n = AppLocalizations.of(context);
     final items = _items;
     final next = _index < items.length - 1 ? items[_index + 1] : null;
-    final theme = Theme.of(context);
     final showProgress = ref.watch(
       settingsProvider.select((s) => s.setProgress),
     );
@@ -997,162 +933,17 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                 ),
               ),
             ),
-            ValueListenableBuilder<bool>(
-              valueListenable: _beat.metronome.clickUnavailable,
-              builder: (context, clickUnavailable, bar) =>
-                  compactLandscape &&
-                      !web &&
-                      !(midi.enabled && !midi.connected) &&
-                      !clickUnavailable &&
-                      !_wakeLock.failed
-                  ? const SizedBox.shrink(key: Key('live-info-hidden'))
-                  : bar!,
-              child: Container(
-                key: const Key('live-info'),
-                color: theme.colorScheme.surfaceContainer,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                child: Row(
-                  children: [
-                    if (compactLandscape)
-                      const Spacer()
-                    else
-                      Expanded(
-                        child: Text(
-                          next == null
-                              ? l10n.liveEnd
-                              : l10n.liveNext(_nextLabel(_index + 1, l10n)),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleSmall,
-                        ),
-                      ),
-                    // Web: no offline guarantee (ADR-0018).
-                    if (web) ...[
-                      const SizedBox(width: 12),
-                      Icon(
-                        Icons.cloud_off,
-                        size: 18,
-                        color: theme.colorScheme.error,
-                      ),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          l10n.liveWebNotice,
-                          key: const Key('live-web-notice'),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.error,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                    ],
-                    // The click was asked for but there is no audio.
-                    ValueListenableBuilder<bool>(
-                      valueListenable: _beat.metronome.clickUnavailable,
-                      builder: (context, unavailable, _) => !unavailable
-                          ? const SizedBox.shrink()
-                          : Flexible(
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 12),
-                                child: Text(
-                                  l10n.clickNoAudioLive,
-                                  key: const Key('live-click-notice'),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.error,
-                                  ),
-                                ),
-                              ),
-                            ),
-                    ),
-                    // The screen may turn off: say so, so the band can
-                    // check the device's power settings before the show.
-                    if (_wakeLock.failed) ...[
-                      Icon(
-                        Icons.screen_lock_portrait,
-                        size: 18,
-                        color: theme.colorScheme.error,
-                      ),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          l10n.liveWakeLockNotice,
-                          key: const Key('live-wakelock-notice'),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.error,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                    ],
-                    ListenableBuilder(
-                      listenable: _stage.songPageFor(_index),
-                      builder: (context, _) {
-                        final pages = _stage.songPageFor(_index);
-                        if (pages.count <= 1) return const SizedBox.shrink();
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: Text(
-                            l10n.liveSongPage(pages.page + 1, pages.count),
-                            key: const Key('live-song-page'),
-                            style: theme.textTheme.titleSmall,
-                          ),
-                        );
-                      },
-                    ),
-                    // The keyboard (ADR-0039), only while MIDI program
-                    // changes are on, with the program the current song
-                    // wants on it, if it has one (#605).
-                    if (midi.enabled)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 16),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Tooltip(
-                              message: midi.connected
-                                  ? l10n.liveMidiConnected(
-                                      midi.deviceName ?? '',
-                                    )
-                                  : l10n.liveMidiNotConnected,
-                              child: Icon(
-                                midi.connected ? Icons.piano : Icons.piano_off,
-                                key: Key(
-                                  midi.connected
-                                      ? 'live-midi-connected'
-                                      : 'live-midi-not-connected',
-                                ),
-                                size: 18,
-                                semanticLabel: midi.connected
-                                    ? l10n.liveMidiConnected(
-                                        midi.deviceName ?? '',
-                                      )
-                                    : l10n.liveMidiNotConnected,
-                                color: midi.connected
-                                    ? null
-                                    : theme.colorScheme.error,
-                              ),
-                            ),
-                            if (items[_index].song case final song?)
-                              LiveMidiProgramLabel(songId: song.id),
-                          ],
-                        ),
-                      ),
-                    Text(
-                      l10n.livePosition(_index + 1, items.length),
-                      style: theme.textTheme.titleSmall,
-                    ),
-                  ],
-                ),
-              ),
+            LiveInfoBar(
+              beat: _beat,
+              compactLandscape: compactLandscape,
+              web: web,
+              midi: midi,
+              wakeLockFailed: _wakeLock.failed,
+              nextLabel: next == null ? null : _nextLabel(_index + 1, l10n),
+              songPages: _stage.songPageFor(_index),
+              song: items[_index].song,
+              index: _index,
+              count: items.length,
             ),
           ],
         ),
