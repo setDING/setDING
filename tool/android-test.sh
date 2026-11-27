@@ -20,6 +20,11 @@
 # The sync tests sign in to a local PocketBase with the repository's schema,
 # started on this machine (server/bin/itest_backend.dart) and reached by the
 # device through `adb reverse`.
+#
+# The deep link tests ask for a link from outside the app by logging
+# "setding-itest-open-link: <link>" (integration_test/support.dart, openLink);
+# a watcher of the device's log fires it with `adb shell am start`, as a chat
+# or the browser would.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -161,5 +166,34 @@ else
     [ "$test" = integration_test/performance_test.dart ] || tests+=("$test")
   done
 fi
+
+# --- Links from outside the app ---------------------------------------------
+
+# Only the app's own links: https on its hosts and setding://, with nothing
+# the device's shell would interpret.
+link_pattern='^(https://(app|api)\.setding\.app/|setding://)[A-Za-z0-9/_-]+$'
+watch_links() {
+  local line link
+  adb_device logcat -T 1 -v raw -s flutter:I | while IFS= read -r line; do
+    line="${line%$'\r'}"
+    case "$line" in
+      *'setding-itest-open-link: '*) link="${line#*setding-itest-open-link: }" ;;
+      *) continue ;;
+    esac
+    if [[ ! "$link" =~ $link_pattern ]]; then
+      log "ignoring link $link"
+      continue
+    fi
+    log "opening $link"
+    adb_device shell am start -W -a android.intent.action.VIEW \
+      -c android.intent.category.BROWSABLE -d "'$link'" "$PACKAGE" >/dev/null </dev/null ||
+      log "could not open $link"
+  done
+}
+watch_links &
+watcher_pid=$!
+cleanup_steps+=("pkill -P $watcher_pid 2>/dev/null; kill $watcher_pid 2>/dev/null")
+defines+=(--dart-define=SETDING_ITEST_LINKS=true)
+
 log "running ${tests[*]} on $serial"
 SETDING_ANDROID_ITEST=1 flutter test "${tests[@]}" -d "$serial" "${defines[@]}"

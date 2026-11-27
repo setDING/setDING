@@ -32,9 +32,16 @@ make android-test EMULATOR_WINDOW=1                  # watch the emulator
    ([`server/bin/itest_backend.dart`](../../server/bin/itest_backend.dart))
    with a user, a band and two songs (one with a PDF), and forwards its port to the device with
    `adb reverse`, so the device reaches it as `http://127.0.0.1:<port>`;
-3. runs every `integration_test/*_test.dart` except the performance scenarios
-   (`make perf`) with `flutter test -d <device>`, passing the server and the
-   account with `--dart-define`.
+3. watches the device's log for links the tests ask for (`openLink` in
+   [`support.dart`](../../app/integration_test/support.dart) logs
+   `setding-itest-open-link: <link>`) and fires each with
+   `adb shell am start -a android.intent.action.VIEW -d <link> app.setding.itest`,
+   as a chat or the browser would; only the app's own links
+   (`https://app.setding.app/…`, `https://api.setding.app/…`, `setding://…`)
+   are fired;
+4. runs every `integration_test/*_test.dart` except the performance scenarios
+   (`make perf`) with `flutter test -d <device>`, passing the server, the
+   account and `SETDING_ITEST_LINKS` with `--dart-define`.
 
 Requirements: the Android SDK (`ANDROID_HOME`, with `platform-tools`,
 `emulator`, `cmdline-tools/latest` and a Google APIs system image for the
@@ -65,6 +72,7 @@ PocketBase. Release builds use the main manifest without this configuration;
 |---|---|
 | `app_test.dart` | Start-up through `main()` with the real database, files and secure storage; the demo song in the library and on the song screen; a set in live mode with a PDF rendered by the platform's engine, page turns with page-turner keys, no wake-lock warning |
 | `platform_test.dart` | Songs and attachment files survive closing and reopening the SQLite file and the storage; the session is kept in the secure storage |
+| `deep_link_test.dart` | Links from outside the app (ADR-0065): `https://app.setding.app/sets/<id>` and `setding://sets/<id>` open the set, invitation links on `api.setding.app`, `app.setding.app` and `setding://invite/…` open the join screen with the token. The intent is addressed to `app.setding.itest`, so it tests the intent filters and the app's handling, not the domain verification of App Links (`assetlinks.json` names the release package). Skipped without the runner of `make android-test` |
 | `sync_test.dart` | Sign-in through the real UI against the local PocketBase over the network, the sync brings the organization's songs onto the device, the session is stored in the secure storage. Skipped without the server of `make android-test` |
 
 Each file runs as its own app start. Tests that call `main()` should stay one
@@ -84,5 +92,5 @@ Each file runs as its own app start. Tests that call `main()` should stay one
 ## Not covered (yet)
 
 MIDI and Bluetooth page turners (need hardware; keys are simulated), audio
-output of the metronome, deep links, file import and sharing, iOS and
-Windows.
+output of the metronome, the link that cold-starts the app, the domain
+verification of App Links, file import and sharing, iOS and Windows.
