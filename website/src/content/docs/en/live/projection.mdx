@@ -1,0 +1,151 @@
+---
+title: Projecting the lyrics
+description: Put the lyrics without chords on a projector, a TV or into OBS – right from live mode, without extra software.
+sidebar:
+  order: 5
+---
+
+import { Image } from 'astro:assets';
+import start from '../../../../../../docs/screenshots/live_projection_start.png';
+import sheet from '../../../../../../docs/screenshots/projection_sheet.png';
+import page from '../../../../../../docs/screenshots/projection_page.png';
+import bar from '../../../../../../docs/screenshots/projection_bar.png';
+import twoLanguages from '../../../../../../docs/screenshots/projection_two_languages.png';
+import lowerThird from '../../../../../../docs/screenshots/projection_lower_third.png';
+import settings from '../../../../../../docs/screenshots/settings_projection.png';
+
+At small gigs, worship sessions or church services the audience wants to sing
+along. setDING shows the lyrics for that **without chords** in a browser: on the
+laptop at the projector, on a TV or as a source in OBS. You need no other software
+and no second song collection. The projection follows the set you play in live
+mode.
+
+The tablet in live mode serves a small web page in the **local network** for it.
+No internet is needed; the tablet and the device at the projector only have to be
+in the same Wi-Fi.
+
+## Where it works
+
+- **Android, iPhone and iPad, Windows and Linux** – in the installed app.
+- **Not in the web client** (`app.setding.app`): a browser cannot serve a page to
+  other devices.
+- The device at the projector only needs a **browser**; nothing to install there.
+
+## Start the projection
+
+1. Start **live mode** and tap the middle of the page to show the controls.
+2. Tap **Project lyrics**.
+
+<Image src={start} alt="Live mode with the controls open; on the left the Project lyrics button" />
+
+3. setDING shows a **QR code** and the addresses. Open the address under **Full
+   screen** in the browser of the device at the projector – with the QR code or by
+   typing it. The copy button lets you send it on.
+
+<Image src={sheet} alt="The Lyrics projection sheet with the QR code, the addresses for full screen and the lower third, and Stop projection" />
+
+4. In the browser, the button at the bottom right (it shows when you move the
+   mouse) or a **double click** switches to **full screen**.
+
+The page shows the current section as large as it fits, white on black, with the
+song's copyright below.
+
+<Image src={page} alt="The projected page: a verse in large white letters on black, the copyright small below" />
+
+The address contains a random key and only works while the projection runs. When
+you start it again, there is a **new address**. The projection ends with **Stop
+projection** or when you leave live mode.
+
+## What is projected
+
+- A song is split into **slides**, one per section (verse, chorus, bridge …). A
+  long section is spread over several slides.
+- The order is the **played** one: the set item's sequence, otherwise the band's
+  or the song's (see [Key and sequence](/en/sets/key-and-sequence/)). A chorus
+  played several times appears several times.
+- **Without** chords, comments, tabs and grids – the lyrics only.
+- A **marker** in the set (e.g. *Break*) shows a black slide or, if you set it,
+  its text.
+
+## Following and advancing by hand
+
+While projecting, the **projection bar** sits at the bottom of the stage.
+
+<Image src={bar} alt="Live mode with the projection bar at the bottom centre: addresses, copyright hint, previous slide, slide 2/6, next slide, follow, blank" />
+
+- **Automatically:** a new song starts at its first slide. When you turn a page in
+  a song with several pages, the projection jumps to the first section of the new
+  page.
+- **By hand:** when a song fits one page, move on with **‹** and **›** in the bar –
+  or someone else takes the tablet. Once you advance by hand, the projection no
+  longer follows live mode for this song. **Follow live mode again** (the round
+  arrows) turns that back on; with the next song it follows anyway.
+- **Blank the projection** (the screen) makes the projection black, e.g. for a
+  prayer or an announcement, until you tap it again.
+- The **cast symbol** shows the addresses again.
+
+When you open the controls, the projection bar makes room for them; the
+**Projection: addresses** button in the controls then shows the addresses.
+
+## Copyright
+
+Projecting lyrics in public requires the copyright. setDING shows the song's
+`{copyright: …}` as written (see [ChordPro](/en/songs/chordpro/)). When it is
+missing, an orange **©** appears in the projection bar: the song is then projected
+without a copyright. Add it to the song.
+
+## Two languages
+
+For multilingual services the projection can show a **second language** beside the
+lyrics: choose it in the [settings](#settings). When the song has a [language
+version](/en/songs/library/#language-versions) in that language, it stands to the
+right in landscape and below in portrait, a little lighter. The sections are paired
+in order.
+
+<Image src={twoLanguages} alt="The projected page with the German verse on the left and the English version on the right, a little lighter" />
+
+## Lower third for livestreams (OBS)
+
+The second address in the sheet, **Lower third (OBS)**, shows the lyrics in a band
+at the bottom on a **transparent** background. Add it in OBS (or similar software)
+as a **browser source** above the camera picture. Set **Lines per slide** to 2 to 4
+for it.
+
+<Image src={lowerThird} alt="The lower third: two lines of lyrics in a dark band at the bottom, the copyright on the right in the band; the grey background stands for the camera picture" />
+
+## Settings
+
+Under **Settings** → **Screen & live mode** → **Projection** you choose how the
+projection looks. The settings apply to **this device** and take effect at once,
+also while projecting.
+
+<Image src={settings} alt="The Projection settings: colours, font, alignment, lines per slide, copyright and second language" />
+
+- **Colours:** white on black or black on white.
+- **Font** and **alignment** (centred or left).
+- **Lines per slide:** at most this many lines on a slide.
+- **Copyright:** on every slide or on the first and last one only.
+- **Second language:** see [Two languages](#two-languages).
+- **Markers as text:** shows the text of a marker instead of a black slide.
+- **Show the next slide:** small below the lyrics, e.g. for a screen only the
+  band sees.
+
+## When it does not work
+
+- **The page does not load:** many guest Wi-Fis do not let devices talk to each
+  other. Turn on the tablet's **hotspot** and connect the projector device to it,
+  or bring your own router.
+- **No network found:** the tablet is in no Wi-Fi. Connect it or turn on its
+  hotspot.
+- **Windows** asks at the first start whether setDING may accept connections.
+  Allow it for **private networks**.
+- **iPhone and iPad** project only while setDING is in the foreground. Live mode
+  keeps the screen on anyway.
+- **The projector laptop goes to sleep:** the browser cannot keep it awake through
+  this address. Turn off sleep and the screen saver there.
+- **A red dot** at the top right of the projected page means the connection to the
+  tablet is lost. The last slide stays and the page reconnects by itself. If the
+  projection was started again, open the new address.
+
+The page shows only what is projected right now. Nobody can read your songs or
+change anything through it, and it is reachable in the local network only.

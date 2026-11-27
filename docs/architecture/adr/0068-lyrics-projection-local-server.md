@@ -214,6 +214,14 @@ Forces:
   the first linked version of the song with that language, paired with its
   own `{x_sequence}`; it is looked up after the song is shown and added
   without moving the slide.
+- 2026-11-27: Website page *Liedtext projizieren* / *Projecting the lyrics*
+  (#1171) with screenshots. Found while rendering them: the projection bar at the
+  top right covered the key, tempo and time in the song's header; it now sits at
+  the bottom centre and gives way to the controls, whose button shows the links
+  while projecting. The second language is a drop-down (nine languages did not
+  fit a row of segments). The projected page is shot by
+  `tool/projection-screenshots.sh` (headless Chromium), as it is not part of the
+  app's screenshot tests.
 
 ## Open points
 

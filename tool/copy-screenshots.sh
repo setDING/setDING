@@ -138,6 +138,10 @@ map=(
   contact_invite 54h_contact_invite
   song_attachment_menu 55_song_attachment_menu
   song_sources 56_song_sources
+  live_projection_start 63_live_projection_start
+  projection_sheet 63b_projection_sheet
+  projection_bar 63c_projection_bar
+  settings_projection 63d_settings_projection
   chord_grid 57_chord_grid
   set_share_link 61_set_share_link
   link_not_available 61b_link_not_available
