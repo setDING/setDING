@@ -1,6 +1,6 @@
 # ADR-0068: Projecting lyrics to a browser from live mode
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-27
 
 ## Context
@@ -166,6 +166,7 @@ Forces:
   (§6); a control page in the browser comes later; two languages side by side
   (§9) and the lower third for livestreams (§10) are part of the first version;
   following on the audience's phones and the Android foreground service stay open.
+- 2026-11-27: Accepted by the owner (#1164).
 
 ## Open points
 
