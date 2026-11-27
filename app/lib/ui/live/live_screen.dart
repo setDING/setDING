@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:chordpro/chordpro.dart' hide Key;
 import 'package:drift/drift.dart' show Value;
 import 'package:chordpro/chordpro.dart' as cp show Key;
 import 'package:material_ui/material_ui.dart';
@@ -12,7 +11,6 @@ import 'package:pdfrx/pdfrx.dart';
 
 import '../../platform/stage_wake_lock.dart';
 import '../../projection/projection_controller.dart';
-import '../../projection/projection_page.dart';
 import '../../projection/projection_token_store.dart';
 import '../../sync/sync_controller.dart';
 import '../../data/database.dart';
@@ -27,7 +25,6 @@ import '../songs/song_reports.dart' show reportMistake;
 import '../annotations/annotation_editor.dart';
 import '../annotations/annotation_toolbar.dart';
 import '../render/render_cache.dart';
-import '../render/song_view.dart';
 import '../theme.dart';
 import '../widgets/dialogs.dart';
 import 'live_midi_sheet.dart';
@@ -42,6 +39,7 @@ import 'projection_bar.dart';
 import 'live_chordpro_page.dart';
 import 'live_control_bar.dart';
 import 'live_item_page.dart';
+import 'live_projection.dart';
 import 'live_item.dart';
 import 'song_page_controller.dart';
 
@@ -296,6 +294,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     _sync.pause();
     FocusManager.instance.addEarlyKeyEventHandler(_onKey);
     _preparation.focus(_index);
+    // Created with the screen: it reads providers, which dispose must not.
+    _projection;
     _midi.show(_index, _items[_index].song?.id);
     // With the automatic start the first song counts in.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -340,7 +340,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     }
     _preparation.dispose();
     _projection
-      ?..removeListener(_onProjection)
+      ..removeListener(_onProjection)
       ..dispose();
     _midi.dispose();
     _beat.dispose();
@@ -383,129 +383,52 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       ..addListener(() => _followSongPage(index)),
   );
 
-  /// The lyrics projection (ADR-0068); null until it is started.
-  ProjectionController? _projection;
+  /// The lyrics projection (ADR-0068).
+  late final LiveProjection _projection = LiveProjection(
+    host: ref.read(projectionHostProvider),
+    items: _items,
+    settings: () => ref.read(settingsProvider),
+    l10n: () => AppLocalizations.of(context),
+    token: () => ref.read(projectionTokenProvider).token,
+    renewToken: () => ref.read(projectionTokenProvider).renew(),
+    languageVersions: (songId) =>
+        ref.read(songRepositoryProvider).languageVersions(songId),
+    parse: (chordpro) =>
+        parseChordProCached(chordpro, selectors: ref.read(selectorsProvider)),
+    section: (index) => _songPages[index]?.section,
+  )..addListener(_onProjection);
 
   /// Starts the projection and shows its links.
   Future<void> _startProjection(BuildContext context) async {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     final lang = Localizations.localeOf(context).languageCode;
-    final projection = _projection ??= ProjectionController(
-      ref.read(projectionHostProvider)(),
-      options: ProjectionOptions.of(ref.read(settingsProvider)),
-      // Sections without a label get the name of their kind (#1185).
-      labeler: sectionLabeler(l10n),
-    )..addListener(_onProjection);
     try {
-      // Small, read once per start: not kept in the asset cache.
-      final template = await rootBundle.loadString(
-        projectionPageAsset,
-        cache: false,
-      );
-      await projection.start(
-        projectionPage(
-          template,
-          lang: lang,
-          fullScreen: l10n.projectionFullScreen,
-        ),
-        // The same address at every start (#1183).
-        token: ref.read(projectionTokenProvider).token,
-      );
+      await _projection.start(lang: lang);
     } catch (_) {
       showMessageOn(messenger, l10n.projectionStartFailed);
       return;
     }
-    _projectItem(_index);
-    if (context.mounted) {
-      await showProjectionSheet(
-        context,
-        projection,
-        onRenew: () => _renewProjection(projection),
-      );
-    }
+    _projection.show(_index);
+    if (context.mounted) await _showProjectionLinks(context);
   }
 
-  /// A new address for this device (#1183); the running projection moves
-  /// to it.
-  Future<void> _renewProjection(ProjectionController projection) =>
-      projection.renew(ref.read(projectionTokenProvider).renew());
+  Future<void> _showProjectionLinks(BuildContext context) =>
+      showProjectionSheet(
+        context,
+        _projection.controller!,
+        onRenew: _projection.renew,
+      );
 
   void _onProjection() {
     if (mounted) setState(() {});
-  }
-
-  /// Tells the projection what live mode shows now (ADR-0068 §6), and
-  /// adds the song's version in the second language once it is found
-  /// (§9).
-  void _projectItem(int index) {
-    final projection = _projection;
-    if (projection == null || !projection.running) return;
-    final item = _projectionItem(_items[index]);
-    projection
-      ..show(item)
-      ..followSection(_songPages[index]?.section);
-    final song = _items[index].song;
-    final language = ref.read(settingsProvider).projectionSecondLanguage;
-    if (item is! ProjectionSong ||
-        song == null ||
-        language.isEmpty ||
-        song.language == language) {
-      return;
-    }
-    ref.read(songRepositoryProvider).languageVersions(song.id).then((versions) {
-      final version = versions.where((v) => v.language == language).firstOrNull;
-      if (version == null || !mounted) return;
-      final second = parseChordProCached(
-        version.chordproSource,
-        selectors: ref.read(selectorsProvider),
-      );
-      // Paired by position in its own played order (ADR-0068 §9).
-      projection.pairWith(
-        item.song,
-        second,
-        sequence: parseSequence(second.metaValue('x_sequence') ?? ''),
-      );
-    });
-  }
-
-  /// The projection settings changed (ADR-0068 §11): the look at once, a
-  /// different second language with the item on stage.
-  void _onSettings(AppSettings? previous, AppSettings next) {
-    final projection = _projection;
-    if (projection == null) return;
-    projection.options = ProjectionOptions.of(next);
-    if (previous?.projectionSecondLanguage != next.projectionSecondLanguage) {
-      _projectItem(_index);
-    }
   }
 
   /// The page of the song on stage changed: the projection follows the
   /// section at its top.
   void _followSongPage(int index) {
     if (index != _index) return;
-    _projection?.followSection(_songPages[index]?.section);
-  }
-
-  ProjectionItem? _projectionItem(LiveItem item) {
-    final song = item.song;
-    if (song == null) {
-      return ProjectionMarker(item.title(AppLocalizations.of(context)));
-    }
-    final parsed = parseChordProCached(
-      song.chordproSource,
-      selectors: ref.read(selectorsProvider),
-    );
-    // The sequence as in live mode: set item, band arrangement, song.
-    final sequence =
-        item.setSequence ??
-        item.arrangement?.sequence ??
-        parsed.metaValue('x_sequence');
-    return ProjectionSong(
-      parsed,
-      sequence: parseSequence(sequence ?? ''),
-      title: item.title(AppLocalizations.of(context)),
-    );
+    _projection.followSection(_songPages[index]?.section);
   }
 
   /// Where the set and the current song stand, for the progress bar
@@ -573,20 +496,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   /// With *Turning pages moves the slides* (#1181), a turn while projecting
   /// moves the projected slide first; true when it did. Live mode shows the
   /// page of the slide's section.
-  bool _turnSlide({required bool forward}) {
-    final projection = _projection;
-    if (projection == null ||
-        !ref.read(settingsProvider).projectionTurnsSlides ||
-        !projection.turn(forward: forward)) {
-      return false;
-    }
-    final pages = _songPages[_index];
-    final line = projection.sectionLine;
-    if (pages != null && line != null) {
-      if (pages.pageOf(line) case final page?) pages.show(page);
-    }
-    return true;
-  }
+  bool _turnSlide({required bool forward}) =>
+      _projection.turnSlide(forward: forward, pages: _songPages[_index]);
 
   void _next() {
     if (_turnSlide(forward: true)) return;
@@ -876,7 +787,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   @override
   Widget build(BuildContext context) {
     // The projection follows its settings (ADR-0068 §11).
-    ref.listen(settingsProvider, _onSettings);
+    ref.listen(
+      settingsProvider,
+      (previous, next) => _projection.settingsChanged(previous, next, _index),
+    );
     // The current song's grouping and subdivisions of the click (#698).
     final currentSong = _items[_index].song;
     if (currentSong != null) {
@@ -1046,13 +960,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                     // turning back into a song whose slides
                                     // the turns move ends at its last slide
                                     // (#1181).
-                                    _projectItem(i);
-                                    if (back &&
-                                        ref
-                                            .read(settingsProvider)
-                                            .projectionTurnsSlides) {
-                                      _projection?.toLast();
-                                    }
+                                    _projection.itemShown(i, back: back);
                                     // Only another set item sends its
                                     // keyboard program, never a page within a
                                     // song or a prepared neighbour (ADR-0039).
@@ -1157,7 +1065,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                         // the bottom centre, clear of the song's header
                         // (key, tempo, time); the controls take its place
                         // while they are open.
-                        if (_projection case final projection?
+                        if (_projection.controller case final projection?
                             when projection.running && !_controls && !_drawing)
                           Positioned(
                             left: 0,
@@ -1167,11 +1075,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                               child: Center(
                                 child: ProjectionBar(
                                   controller: projection,
-                                  onShowLinks: () => showProjectionSheet(
-                                    context,
-                                    projection,
-                                    onRenew: () => _renewProjection(projection),
-                                  ),
+                                  onShowLinks: () =>
+                                      _showProjectionLinks(context),
                                 ),
                               ),
                             ),
@@ -1250,16 +1155,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                               // button shows the links.
                               onProject: !ref.watch(projectionSupportedProvider)
                                   ? null
-                                  : switch (_projection) {
-                                      final p? when p.running =>
-                                        () => showProjectionSheet(
-                                          context,
-                                          p,
-                                          onRenew: () => _renewProjection(p),
-                                        ),
-                                      _ => () => _startProjection(context),
-                                    },
-                              projecting: _projection?.running ?? false,
+                                  : _projection.running
+                                  ? () => _showProjectionLinks(context)
+                                  : () => _startProjection(context),
+                              projecting: _projection.running,
                             ),
                           ),
                       ],
