@@ -347,14 +347,64 @@ class SongMapEntry {
 /// (`V, C, V, C` → first verse, chorus, second verse, chorus). Without a
 /// sequence, or when it matches none of the song's parts, the parts of the
 /// song in document order (a chorus recall repeats the chorus).
-List<SongMapEntry> songMap(Song song, List<SequenceItem> sequence) {
-  final parts = _sectionParts(song);
-  SongMapEntry entry(SequenceItem part, Section? section) => SongMapEntry(
-    part: part,
-    cue: section == null ? null : _cue(section),
-    notes: section == null ? const [] : _notes(section),
-  );
+List<SongMapEntry> songMap(Song song, List<SequenceItem> sequence) => [
+  for (final (:part, :section) in playedParts(song, sequence))
+    SongMapEntry(
+      part: part,
+      cue: section == null ? null : _cue(section),
+      notes: section == null ? const [] : _notes(section),
+    ),
+];
 
+/// The parts of [song] in the order the band plays them, each with its
+/// section (null when a sequence item matches no section): the parts of
+/// [sequence] in its order (repetitions are kept on the item, not
+/// expanded), where a part without a number takes the next section of its
+/// kind (`V, C, V, C` → first verse, chorus, second verse, chorus).
+/// Without a sequence, or when it matches none of the song's parts, the
+/// parts of the song in document order, a chorus recall repeating the
+/// chorus. Sections that are no part (no label, tab, grid) are left out;
+/// used by the song map (ADR-0026) and the lyrics projection (ADR-0068).
+List<({SequenceItem part, Section? section})> playedParts(
+  Song song,
+  List<SequenceItem> sequence,
+) {
+  final bySequence = sequenceParts(song, sequence);
+  if (bySequence != null) return bySequence;
+  final parts = _sectionParts(song);
+  final result = <({SequenceItem part, Section? section})>[];
+  Section? lastChorus;
+  for (final element in song.elements) {
+    if (element is Section) {
+      final part = parts[element];
+      if (part == null) continue;
+      if (element.kind == SectionKind.chorus) lastChorus = element;
+      result.add((part: part, section: element));
+    } else if (element is ChorusRecall) {
+      final chorus = element.chorus ?? lastChorus;
+      final part = chorus == null ? null : parts[chorus];
+      result.add((
+        part:
+            part ??
+            SequenceItem(
+              code: sequenceAbbreviations[SequencePart.chorus]!,
+              part: SequencePart.chorus,
+            ),
+        section: chorus,
+      ));
+    }
+  }
+  return result;
+}
+
+/// The parts of [sequence] in its order, each with the section of [song]
+/// it plays (see [playedParts]); null when the sequence is empty or matches
+/// none of the song's parts.
+List<({SequenceItem part, Section? section})>? sequenceParts(
+  Song song,
+  List<SequenceItem> sequence,
+) {
+  final parts = _sectionParts(song);
   final sections = parts.keys.toList();
   bool matches(SequenceItem item, SequenceItem part) =>
       part.part == SequencePart.other
@@ -385,35 +435,11 @@ List<SongMapEntry> songMap(Song song, List<SequenceItem> sequence) {
               used[item.part] = n + 1;
             }
           }
-          return entry(item, section);
+          return (part: item, section: section);
         }(),
     ];
   }
-
-  final result = <SongMapEntry>[];
-  Section? lastChorus;
-  for (final element in song.elements) {
-    if (element is Section) {
-      final part = parts[element];
-      if (part == null) continue;
-      if (element.kind == SectionKind.chorus) lastChorus = element;
-      result.add(entry(part, element));
-    } else if (element is ChorusRecall) {
-      final chorus = element.chorus ?? lastChorus;
-      final part = chorus == null ? null : parts[chorus];
-      result.add(
-        entry(
-          part ??
-              SequenceItem(
-                code: sequenceAbbreviations[SequencePart.chorus]!,
-                part: SequencePart.chorus,
-              ),
-          chorus,
-        ),
-      );
-    }
-  }
-  return result;
+  return null;
 }
 
 String? _cue(Section section) {

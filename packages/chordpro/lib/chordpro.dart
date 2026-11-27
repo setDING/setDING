@@ -26,6 +26,7 @@ export 'src/lilypond.dart';
 export 'src/highlight.dart';
 export 'src/key_guess.dart';
 export 'src/links.dart';
+export 'src/lyric_slides.dart';
 export 'src/markup.dart';
 export 'src/metadata.dart';
 export 'src/meter.dart';

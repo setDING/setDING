@@ -167,6 +167,14 @@ Forces:
   (§9) and the lower third for livestreams (§10) are part of the first version;
   following on the audience's phones and the Android foreground service stay open.
 - 2026-11-27: Accepted by the owner (#1164).
+- 2026-11-27: Slide model in `packages/chordpro` (#1166): `lyricSections` takes
+  the played order from the same rule as the drummer's song map (ADR-0026,
+  `playedParts`/`sequenceParts`): a part without a number takes the next section
+  of its kind, repetitions (`C x2`) are kept on the section and not expanded into
+  more slides, and without a matching sequence every section with lyrics is used
+  in document order, including sections without a label. `lyricSlides` splits a
+  section into the fewest slides of at most *lines per slide* text lines, of about
+  equal length, and gives a language pair the slide count of the longer one.
 
 ## Open points
 
