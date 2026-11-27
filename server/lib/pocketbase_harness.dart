@@ -195,6 +195,57 @@ class PocketBase {
   /// afterwards.
   Future<PocketBase> upgrade() => restart();
 
+  /// Stops the server, reverts [migration] and every later migration with
+  /// `migrate down` and starts it again with only the older migrations, so a
+  /// test can check the schema of the down migration; [upgrade] applies them
+  /// again. This instance must not be used afterwards.
+  Future<PocketBase> downgrade(String migration) async {
+    final process = _process;
+    if (process == null) throw StateError('a remote server cannot downgrade');
+    final i = _flags.indexOf('--migrationsDir');
+    if (i < 0) throw StateError('no --migrationsDir to downgrade');
+    final all = Directory(
+      _flags[i + 1],
+    ).listSync().whereType<File>().map((f) => f.uri.pathSegments.last);
+    final later = all.where((n) => n.compareTo(migration) >= 0).length;
+    process.kill();
+    await process.exitCode;
+    // `migrate down` asks for a confirmation and exits with 0 either way.
+    final down = await Process.start(_binaryPath, [
+      'migrate',
+      'down',
+      '$later',
+      ..._without(_flags, ['--publicDir', '--http']),
+    ], workingDirectory: _workingDirectory);
+    down.stdin.writeln('y');
+    await down.stdin.close();
+    final output = StringBuffer();
+    final streams = [
+      down.stdout.transform(utf8.decoder).forEach(output.write),
+      down.stderr.transform(utf8.decoder).forEach(output.write),
+    ];
+    final code = await down.exitCode;
+    await Future.wait(streams);
+    if (code != 0 || !'$output'.contains('Reverted $migration')) {
+      throw StateError('migrate down failed: $output');
+    }
+    final older = Directory('${_dir.path}/pb_migrations_before_$migration')
+      ..createSync();
+    for (final name in all.where((n) => n.compareTo(migration) < 0)) {
+      File('${_flags[i + 1]}/$name').copySync('${older.path}/$name');
+    }
+    return _launch(
+      binary: _binaryPath,
+      dir: _dir,
+      dataDir: dataDir,
+      flags: [..._flags]..[i + 1] = older.path,
+      restartFlags: _flags,
+      workingDirectory: _workingDirectory,
+      environment: _environment,
+      rateLimits: false,
+    );
+  }
+
   /// Stops the server, runs [whileStopped] (e.g. a restore into [dataDir])
   /// and starts it again on the same directory with all migrations; this
   /// instance must not be used afterwards. [environment] is added to the
