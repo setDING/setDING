@@ -96,6 +96,8 @@ app, so the APK must be signed with a stable release key, not a per-machine debu
 
 - 2026-11-24: Server artifacts (ADR-0063, #1052): the job `server` builds and tests the server bundles (amd64, arm64 under QEMU) and their images with `tool/server-dist/release-test.sh`, including the update from the previous release; `publish` waits for it and attaches the bundles; the job `server-image` pushes the multi-platform image to ghcr.io (`packages: write`) after the GitHub Release. The bundles have no SBOM yet (#1062).
 - 2026-11-27: The owner created a Google Play developer account; ADR-0067 (accepted, #1137) adds Google Play next to Obtainium with the same release key (Play App Signing) and an AAB uploaded by this workflow. The Play row in the alternatives reflects the situation of 2026-11-16.
+- 2026-11-27: Pre-releases (`vX.Y.Z-<pre>`) default to the staging server and
+  skip Google Play (ADR-0069, #1178).
 
 ## Open points
 

@@ -18,7 +18,7 @@ class ServerTargetsTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         stub = pathlib.Path(self.tmp.name) / 'stub'
-        stub.write_text('#!/bin/sh\necho "SERVER=$SERVER SERVER_SITE=$SERVER_SITE ARGS=$*"\n')
+        stub.write_text('#!/bin/sh\necho "SERVER=$SERVER SERVER_SITE=$SERVER_SITE TARGET=$TARGET ARGS=$*"\n')
         stub.chmod(0o755)
         self.stub = str(stub)
 
@@ -57,8 +57,21 @@ class ServerTargetsTest(unittest.TestCase):
         self.assertEqual(out.returncode, 0, out.stderr)
         self.assertIn('SERVER=debian@prod', out.stdout)
         self.assertIn('ARGS=1.2.3', out.stdout)
+        self.assertIn('TARGET=prod', out.stdout)
         out = self.make('server-release', TARGET='staging')
         self.assertIn('SERVER=root@staging', out.stdout)
+        self.assertIn('TARGET=staging', out.stdout)
+
+    def test_pre_release_goes_to_staging_by_default(self):
+        # ADR-0069 (#1178): a pre-release never reaches production by default.
+        out = self.make('server-release', VERSION='1.3.0-beta.1')
+        self.assertEqual(out.returncode, 0, out.stderr)
+        self.assertIn('SERVER=root@staging', out.stdout)
+        self.assertIn('TARGET=staging', out.stdout)
+        self.assertIn('ARGS=1.3.0-beta.1', out.stdout)
+        # An explicit TARGET=prod reaches the deploy script, which refuses it.
+        out = self.make('server-release', VERSION='1.3.0-beta.1', TARGET='prod')
+        self.assertIn('TARGET=prod', out.stdout)
 
     def test_other_targets_default_to_production(self):
         out = self.make('server-ssh')

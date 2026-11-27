@@ -1,8 +1,25 @@
+import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../util/log.dart';
 
 const _log = Log('session');
+
+/// The server a stored session belongs to (`{"server": …, "auth": …}`, written
+/// by the PocketBase backend), or null if there is none or it cannot be read.
+String? sessionServer(String? stored) {
+  if (stored == null || stored.isEmpty) return null;
+  try {
+    if (jsonDecode(stored) case {'server': final String server}
+        when server.isNotEmpty) {
+      return server;
+    }
+  } on FormatException {
+    // An unreadable session belongs to no server.
+  }
+  return null;
+}
 
 /// Persists the session (auth token and user record) between app starts.
 ///

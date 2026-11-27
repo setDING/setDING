@@ -23,6 +23,12 @@ build_args=()
 if [ -n "${BUILD_NUMBER:-}" ]; then
   build_args+=(--build-number "$BUILD_NUMBER")
 fi
+# DART_DEFINES (optional, set by CI): extra build arguments, e.g. the staging
+# server of a pre-release (ADR-0069).
+if [ -n "${DART_DEFINES:-}" ]; then
+  read -ra defines <<<"$DART_DEFINES"
+  build_args+=("${defines[@]}")
+fi
 # The instruction sizes name the packages compiled into the app (SBOM).
 sizes="$src/app/build/instruction-sizes.json"
 flutter build linux --release "${build_args[@]}" \

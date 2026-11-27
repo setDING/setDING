@@ -18,6 +18,9 @@
 # Google Play (ADR-0067) gets an AAB of the same build, signed with the upload
 # key, uploaded to the internal track after the GitHub Release; the owner
 # promotes it in the Play Console. The AAB is not a GitHub Release asset.
+# Pre-releases (ADR-0069): a tag with a suffix (v1.3.0-beta.1) becomes a GitHub
+# pre-release for Obtainium, its apps use the staging server by default, and
+# nothing goes to Google Play; `make server-release` deploys it to staging only.
 name: Release
 
 on:
@@ -32,6 +35,10 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  # The default server of pre-release builds (ADR-0069).
+  STAGING_SERVER_URL: https://api.setding.dev
+
 jobs:
   version:
     runs-on: ubuntu-latest
@@ -40,6 +47,10 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       flutter: ${{ steps.version.outputs.flutter }}
       name: ${{ steps.version.outputs.name }}
+      # true for a tag with a suffix (v1.3.0-beta.1, ADR-0069).
+      prerelease: ${{ steps.version.outputs.prerelease }}
+      # Extra flutter build arguments: the staging server for pre-releases.
+      defines: ${{ steps.version.outputs.defines }}
     steps:
       - name: Check out
         uses: actions/checkout@v7
@@ -60,6 +71,14 @@ jobs:
             echo "::error::Tag $GITHUB_REF_NAME does not match the version in app/pubspec.yaml (v$version)"
             exit 1
           fi
+          if [ "$GITHUB_REF_TYPE" = tag ] && [[ "$GITHUB_REF_NAME" == *-* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+            echo "defines=--dart-define=SETDING_SERVER_URL=$STAGING_SERVER_URL" >> "$GITHUB_OUTPUT"
+            echo "Pre-release: default server $STAGING_SERVER_URL, no Google Play upload"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+            echo "defines=" >> "$GITHUB_OUTPUT"
+          fi
 
       # The release notes are the version's section in CHANGELOG.md: fail before
       # the builds if it is missing or invalid.
@@ -78,7 +97,7 @@ jobs:
       # Same container build as locally (make release-linux, ADR-0019): baseline
       # glibc and the ISA check, independent of the runner's Ubuntu.
       - name: Build (Debian container)
-        run: make release-linux RELEASE_NAME=${{ needs.version.outputs.name }} BUILD_NUMBER=$GITHUB_RUN_NUMBER
+        run: make release-linux RELEASE_NAME=${{ needs.version.outputs.name }} BUILD_NUMBER=$GITHUB_RUN_NUMBER DART_DEFINES="${{ needs.version.outputs.defines }}"
 
       - name: Upload
         uses: actions/upload-artifact@v7
@@ -155,7 +174,7 @@ jobs:
         run: |
           flutter config --no-analytics >/dev/null
           flutter build apk --release --target-platform android-arm64 \
-            --build-number "$GITHUB_RUN_NUMBER" \
+            --build-number "$GITHUB_RUN_NUMBER" ${{ needs.version.outputs.defines }} \
             --extra-gen-snapshot-options=--print-instructions-sizes-to="$PWD/build/instruction-sizes.json"
           cp build/app/outputs/flutter-apk/app-release.apk \
             "$GITHUB_WORKSPACE/${{ needs.version.outputs.name }}-android.apk"
@@ -213,7 +232,7 @@ jobs:
         working-directory: app
         run: |
           flutter build appbundle --release --target-platform android-arm64 \
-            --build-number "$GITHUB_RUN_NUMBER"
+            --build-number "$GITHUB_RUN_NUMBER" ${{ needs.version.outputs.defines }}
           cp build/app/outputs/bundle/release/app-release.aab \
             "$GITHUB_WORKSPACE/${{ needs.version.outputs.name }}-android.aab"
           keytool -printcert -jarfile "$GITHUB_WORKSPACE/${{ needs.version.outputs.name }}-android.aab" |
@@ -256,7 +275,7 @@ jobs:
         shell: bash
         run: |
           flutter config --no-analytics >/dev/null
-          flutter build windows --release --build-number "$GITHUB_RUN_NUMBER" \
+          flutter build windows --release --build-number "$GITHUB_RUN_NUMBER" ${{ needs.version.outputs.defines }} \
             --extra-gen-snapshot-options=--print-instructions-sizes-to="$(cygpath -m "$PWD")/build/instruction-sizes.json"
 
       # Flutter apps need the Visual C++ runtime; ship its DLLs next to the
@@ -473,14 +492,15 @@ jobs:
             --notes-file ../release-notes.md --verify-tag "${prerelease[@]}" -- *
 
   # Google Play (ADR-0067): uploads the AAB to the internal track once the
-  # GitHub Release exists; the owner promotes it in the Play Console. The
+  # GitHub Release exists; the owner promotes it in the Play Console.
+  # Pre-releases are never uploaded (ADR-0069). The
   # release notes are the version's user notes (whats_new.json, ADR-0041).
   # Needs the service account key PLAY_SERVICE_ACCOUNT_JSON; the variable
   # PLAY_RELEASE_STATUS may set `draft` (required while the app itself is
   # still a draft in the Play Console), default `completed`. The first AAB
   # of the app is uploaded by hand (docs/development/releases.md).
   play:
-    if: github.ref_type == 'tag'
+    if: github.ref_type == 'tag' && needs.version.outputs.prerelease != 'true'
     needs: [version, android, publish]
     runs-on: ubuntu-latest
     timeout-minutes: 15

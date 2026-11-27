@@ -84,6 +84,8 @@ job_changelog() {
   python3 -m unittest -q test_changelog
   # Google Play release notes from whats_new.json (ADR-0067).
   python3 -m unittest -q test_play_notes
+  # The tag make server-release deploys: no pre-release on production (ADR-0069).
+  python3 -m unittest -q test_release_tag
   ./changelog.py check --version pubspec
 }
 

@@ -71,6 +71,9 @@ DOCKER          ?= docker
 RELEASE_NAME  ?= setding-$(APK_VERSION)-$(APK_COMMIT)
 RELEASE_IMAGE ?= setding-release-linux:$(FLUTTER_VERSION)
 BUILD_NUMBER  ?=
+# Extra flutter build arguments of the release build; CI passes the staging
+# server of pre-releases (ADR-0069).
+DART_DEFINES  ?=
 
 # Android release key (make android-keystore, ADR-0021); never inside the repository.
 ANDROID_KEYSTORE ?= $(HOME)/.local/share/setding/android-release.jks
@@ -175,7 +178,7 @@ release-linux: release-check ## Build the Linux release and its SBOMs in a conta
 	@mkdir -p $(APP)/build
 	git -C $(ROOT) archive $(RELEASE_COMMIT) | $(DOCKER) run --rm -i \
 		-v $(ROOT)/tool/release:/release:ro -v $(APP)/build:/out -v setding-release-pub-cache:/root/.pub-cache \
-		-e HOST_UID=$$(id -u) -e HOST_GID=$$(id -g) -e BUILD_NUMBER=$(BUILD_NUMBER) \
+		-e HOST_UID=$$(id -u) -e HOST_GID=$$(id -g) -e BUILD_NUMBER=$(BUILD_NUMBER) -e DART_DEFINES="$(DART_DEFINES)" \
 		-e COMMIT=$(RELEASE_COMMIT) \
 		$(RELEASE_IMAGE) /release/build-linux.sh $(RELEASE_NAME)-linux-x64
 	@echo "Linux release: $(APP)/build/$(RELEASE_NAME)-linux-x64.tar.gz and .AppImage"
@@ -311,8 +314,11 @@ server-install: server-target ## Install the server built from the working tree 
 	@test "$(T)" != prod || test "$(FORCE)" = 1 || { echo "Production gets releases only (make server-release); TARGET=prod FORCE=1 only in an emergency"; exit 1; }
 	@SERVER=$(SRV) SSH="$(SSH)" $(SERVER_DEPLOY)
 
-server-release: server-target ## After a release: wait for its green build, then install its published bundle (VERSION=x.y.z, default newest; TARGET=prod, default, or staging)
-	@SERVER=$(SRV) SSH="$(SSH)" $(SERVER_RELEASE_DEPLOY) $(VERSION)
+# A pre-release (VERSION with a suffix) goes to staging by default; production
+# refuses it (ADR-0069).
+server-release: T = $(or $(TARGET),$(if $(findstring -,$(VERSION)),staging,prod))
+server-release: server-target ## After a release: wait for its green build, then install its published bundle (VERSION=x.y.z, default newest; TARGET=prod, default, or staging; a pre-release x.y.z-beta.n goes to staging)
+	@SERVER=$(SRV) TARGET=$(T) SSH="$(SSH)" $(SERVER_RELEASE_DEPLOY) $(VERSION)
 
 server-bundle: ## Build the server bundle setding-server-<version>-linux-<arch>.tar.gz and SHA256SUMS into build/server-dist (ARCH=amd64|arm64, WEB_DIR=<web build>; ADR-0063)
 	@ARCH=$(ARCH) WEB_DIR=$(WEB_DIR) PB_VERSION=$(PB_VERSION) $(ROOT)/tool/server-dist/build-bundle.sh

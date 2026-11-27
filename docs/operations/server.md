@@ -37,7 +37,7 @@ commands with `sudo -n` then. `TARGET=prod|staging` picks the server; the old na
 
 | Target | What it does |
 |---|---|
-| `make server-release [VERSION=X.Y.Z]` | **Production updates** (default `TARGET=prod`): after a release, wait for its green build, then install the bundle published with it (default: newest tag) |
+| `make server-release [VERSION=X.Y.Z]` | **Production updates** (default `TARGET=prod`): after a release, wait for its green build, then install the bundle published with it (default: newest final tag). A pre-release (`VERSION=X.Y.Z-beta.N`) goes to **staging** by default and is refused on production; `TARGET=staging` without `VERSION` takes the newest tag, pre-releases included (ADR-0069) |
 | `make server-install` | Install a bundle built from the working tree, stamped `X.Y.Z-dev+<commit>`, on the **test server** (default `TARGET=staging`). On production only with `TARGET=prod FORCE=1`, in an emergency |
 | `make server-site [VERSION=X.Y.Z]` | Build the website and deploy it to `SERVER_SITE`: from the release tag after a release, from the working tree for documentation fixes (section 8) |
 | `make server-status` | Services, version, health, latest backups, disk |
@@ -72,6 +72,7 @@ Firewall) must allow port 22; the tunnel needs no incoming port.
 
 ```bash
 make server-release                 # production, the newest release
+make server-release VERSION=1.3.0-beta.1   # a pre-release, on the test server
 make server-install                 # test server, the working tree
 ```
 
