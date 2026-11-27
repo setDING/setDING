@@ -4,6 +4,7 @@
 // its hash, the server stores the token encrypted with the key
 // `SETDING_INVITE_KEY` from `pocketbase.env` (pb_hooks/lib/invites.js).
 // Hidden like the hash, and never set through the records API.
+
 /// [rule] with the first [from] replaced by [to]; throws if [rule] does not
 /// contain [from], so a migration never silently leaves a rule unchanged
 /// (issue #1201).
