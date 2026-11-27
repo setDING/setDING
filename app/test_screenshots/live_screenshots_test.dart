@@ -277,7 +277,7 @@ void main() {
       await tester.pumpWidget(
         RepaintBoundary(
           key: UniqueKey(),
-          child: app.build(home: SongScreen(songId: items!.first.song!.id)),
+          child: app.build(home: SongScreen(songId: items.first.song!.id)),
         ),
       );
       await tester.pumpAndSettle();
