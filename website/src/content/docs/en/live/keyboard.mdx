@@ -8,6 +8,8 @@ sidebar:
 import { Image } from 'astro:assets';
 import settings from '../../../../../../docs/screenshots/settings_midi.png';
 import live from '../../../../../../docs/screenshots/live_midi.png';
+import liveSheet from '../../../../../../docs/screenshots/live_midi_sheet.png';
+import picker from '../../../../../../docs/screenshots/midi_program_picker.png';
 
 If you play keys, setDING can switch your keyboard to the right sound for every song
 in live mode: piano for one song, organ for the next. You store your **keyboard
@@ -45,7 +47,7 @@ Bluetooth MIDI is not supported yet.
      tells you which values it expects.
    - **Nord Stage 3** – you enter programs as the Nord's display shows them.
    - **Yamaha Motif XF** – voices and performances as the Motif's display shows
-     them.
+     them. Not yet tested with a real Motif XF.
 6. Set the **MIDI channel** the keyboard receives on.
 
 <Image src={settings} alt="The Keyboard (MIDI) settings with a connected Nord Stage 3, device profile and MIDI channel" />
@@ -63,6 +65,13 @@ Bluetooth MIDI is not supported yet.
   2.54). If a song does not match, use the profile **Generic**.
 
 ### Yamaha Motif XF
+
+:::caution[Not tested yet]
+The profile for the Yamaha Motif XF follows its MIDI documentation but has not
+been tested with a real Motif XF yet. If it does not switch as expected, use the
+profile **Generic** and let us know on
+[GitHub](https://github.com/setDING/setDING/issues).
+:::
 
 - On the Motif, under **Utility** → **Control** (F5) → **MIDI** (SF2):
   - set **MIDI IN/OUT** to **USB**,
@@ -82,7 +91,7 @@ Bluetooth MIDI is not supported yet.
 
 1. Open the song and tap **Personal adjustments**.
 2. Under **Keyboard programs**, tap **Choose program** and pick it without typing,
-   e.g. bank C and 13 in the grid (page 1, button 3), then **Save**. With the
+   e.g. bank C and 23 in the grid (page 2, button 3), then **Save**. With the
    Nord, first choose **Program**, **Live memory** or **Song** at the top; a new
    program starts with the kind you saved last.
 3. **Test** sends it to the keyboard right away, so you hear whether the sound is
@@ -90,6 +99,8 @@ Bluetooth MIDI is not supported yet.
 
 The field appears when MIDI program changes are on for this device or when the song
 already has a program. You can remove the program again.
+
+<Image src={picker} alt="The Keyboard program picker for a Nord Stage 3: bank C, 23 chosen in the grid, next to the personal adjustments" />
 
 ## Changing keyboards
 
@@ -147,6 +158,8 @@ program for this device's keyboard:
 
 A change is saved in the song at once and sent to the keyboard. **Undo** in the
 message at the bottom brings the previous program back.
+
+<Image src={liveSheet} alt="The Keyboard program panel in live mode with program C:23, Send program again, Change program, Same as previous song and Remove program" />
 
 ### Taking over the sound from the keyboard
 

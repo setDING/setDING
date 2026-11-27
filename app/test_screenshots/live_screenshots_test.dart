@@ -9,6 +9,7 @@ import 'package:setding/data/demo_song.dart';
 import 'package:setding/midi/midi_output.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/settings_screen.dart';
+import 'package:setding/ui/songs/song_screen.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/gestures.dart';
 import 'package:drift/drift.dart' show Value;
@@ -219,8 +220,9 @@ void main() {
   }
 
   // Keyboard (MIDI, ADR-0039) for the user documentation: the device
-  // settings with a connected Nord Stage 3, and live mode with the
-  // indicator and "Send program again".
+  // settings with a connected Nord Stage 3, live mode with the indicator and
+  // "Send program again", the program sheet of live mode and the program
+  // picker of a song.
   for (final (lang, dark) in [('de', false), ('en', true)]) {
     screenshotTest('keyboard midi $lang', (tester) async {
       useTabletSize(tester);
@@ -268,6 +270,24 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tapAt(tester.getRect(find.byType(PageView)).center);
       await shot(tester, '${lang}_22b_live_midi');
+      await tester.tap(find.byKey(const Key('live-midi-button')));
+      await tester.pumpAndSettle();
+      await shot(tester, '${lang}_22c_live_midi_sheet');
+
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: SongScreen(songId: items!.first.song!.id)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('open-personal-adjustments')));
+      await tester.pumpAndSettle();
+      final value = find.byKey(const Key('midi-program-value'));
+      await tester.ensureVisible(value);
+      await tester.pumpAndSettle();
+      await tester.tap(value);
+      await shot(tester, '${lang}_22d_midi_program_picker');
       await app.dispose(tester);
     });
   }

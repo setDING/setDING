@@ -8,6 +8,8 @@ sidebar:
 import { Image } from 'astro:assets';
 import settings from '../../../../../docs/screenshots/settings_midi_de.png';
 import live from '../../../../../docs/screenshots/live_midi_de.png';
+import liveSheet from '../../../../../docs/screenshots/live_midi_sheet_de.png';
+import picker from '../../../../../docs/screenshots/midi_program_picker_de.png';
 
 Spielst du Keyboard, kann setDING im Live-Modus dein Keyboard bei jedem Song zum
 passenden Sound wechseln: Klavier für den einen Song, Orgel für den nächsten. Dazu
@@ -47,7 +49,7 @@ Bluetooth-MIDI wird noch nicht unterstützt.
    - **Nord Stage 3** – du gibst Programme so ein, wie sie das Display des Nord
      zeigt.
    - **Yamaha Motif XF** – Voices und Performances so, wie sie das Display des
-     Motif zeigt.
+     Motif zeigt. Noch nicht mit einem echten Motif XF getestet.
 6. Stelle den **MIDI-Kanal** ein, auf dem das Keyboard empfängt.
 
 <Image src={settings} alt="Die Einstellungen «Keyboard (MIDI)» mit einem verbundenen Nord Stage 3, Geräteprofil und MIDI-Kanal" />
@@ -65,6 +67,13 @@ Bluetooth-MIDI wird noch nicht unterstützt.
   OS 2.54). Passt ein Song nicht, verwende das Profil **Allgemein**.
 
 ### Yamaha Motif XF
+
+:::caution[Noch nicht getestet]
+Das Profil für den Yamaha Motif XF ist nach seiner MIDI-Dokumentation gebaut, aber
+noch nicht mit einem echten Motif XF getestet. Schaltet er nicht wie erwartet um,
+verwende das Profil **Allgemein** und melde es uns auf
+[GitHub](https://github.com/setDING/setDING/issues).
+:::
 
 - Stelle am Motif unter **Utility** → **Control** (F5) → **MIDI** (SF2):
   - **MIDI IN/OUT** auf **USB**,
@@ -84,7 +93,7 @@ Bluetooth-MIDI wird noch nicht unterstützt.
 
 1. Öffne den Song und tippe auf **Persönliche Anpassungen**.
 2. Tippe bei den **Keyboard-Programmen** auf **Programm wählen** und wähle es ohne
-   Eingabe aus, z. B. Bank C und im Raster 13 (Seite 1, Taste 3), dann **Speichern**.
+   Eingabe aus, z. B. Bank C und im Raster 23 (Seite 2, Taste 3), dann **Speichern**.
    Beim Nord wählst du oben zuerst **Programm**, **Live-Speicher** oder **Song**;
    ein neues Programm beginnt mit der Art, die du zuletzt gespeichert hast.
 3. Mit **Test** schickst du es sofort an das Keyboard und hörst, ob der Sound
@@ -92,6 +101,8 @@ Bluetooth-MIDI wird noch nicht unterstützt.
 
 Das Feld erscheint, wenn MIDI-Programmwechsel auf diesem Gerät eingeschaltet sind
 oder der Song schon ein Programm hat. Du kannst das Programm auch wieder entfernen.
+
+<Image src={picker} alt="Die Auswahl «Keyboard-Programm» für einen Nord Stage 3: Bank C, im Raster 23 gewählt, daneben die persönlichen Anpassungen" />
 
 ## Keyboard wechseln
 
@@ -151,6 +162,8 @@ Programm des aktuellen Songs für das Keyboard dieses Geräts:
 
 Eine Änderung wird sofort im Song gespeichert und ans Keyboard gesendet. Mit
 **Rückgängig** in der Meldung unten kommt das bisherige Programm zurück.
+
+<Image src={liveSheet} alt="Der Bereich «Keyboard-Programm» im Live-Modus mit Programm C:23, Programm erneut senden, Programm ändern, Wie vorheriger Song und Programm entfernen" />
 
 ### Klang vom Keyboard übernehmen
 
