@@ -91,9 +91,10 @@ Die Backups des Servers behalten bis zu 14 Tage eine Kopie.
 ## Konto löschen
 
 In der App löschst du dein Konto unter **Einstellungen** → **Konto & Synchronisation** →
-**Konto löschen** (siehe [Konto](/settings/account/)). Hast du keinen Zugriff mehr auf
-die App, schreib dafür an die Adresse unter [Verantwortlich](#verantwortlich); wir löschen das Konto
-dann innerhalb von 30 Tagen.
+**Konto löschen** (siehe [Konto](/settings/account/)), ohne App im Web-Client unter
+[app.setding.app](https://app.setding.app). Kannst du dich nicht mehr anmelden, schreib
+dafür an die Adresse unter [Verantwortlich](#verantwortlich); wir löschen das Konto
+dann innerhalb von 30 Tagen. Alle Schritte stehen unter [Konto löschen](/delete-account/).
 
 Gelöscht werden dein Konto, deine persönlichen Anpassungen, Annotationen und
 Einstellungen und deine Mitgliedschaften. Songs und Sets, die du erstellt oder
