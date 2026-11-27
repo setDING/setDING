@@ -358,9 +358,14 @@ class SettingsDropdown<T> extends StatelessWidget {
     required this.options,
     required this.onChanged,
     this.hint,
+    this.expanded = false,
   });
 
   final Key? dropdownKey;
+
+  /// Takes the tile's width and shortens long entries, for many options
+  /// whose longest name does not fit a phone.
+  final bool expanded;
   final IconData icon;
   final String title;
   final T value;
@@ -380,9 +385,16 @@ class SettingsDropdown<T> extends StatelessWidget {
         DropdownButton<T>(
           key: dropdownKey,
           value: value,
+          isExpanded: expanded,
           items: [
             for (final e in options.entries)
-              DropdownMenuItem(value: e.key, child: Text(e.value)),
+              DropdownMenuItem(
+                value: e.key,
+                child: Text(
+                  e.value,
+                  overflow: expanded ? TextOverflow.ellipsis : null,
+                ),
+              ),
           ],
           onChanged: (v) {
             if (v != null) onChanged(v);

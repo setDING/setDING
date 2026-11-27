@@ -31,6 +31,13 @@ The test gate (`make check`) runs the same tests without writing files: the scre
 are built, driven, laid out and painted, but not rasterised and PNG-encoded, so a UI
 change that breaks them fails the check at a fraction of the cost.
 
+The projected page of the lyrics projection (ADR-0068) runs in a browser, not
+in the app, so the Flutter tests cannot render it. `tool/projection-screenshots.sh`
+serves the real page with the real server and shoots it with a headless Chromium
+(`projection_page`, `projection_two_languages`, `projection_lower_third`, each
+with `_de`); run it when the page asset changes (`CHROMIUM=<path>` picks the
+browser).
+
 The screenshots of the store listings (Google Play, App Store) are rendered by
 `store_screenshots_test.dart` and composed into `docs/store/` instead
 (`make screenshots ONLY="^store "`, see [its README](../store/README.md)).

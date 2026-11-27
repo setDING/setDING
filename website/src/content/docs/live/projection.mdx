@@ -1,0 +1,154 @@
+---
+title: Liedtext projizieren
+description: Den Liedtext ohne Akkorde auf einen Beamer, Fernseher oder in OBS bringen – direkt aus dem Live-Modus, ohne zusätzliche Software.
+sidebar:
+  order: 5
+---
+
+import { Image } from 'astro:assets';
+import start from '../../../../../docs/screenshots/live_projection_start_de.png';
+import sheet from '../../../../../docs/screenshots/projection_sheet_de.png';
+import page from '../../../../../docs/screenshots/projection_page_de.png';
+import bar from '../../../../../docs/screenshots/projection_bar_de.png';
+import twoLanguages from '../../../../../docs/screenshots/projection_two_languages_de.png';
+import lowerThird from '../../../../../docs/screenshots/projection_lower_third_de.png';
+import settings from '../../../../../docs/screenshots/settings_projection_de.png';
+
+Bei kleinen Auftritten, Lobpreis oder Gottesdiensten soll das Publikum mitsingen.
+setDING zeigt den Liedtext dafür **ohne Akkorde** in einem Browser: auf dem Laptop
+am Beamer, auf einem Fernseher oder als Quelle in OBS. Du brauchst keine weitere
+Software und keine zweite Song-Sammlung. Die Projektion folgt dem Set, das du im
+Live-Modus spielst.
+
+Das Tablet im Live-Modus stellt dafür eine kleine Webseite im **lokalen Netzwerk**
+bereit. Internet ist nicht nötig; Tablet und Beamer-Gerät müssen nur im selben
+WLAN sein.
+
+## Wo es funktioniert
+
+- **Android, iPhone und iPad, Windows und Linux** – in der installierten App.
+- **Nicht im Web-Client** (`app.setding.app`): Ein Browser kann keine Seite für
+  andere Geräte bereitstellen.
+- Auf dem Gerät am Beamer reicht ein **Browser**; dort ist nichts zu installieren.
+
+## Projektion starten
+
+1. Starte den **Live-Modus** und tippe in die Mitte der Seite, damit die
+   Steuerleiste erscheint.
+2. Tippe auf **Liedtext projizieren**.
+
+<Image src={start} alt="Der Live-Modus mit offener Steuerleiste; links der Knopf «Liedtext projizieren»" />
+
+3. setDING zeigt einen **QR-Code** und die Adressen. Öffne die Adresse unter
+   **Vollbild** im Browser des Geräts am Beamer – mit dem QR-Code oder indem du
+   sie abtippst. Mit dem Kopier-Knopf kannst du sie auch weiterschicken.
+
+<Image src={sheet} alt="Das Blatt «Liedtext projizieren» mit QR-Code, der Adresse für Vollbild und für die Bauchbinde und «Projektion beenden»" />
+
+4. Im Browser schaltet der Knopf unten rechts (er erscheint, wenn du die Maus
+   bewegst) oder ein **Doppelklick** auf **Vollbild**.
+
+Die Seite zeigt den aktuellen Abschnitt so gross, wie er auf den Bildschirm passt,
+weiss auf schwarz und darunter das Copyright des Songs.
+
+<Image src={page} alt="Die projizierte Seite: eine Strophe gross in weisser Schrift auf schwarzem Grund, darunter klein das Copyright" />
+
+Die Adresse enthält einen zufälligen Schlüssel und gilt nur, solange die
+Projektion läuft. Startest du sie neu, gibt es eine **neue Adresse**. Die Projektion
+endet mit **Projektion beenden** oder wenn du den Live-Modus verlässt.
+
+## Was projiziert wird
+
+- Ein Song wird in **Folien** geteilt, eine pro Abschnitt (Strophe, Refrain,
+  Bridge …). Ein langer Abschnitt verteilt sich auf mehrere Folien.
+- Die Reihenfolge ist die **gespielte**: die Folge des Set-Eintrags, sonst die der
+  Band oder des Songs (siehe [Tonart und Folge](/sets/key-and-sequence/)). Ein
+  Refrain, der mehrmals vorkommt, kommt auch mehrmals.
+- **Ohne** Akkorde, Kommentare, Tabs und Grids – nur der Liedtext.
+- Ein **Marker** im Set (z. B. *Pause*) zeigt eine schwarze Folie oder, wenn du es
+  einstellst, seinen Text.
+
+## Folgen und von Hand weiterschalten
+
+Solange projiziert wird, steht unten auf der Bühne die **Projektionsleiste**.
+
+<Image src={bar} alt="Der Live-Modus mit der Projektionsleiste unten in der Mitte: Adressen, Copyright-Hinweis, vorherige Folie, Folie 2/6, nächste Folie, Folgen, Schwarz" />
+
+- **Automatisch:** Ein neuer Song beginnt mit seiner ersten Folie. Blätterst du in
+  einem Song mit mehreren Seiten um, springt die Projektion zum ersten Abschnitt
+  der neuen Seite.
+- **Von Hand:** Passt ein Song auf eine Seite, schaltest du mit **‹** und **›** in
+  der Leiste weiter – oder jemand anderes übernimmt das Tablet. Sobald du von Hand
+  weiterschaltest, folgt die Projektion bei diesem Song nicht mehr dem Live-Modus.
+  **Wieder dem Live-Modus folgen** (die runden Pfeile) schaltet das zurück; beim
+  nächsten Song folgt sie ohnehin wieder.
+- **Projektion schwarz** (der Bildschirm) macht die Projektion schwarz, z. B. für
+  ein Gebet oder eine Ansage, bis du wieder darauf tippst.
+- Das **Sender-Symbol** zeigt die Adressen wieder an.
+
+Öffnest du die Steuerleiste, macht die Projektionsleiste ihr Platz; der Knopf
+**Projektion: Adressen** in der Steuerleiste zeigt dann die Adressen.
+
+## Copyright
+
+Wer Liedtexte öffentlich projiziert, muss das Copyright angeben. setDING zeigt
+dafür die Angabe aus `{copyright: …}` des Songs, so wie sie geschrieben ist (siehe
+[ChordPro](/songs/chordpro/)). Fehlt sie, erscheint in der Projektionsleiste ein
+oranges **©**: Der Song wird dann ohne Copyright projiziert. Ergänze es im Song.
+
+## Zwei Sprachen
+
+Für mehrsprachige Gottesdienste zeigt die Projektion auf Wunsch eine **zweite
+Sprache** daneben: Wähle sie unter [Einstellungen](#einstellungen). Hat der Song
+eine [Sprachversion](/songs/library/#sprachversionen) in dieser Sprache, steht sie
+im Querformat rechts daneben, im Hochformat darunter, etwas heller. Die Abschnitte
+werden der Reihe nach einander zugeordnet.
+
+<Image src={twoLanguages} alt="Die projizierte Seite mit der deutschen Strophe links und der englischen Version rechts, etwas heller" />
+
+## Bauchbinde für Livestreams (OBS)
+
+Die zweite Adresse im Blatt, **Bauchbinde (OBS)**, zeigt den Text in einem Band am
+unteren Rand, auf **durchsichtigem** Hintergrund. Füge sie in OBS (oder einer
+ähnlichen Software) als **Browserquelle** über dem Kamerabild ein. Stelle dafür
+**Zeilen pro Folie** auf 2 bis 4.
+
+<Image src={lowerThird} alt="Die Bauchbinde: zwei Zeilen Liedtext in einem dunklen Band am unteren Rand, das Copyright rechts im Band; der graue Hintergrund steht für das Kamerabild" />
+
+## Einstellungen
+
+Unter **Einstellungen** → **Bildschirm & Live-Modus** → **Projektion** legst du
+fest, wie die Projektion aussieht. Die Einstellungen gelten für **dieses Gerät**
+und wirken sofort, auch während projiziert wird.
+
+<Image src={settings} alt="Die Einstellungen «Projektion»: Farben, Schrift, Ausrichtung, Zeilen pro Folie, Copyright und Zweite Sprache" />
+
+- **Farben:** Weiss auf Schwarz oder Schwarz auf Weiss.
+- **Schrift** und **Ausrichtung** (zentriert oder links).
+- **Zeilen pro Folie:** Wie viele Zeilen höchstens auf einer Folie stehen.
+- **Copyright:** auf jeder Folie oder nur auf der ersten und letzten.
+- **Zweite Sprache:** siehe [Zwei Sprachen](#zwei-sprachen).
+- **Marker als Text:** zeigt den Text eines Markers statt einer schwarzen Folie.
+- **Nächste Folie zeigen:** klein unter dem Text, z. B. für einen Bildschirm, den
+  nur die Band sieht.
+
+## Wenn es nicht klappt
+
+- **Die Seite lädt nicht:** Viele Gäste-WLANs lassen die Geräte nicht miteinander
+  reden. Schalte am Tablet den **Hotspot** ein und verbinde das Beamer-Gerät damit,
+  oder nimm einen eigenen Router mit.
+- **Kein Netzwerk gefunden:** Das Tablet ist in keinem WLAN. Verbinde es oder
+  schalte seinen Hotspot ein.
+- **Windows** fragt beim ersten Start, ob setDING Verbindungen annehmen darf.
+  Erlaube es für **private Netzwerke**.
+- **iPhone und iPad** projizieren nur, solange setDING im Vordergrund ist. Der
+  Live-Modus hält den Bildschirm ohnehin wach.
+- **Der Beamer-Laptop schläft ein:** Der Browser kann ihn über diese Adresse nicht
+  wach halten. Schalte dort den Ruhezustand und den Bildschirmschoner aus.
+- **Ein roter Punkt** oben rechts auf der projizierten Seite heisst: Die Verbindung
+  zum Tablet ist unterbrochen. Die letzte Folie bleibt stehen, und die Seite
+  verbindet sich von selbst wieder. Wurde die Projektion neu gestartet, öffne die
+  neue Adresse.
+
+Die Seite zeigt nur, was gerade projiziert wird. Über sie kann niemand deine Songs
+lesen oder etwas ändern, und sie ist nur im lokalen Netzwerk erreichbar.

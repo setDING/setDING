@@ -1185,17 +1185,23 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                         // Beat of the drummer mode (ADR-0026); take no taps.
                         const Positioned.fill(child: EdgeFlash()),
                         const Positioned.fill(child: CountInOverlay()),
-                        // The projection bar while projecting (ADR-0068).
+                        // The projection bar while projecting (ADR-0068), at
+                        // the bottom centre, clear of the song's header
+                        // (key, tempo, time); the controls take its place
+                        // while they are open.
                         if (_projection case final projection?
-                            when projection.running)
+                            when projection.running && !_controls && !_drawing)
                           Positioned(
-                            top: 8,
-                            right: 8,
+                            left: 0,
+                            right: 0,
+                            bottom: 8,
                             child: SafeArea(
-                              child: ProjectionBar(
-                                controller: projection,
-                                onShowLinks: () =>
-                                    showProjectionSheet(context, projection),
+                              child: Center(
+                                child: ProjectionBar(
+                                  controller: projection,
+                                  onShowLinks: () =>
+                                      showProjectionSheet(context, projection),
+                                ),
                               ),
                             ),
                           ),
@@ -1270,12 +1276,15 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                   ? () => _editProgram(context)
                                   : null,
                               // Native apps only (ADR-0068); while on, the
-                              // projection bar has its links.
-                              onProject:
-                                  ref.watch(projectionSupportedProvider) &&
-                                      !(_projection?.running ?? false)
-                                  ? () => _startProjection(context)
-                                  : null,
+                              // button shows the links.
+                              onProject: !ref.watch(projectionSupportedProvider)
+                                  ? null
+                                  : switch (_projection) {
+                                      final p? when p.running =>
+                                        () => showProjectionSheet(context, p),
+                                      _ => () => _startProjection(context),
+                                    },
+                              projecting: _projection?.running ?? false,
                             ),
                           ),
                       ],
@@ -1528,6 +1537,7 @@ class _ControlBar extends ConsumerWidget {
     this.onSendProgram,
     this.onEditProgram,
     this.onProject,
+    this.projecting = false,
   });
 
   final LiveItem item;
@@ -1556,8 +1566,10 @@ class _ControlBar extends ConsumerWidget {
   /// keyboard symbol; null hides it.
   final VoidCallback? onEditProgram;
 
-  /// Starts the lyrics projection (ADR-0068); null hides the button.
+  /// Starts the lyrics projection (ADR-0068), or shows its links while it
+  /// is [projecting]; null hides the button.
   final VoidCallback? onProject;
+  final bool projecting;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1637,8 +1649,8 @@ class _ControlBar extends ConsumerWidget {
       if (onProject case final project?)
         IconButton(
           key: const Key('live-project'),
-          tooltip: l10n.projectionStart,
-          icon: const Icon(Icons.cast),
+          tooltip: projecting ? l10n.projectionLinks : l10n.projectionStart,
+          icon: Icon(projecting ? Icons.cast_connected : Icons.cast),
           onPressed: project,
         ),
       if (adjust != null &&

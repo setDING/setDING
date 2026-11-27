@@ -69,9 +69,11 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// Closes the sheet and the controls: the projection bar shows.
   Future<void> closeSheet(WidgetTester tester) async {
     await tester.tapAt(const Offset(20, 20));
     await tester.pumpAndSettle();
+    await tapAt(tester, 0.5);
   }
 
   Future<void> startProjection(WidgetTester tester) async {
@@ -144,7 +146,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(host.running, isFalse);
     expect(find.byKey(const Key('projection-bar')), findsNothing);
+    await tapAt(tester, 0.5);
     expect(find.byKey(const Key('live-project')), findsOneWidget);
+    expect(find.byIcon(Icons.cast), findsOneWidget);
     await app.dispose(tester);
   });
 
@@ -155,8 +159,7 @@ void main() {
     await closeSheet(tester);
     expect((lines()! as List).first, 'Verse 1 line 1 la la la');
 
-    // Close the controls, then turn a page of the song.
-    await tapAt(tester, 0.5);
+    // Turn a page of the song.
     await tapAt(tester, 0.9);
     final first = (lines()! as List).first as String;
     expect(first, isNot('Verse 1 line 1 la la la'));
@@ -204,6 +207,34 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect((host.last['style']! as Map)['align'], 'left');
+    await app.dispose(tester);
+  });
+
+  // Regression test (#1171): the bar at the top right covered the key,
+  // tempo and time in the song's header.
+  testWidgets('the bar keeps the header clear and gives way to the controls', (
+    tester,
+  ) async {
+    await start(
+      tester,
+      sources: ['{title: One}\n{key: G}\n{tempo: 92}\n{time: 4/4}\n[G]La la'],
+    );
+    await startProjection(tester);
+    await closeSheet(tester);
+    final bar = tester.getRect(find.byKey(const Key('projection-bar')));
+    for (final chip in ['92 BPM', '4/4']) {
+      final rect = tester.getRect(find.textContaining(chip).first);
+      expect(bar.overlaps(rect), isFalse, reason: chip);
+    }
+
+    // The controls take its place; their button shows the links.
+    await tapAt(tester, 0.5);
+    expect(find.byKey(const Key('projection-bar')), findsNothing);
+    expect(find.byIcon(Icons.cast_connected), findsOneWidget);
+    await tester.tap(find.byKey(const Key('live-project')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('projection-stop')), findsOneWidget);
+    expect(host.starts, 1);
     await app.dispose(tester);
   });
 

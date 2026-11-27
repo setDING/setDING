@@ -79,8 +79,10 @@ class ProjectionSettings extends ConsumerWidget {
           },
           onChanged: (v) => update((s) => s.copyWith(projectionCopyright: v)),
         ),
-        SettingsChoice(
-          tileKey: const Key('settings-projection-second-language'),
+        // Nine languages: a drop-down, not a row of segments.
+        SettingsDropdown(
+          dropdownKey: const Key('settings-projection-second-language'),
+          expanded: true,
           icon: Icons.translate,
           title: l10n.settingsProjectionSecondLanguage,
           hint: l10n.settingsProjectionSecondLanguageHint,
