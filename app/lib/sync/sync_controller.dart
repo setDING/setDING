@@ -4,8 +4,10 @@ import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/band_providers.dart';
 import '../data/database.dart';
-import '../providers.dart';
+import '../data/storage_providers.dart';
+import '../platform/web_client.dart';
 import '../settings/settings.dart';
 import '../data/attachment_storage.dart';
 import 'attachment_fetcher.dart';
