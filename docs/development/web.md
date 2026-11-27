@@ -22,6 +22,28 @@ get `index.html` from the server's SPA fallback and report a source map error. F
 `flutter run -d chrome --dart-define=SETDING_SERVER_URL=http://127.0.0.1:8090`
 in `app/`. Hosting in production: docs/operations/server.md, step 6.
 
+## Security headers
+
+PocketBase sends the web client's files (everything outside `/api/` and `/_/`)
+with a `Content-Security-Policy`, `X-Content-Type-Options: nosniff` and
+`Referrer-Policy: no-referrer` (#1196, `webHeaders` in
+`server/pb_hooks/lib/web.js`, which explains each directive). What the build
+needs:
+
+| Directive | Why |
+|---|---|
+| `script-src 'self' 'wasm-unsafe-eval'` | Scripts only from the server; WebAssembly: CanvasKit, `sqlite3.wasm`, pdfium, SoLoud, zxing. **No inline scripts**: `web/index.html` loads `splash.js` instead (`test/web_hosting_test.dart` checks it) |
+| `worker-src 'self' blob:` | drift, SoLoud and zxing workers, Flutter's service worker; pdfrx starts its worker from a blob URL |
+| `style-src 'self' 'unsafe-inline'` | The Flutter engine and the splash use inline styles |
+| `connect-src 'self' data: blob: https://fonts.gstatic.com` | The API and its realtime SSE on the page's own origin (ADR-0018); Flutter loads Noto fallback fonts for characters the bundled fonts lack from `fonts.gstatic.com` |
+| `img-src`, `media-src`: `'self' data: blob:`; `font-src 'self' data: https://fonts.gstatic.com` | Decoded attachments, PDF pages, fonts |
+| `frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'self'`, `form-action 'self'` | Never framed, no plugins |
+
+A new library that loads code or data from elsewhere needs a change there
+(and in `server/test/web_test.dart`); check the browser console of
+`make web-test` for "Content Security Policy" errors. The invitation landing
+page has its own policy without scripts (`default-src 'none'`).
+
 ## Local database in the browser
 
 drift runs SQLite as WebAssembly (`package:drift/wasm.dart`), started by

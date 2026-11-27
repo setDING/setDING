@@ -35,8 +35,49 @@ function isWebHost(e) {
   return (e.request.host || "").toLowerCase() === host;
 }
 
+/// Content Security Policy of the web client (#1196). What the Flutter web
+/// build needs, all from this server (tool/build-web.sh, no CDN):
+/// - scripts only from this origin (index.html has no inline script) and
+///   'wasm-unsafe-eval' for WebAssembly: CanvasKit, sqlite3 (drift), pdfium
+///   (pdfrx), SoLoud and zxing;
+/// - workers from this origin (drift, SoLoud, zxing, the service worker) and
+///   blob: (pdfrx starts its pdfium worker from a blob URL);
+/// - inline styles: the Flutter engine and index.html's splash set them;
+/// - images, fonts and media from this origin, data: and blob: (decoded
+///   attachments, PDF pages);
+/// - connections to this origin (the API and its realtime SSE: the web
+///   client calls the API on the hostname it was loaded from, ADR-0018),
+///   blob: and data:, and fonts.gstatic.com, where Flutter loads the Noto
+///   fallback fonts for characters the bundled fonts lack;
+/// - never framed (frame-ancestors 'none'), no plugins, base and form
+///   targets only this origin.
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'wasm-unsafe-eval'",
+  "worker-src 'self' blob:",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  "media-src 'self' data: blob:",
+  "connect-src 'self' data: blob: https://fonts.gstatic.com",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join("; ");
+
+/// Security headers of every page and file outside the API (#1196); the
+/// invitation landing page sets its own, stricter policy.
+function securityHeaders(h, csp) {
+  h.set("Content-Security-Policy", csp);
+  h.set("X-Content-Type-Options", "nosniff");
+  // Invitation tokens are in URL paths (/invite/<token>).
+  h.set("Referrer-Policy", "no-referrer");
+}
+
 /// Headers for the web client's files (everything but the API and the admin
 /// UI):
+/// - the security headers above (#1196);
 /// - cross-origin isolation, so browsers give its database OPFS instead of
 ///   the IndexedDB fallback (ADR-0018); "credentialless" keeps cross-origin
 ///   resources without CORP headers working, browsers without it fall back
@@ -48,6 +89,7 @@ function webHeaders(e) {
   const path = e.request.url.path || "";
   if (!path.startsWith("/api/") && !path.startsWith("/_/")) {
     const h = e.response.header();
+    securityHeaders(h, CSP);
     h.set("Cross-Origin-Opener-Policy", "same-origin");
     h.set("Cross-Origin-Embedder-Policy", "credentialless");
     h.set("Cache-Control", "no-cache");
@@ -55,4 +97,4 @@ function webHeaders(e) {
   return e.next();
 }
 
-module.exports = { webUrl, index, available, isWebHost, webHeaders };
+module.exports = { webUrl, index, available, isWebHost, securityHeaders, webHeaders };

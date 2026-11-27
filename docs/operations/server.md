@@ -174,7 +174,11 @@ The web client (ADR-0018) is a Flutter web build that comes with the server bund
 the headers `Cross-Origin-Opener-Policy: same-origin` and
 `Cross-Origin-Embedder-Policy: credentialless` (hook `web.pb.js`), so browsers keep
 its database in OPFS, and `Cache-Control: no-cache`, so browsers and Cloudflare
-revalidate its files after a deploy instead of keeping the old build for hours. Do not
+revalidate its files after a deploy instead of keeping the old build for hours. They
+also get a `Content-Security-Policy` (never framed, scripts only from this server),
+`X-Content-Type-Options: nosniff` and `Referrer-Policy: no-referrer` (#1196,
+[web.md](../development/web.md#security-headers)); the invitation landing page gets
+a stricter policy of its own. Do not
 add a Cloudflare cache rule with a fixed edge TTL for `app.setding.app`; after the
 first deploy with this header, purge the hostname's cache once. The web client calls the API on the hostname it was loaded
 from, so no CORS setting is needed.

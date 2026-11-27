@@ -543,6 +543,13 @@ function landing(e) {
           `${escapeHtml(t.browser)}</a></p>`
         : "");
   }
+  // Only the inline style above; links to the app and the web client are
+  // navigations (#1196).
+  web.securityHeaders(
+    e.response.header(),
+    "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; " +
+      "form-action 'none'; frame-ancestors 'none'",
+  );
   return e.html(
     200,
     `<!doctype html><html><head><meta charset="utf-8">` +

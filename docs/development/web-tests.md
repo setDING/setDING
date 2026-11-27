@@ -44,8 +44,10 @@ development machine and CI run Linux.
    ([`server/bin/itest_backend.dart`](../../server/bin/itest_backend.dart))
    with a user, a band and two songs, one with a two-page PDF. It serves
    `app/build/web-itest` like the production server serves the web client:
-   **same origin as the API, with the isolation headers** of
-   `server/pb_hooks/lib/web.js`;
+   **same origin as the API, with the isolation and security headers
+   (Content-Security-Policy, #1196)** of `server/pb_hooks/lib/web.js`;
+   what the policy blocks shows up as "Content Security Policy" errors in
+   the printed browser console;
 2. builds each test as the web client into that directory
    (`tool/build-web.sh` with `WEB_OUT`, `--profile --target <test>`), with
    the account as `--dart-define`;

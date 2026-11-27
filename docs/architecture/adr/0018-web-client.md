@@ -210,6 +210,15 @@ Tracked in issue #27, each step a separate PR:
   PocketBase's index fallback serves `index.html` for these paths. A
   signed-out visitor of a path sees the sign-in gate and is taken to the path
   after signing in.
+- 2026-11-27: **Security headers** (#1196): the web client's files and the
+  invitation landing page are served with a `Content-Security-Policy`
+  (`frame-ancestors 'none'`, scripts only from the server plus
+  `'wasm-unsafe-eval'` for WebAssembly, connections to the same origin and
+  `fonts.gstatic.com` for Flutter's fallback fonts), `X-Content-Type-Options:
+  nosniff` and `Referrer-Policy: no-referrer`, because the "Stay signed in"
+  token is in `localStorage` and invitation tokens are in URL paths.
+  `index.html` has no inline script. The landing page has a policy without
+  scripts. The API's responses are unchanged.
 
 ## Open points
 
