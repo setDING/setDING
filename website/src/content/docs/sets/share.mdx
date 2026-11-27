@@ -1,6 +1,6 @@
 ---
 title: Offline bereit, drucken und Sets teilen
-description: Wann ein Set ohne Netz spielbar ist, wie du die Set-Liste druckst und wie du ein Set exportierst und importierst.
+description: Wann ein Set ohne Netz spielbar ist, wie du einen Link auf ein Set teilst, die Set-Liste druckst und ein Set exportierst und importierst.
 sidebar:
   order: 3
 ---
@@ -13,6 +13,8 @@ import importDialog from '../../../../../docs/screenshots/set_import_de.png';
 import newSetImport from '../../../../../docs/screenshots/new_set_import_de.png';
 import importResult from '../../../../../docs/screenshots/set_import_result_de.png';
 import offlineStatus from '../../../../../docs/screenshots/offline_status_de.png';
+import shareLink from '../../../../../docs/screenshots/set_share_link_de.png';
+import notAvailable from '../../../../../docs/screenshots/link_not_available_de.png';
 
 ## Offline bereit
 
@@ -38,6 +40,37 @@ Damit die Sets auch **aktuell** sind, warnt setDING über den Sets, wenn
 
 Prüfe vor dem Auftritt auf jedem Gerät, dass weder eine Warnung noch ein
 Hinweis beim Set steht.
+
+## Link auf ein Set teilen
+
+Im ⋮-Menü eines Sets teilt **Link teilen** einen Link auf das Set, zum Beispiel im
+Chat der Band. Auf dem Handy und dem Tablet öffnet sich dafür das Teilen-Menü des
+Geräts; am Computer und im Browser kopiert setDING den Link, und du fügst ihn im
+Chat ein. Im Menü eines Songs gibt es **Link teilen** genauso.
+
+<Image src={shareLink} alt="Das ⋮-Menü eines Sets mit dem Eintrag Link teilen" />
+
+Wer den Link öffnet, landet direkt im Set:
+
+- **setDING installiert** (Android): Die App öffnet sich beim Set. Gehört es zu
+  einer anderen Band als der gewählten, wechselt setDING zu dieser Band und sagt
+  es kurz an.
+- **Sonst** öffnet sich das Set im Browser, in setDING im Web. Wer dort nicht
+  angemeldet ist, meldet sich zuerst an und kommt danach zum Set.
+
+Der Link verrät nichts über das Set, auch nicht seinen Namen. Er gibt keine Rechte:
+Sehen kann ein Set nur, wer in der Band ist oder für das Set eingeplant ist.
+
+Ist das Set noch nicht auf dem Gerät, zeigt setDING **Auf diesem Gerät nicht
+verfügbar**. Mit **Jetzt synchronisieren** holt es das Set; sobald es ankommt,
+öffnet es sich. Fehlt es danach immer noch, wurde es gelöscht, oder du hast keinen
+Zugriff darauf.
+
+<Image src={notAvailable} alt="Die Seite «Auf diesem Gerät nicht verfügbar» mit dem Hinweis, dass das Set noch nicht synchronisiert ist oder kein Zugriff besteht, und der Schaltfläche Jetzt synchronisieren" />
+
+Im Browser hat jede Seite von setDING ihre eigene Adresse: **Zurück** und **Vor**
+des Browsers führen durch die Seiten der App, und eine Seite bleibt nach dem
+Neuladen offen.
 
 ## Set-Liste drucken
 

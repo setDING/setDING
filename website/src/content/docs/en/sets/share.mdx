@@ -1,6 +1,6 @@
 ---
 title: Offline ready, print and share sets
-description: When a set can be played without a network, how to print the set list, and how to export and import a set.
+description: When a set can be played without a network, how to share a link to a set, print the set list, and export and import a set.
 sidebar:
   order: 3
 ---
@@ -13,6 +13,8 @@ import importDialog from '../../../../../../docs/screenshots/set_import.png';
 import newSetImport from '../../../../../../docs/screenshots/new_set_import.png';
 import importResult from '../../../../../../docs/screenshots/set_import_result.png';
 import offlineStatus from '../../../../../../docs/screenshots/offline_status.png';
+import shareLink from '../../../../../../docs/screenshots/set_share_link.png';
+import notAvailable from '../../../../../../docs/screenshots/link_not_available.png';
 
 ## Offline ready
 
@@ -37,6 +39,34 @@ So that the sets are also **up to date**, setDING shows a warning above the sets
 
 Before the gig, check on every device that there is no warning and no note on
 the set.
+
+## Share a link to a set
+
+In a set's ⋮ menu, **Share link** shares a link to the set, in the band's chat for
+example. On a phone or tablet, your device's share menu opens; on a computer and in
+the browser, setDING copies the link, and you paste it into the chat. A song's
+menu has **Share link** in the same way.
+
+<Image src={shareLink} alt="The ⋮ menu of a set with the entry Share link" />
+
+Whoever opens the link goes straight to the set:
+
+- **setDING installed** (Android): the app opens at the set. If it belongs to a
+  band other than the chosen one, setDING switches to that band and says so.
+- **Otherwise** the set opens in the browser, in setDING on the web. Whoever is not
+  signed in there signs in first and then gets to the set.
+
+The link tells nothing about the set, not even its name. It gives no rights: only
+the band's members and the people planned for the set can see it.
+
+If the set is not on the device yet, setDING shows **Not available on this
+device**. **Sync now** fetches it; as soon as it arrives, it opens. If it is still
+missing after that, it was deleted, or you have no access to it.
+
+<Image src={notAvailable} alt="The page «Not available on this device» saying the set is not synced yet or there is no access, with the button Sync now" />
+
+In the browser, every page of setDING has its own address: the browser's **Back**
+and **Forward** go through the app's pages, and a page stays open when you reload.
 
 ## Print the set list
 
