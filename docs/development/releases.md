@@ -7,7 +7,9 @@ releases are not covered yet.
 ## Releasing a version (CI)
 
 The full sequence and its rules are in the git workflow (section 10); each step
-only after the previous one succeeded. Before it, run `make release-gate` on
+only after the previous one succeeded. **An agent asked for a release first asks
+the owner whether it is a [pre-release](#pre-releases) or a final release**, and
+only then picks the version number and starts. Before it, run `make release-gate` on
 `main`: every check with the dependency check fatal (`make check-full`), the
 Linux release build in its container with its SBOMs (`make sbom`, the same build
 as the release workflow's Linux job, so a native build hook that does not compile

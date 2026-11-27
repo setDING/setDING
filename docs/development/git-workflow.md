@@ -286,6 +286,12 @@ Agents may create **proposals** for all of these (an ADR, a draft PR), just not 
   next build number (`setding-X.Y.Z-buildN-…`) as workflow artifacts, without a release.
 - **A release** is done by an agent in these steps, **each only after the previous one
   succeeded**:
+  0. **Ask the owner first whether it is a pre-release or a final release**, every
+     time the owner asks for a release and before any other step. A pre-release
+     (`vX.Y.Z-<pre>`, e.g. `-beta.1`, `-rc.1`) follows
+     [releases.md](releases.md#pre-releases) (ADR-0069): no "What's new" entry, test
+     server only, nothing uploaded to Google Play. Never decide this yourself from the
+     wording of the request, the previous release or the state of `main`.
   1. `chore(release): vX.Y.Z` PR that sets `version: X.Y.Z` in `app/pubspec.yaml` and
      adds the section `## [X.Y.Z] - YYYY-MM-DD` to `CHANGELOG.md` (drafted with
      `make changelog`, rewritten for users; [releases.md](releases.md#changelog)) and

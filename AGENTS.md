@@ -118,6 +118,16 @@ without this prefix that the specification does not define.
 - **Exception: user-facing UI texts**, in **Swiss Standard German (`de-CH`, no "ß")**, **English**, **French**, **Italian**, **Spanish** and **Portuguese** (ADR-0008). UI texts are never hard-coded; every new text goes into all ARB files (`app/lib/l10n/app_*.arb`); German is the reference.
 - Conversation with the user may be in German; this does not change the project language.
 
+## Releases (mandatory)
+
+When the owner asks for a release, **first ask whether it is a pre-release**
+(`vX.Y.Z-beta.N` / `-rc.N`, test server only, no Google Play; ADR-0069) **or a
+final release**, before choosing the version number, opening the release PR or
+running any release step. Never infer it from the wording, the previous release
+or the state of `main`. The flow is in
+[`git-workflow.md`](docs/development/git-workflow.md) section 10 and
+[`releases.md`](docs/development/releases.md).
+
 ## Local commands
 
 `make help` lists all targets. `make check` is the test gate; `make dev` / `make start`
