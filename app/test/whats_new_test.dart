@@ -103,6 +103,9 @@ void main() {
         r'^version:\s*([^\s+]+)',
         multiLine: true,
       ).firstMatch(pubspec)!.group(1)!;
+      // A pre-release (1.3.0-beta.1) has no notes of its own: the final
+      // release brings them, and the website takes X.Y.Z only (ADR-0069).
+      if (version.contains('-')) return;
       expect(
         versions(bundled),
         contains(version),

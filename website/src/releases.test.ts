@@ -67,7 +67,11 @@ test('the repository files give the released version of pubspec.yaml first', () 
   const whatsNew = JSON.parse(readFileSync(new URL('app/assets/whats_new.json', root), 'utf8'));
   const log = readFileSync(new URL('CHANGELOG.md', root), 'utf8');
   const pubspec = readFileSync(new URL('app/pubspec.yaml', root), 'utf8');
-  const version = /^version:\s*(\d+\.\d+\.\d+)/m.exec(pubspec)?.[1];
+  const match = /^version:\s*(\d+\.\d+\.\d+)(-\S+)?/m.exec(pubspec);
+  // A pre-release (1.3.0-beta.1) has no notes of its own; the site shows the
+  // last final release (ADR-0069).
+  if (match?.[2]) return;
+  const version = match?.[1];
   for (const lang of ['de', 'en'] as const) {
     assert.equal(releases(whatsNew, log, lang)[0].version, version);
   }
