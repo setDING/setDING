@@ -12,6 +12,20 @@ RUN apt-get update -qq \
       cmake ninja-build pkg-config libgtk-3-dev libsecret-1-dev liblzma-dev binutils \
  && rm -rf /var/lib/apt/lists/*
 
+# clang 19 from Debian bookworm instead of its default clang 14, which cannot
+# compile the C++20 of native build hooks such as flutter_zxing's zxing-cpp
+# (ranges over libstdc++ 12, captured structured bindings; #1133). Only the
+# compiler is newer: the bundle still links against bookworm's glibc and
+# libstdc++, so the baseline of ADR-0019 stays. Flutter and the build hooks
+# find the toolchain through `clang`/`clang++` on the PATH.
+RUN apt-get update -qq \
+ && apt-get install -y -qq --no-install-recommends clang-19 lld-19 llvm-19 \
+ && rm -rf /var/lib/apt/lists/* \
+ && for tool in clang clang++ ld.lld llvm-ar llvm-nm llvm-strip; do \
+      ln -sf "/usr/lib/llvm-19/bin/$tool" "/usr/bin/$tool"; \
+    done \
+ && clang++ --version | grep -q 'version 19\.'
+
 # AppImage tooling (ADR-0038), pinned by version and checksum: appimagetool
 # (MIT) and the type-2 runtime (MIT; contains libfuse, LGPL-2.1, statically)
 # that becomes the start of every AppImage. appimagetool is an AppImage itself;
