@@ -1,6 +1,6 @@
-// Phone and tablet screenshots of the Google Play listing (ADR-0067, #1147),
-// in both languages and both themes. Composed into docs/store/play/ by
-// tool/store-screenshots.sh (run by tool/copy-screenshots.sh).
+// Screenshots of the store listings (Google Play, ADR-0067, #1147, and the
+// App Store), in both languages and both themes. Composed into docs/store/
+// by tool/store-screenshots.sh (run by tool/copy-screenshots.sh).
 // See screenshot_support.dart.
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
@@ -18,11 +18,16 @@ import '../test/test_app.dart';
 
 import 'screenshot_support.dart';
 
-/// The devices of the listing: a phone at 1080×1920 (about 411×731 logical
-/// pixels) and a landscape tablet at 2560×1600 (1280×800 logical pixels).
+/// The devices of the store listings: for Google Play a phone at 1080×1920
+/// (about 411×731 logical pixels) and a landscape tablet at 2560×1600
+/// (1280×800); for the App Store the iPhone 6.9" (1320×2868), the iPad 13"
+/// in landscape (2752×2064) and the Mac (2880×1800).
 enum _Device {
   phone(Size(1080, 1920), 2.625),
-  tablet(Size(2560, 1600), 2);
+  tablet(Size(2560, 1600), 2),
+  iphone(Size(1320, 2868), 3),
+  ipad(Size(2752, 2064), 2),
+  mac(Size(2880, 1800), 2);
 
   const _Device(this.size, this.ratio);
   final Size size;
@@ -39,7 +44,7 @@ void main() {
       for (final dark in [false, true]) {
         final theme = dark ? 'dark' : 'light';
         final label = '${device.name} $lang $theme';
-        final prefix = '${lang}_${theme}_play_${device.name}';
+        final prefix = '${lang}_${theme}_store_${device.name}';
 
         Future<TestApp> start(
           WidgetTester tester, [
@@ -56,7 +61,7 @@ void main() {
         Future<void> capture(WidgetTester tester, String name) =>
             shot(tester, '${prefix}_$name', pixelRatio: device.ratio);
 
-        screenshotTest('play $label', (tester) async {
+        screenshotTest('store $label', (tester) async {
           final app = await start(tester, {'userName': 'Ann'});
           final ids = await tester.runAsync(() => _fill(app, lang));
           Future<void> show(Widget? home, String name) async {
@@ -92,7 +97,7 @@ void main() {
         });
 
         // The song display editor (ADR-0033) with the chorus selected.
-        screenshotTest('play style $label', (tester) async {
+        screenshotTest('store style $label', (tester) async {
           final app = await start(tester);
           await tester.pumpWidget(
             RepaintBoundary(
@@ -118,7 +123,7 @@ void main() {
         });
 
         // Drummer mode: the beat above, the song map of the song below (#952).
-        screenshotTest('play drums $label', (tester) async {
+        screenshotTest('store drums $label', (tester) async {
           final app = await start(tester, {
             'instrument': 'drums',
             'clickStart': 'manual',
@@ -146,7 +151,7 @@ void main() {
         });
 
         // An own server (ADR-0063): the Server dialog under Account & sync.
-        screenshotTest('play server $label', (tester) async {
+        screenshotTest('store server $label', (tester) async {
           final app = await start(tester);
           await tester.pumpWidget(
             RepaintBoundary(

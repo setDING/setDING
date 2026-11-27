@@ -65,5 +65,5 @@ server/pb_hooks/setding-version.txt
 # Python bytecode (tool/release/changelog.py tests)
 __pycache__/
 
-# Google Play screenshots, composed by tool/store-screenshots.sh (docs/store/play/README.md)
-/docs/store/play/*/images/
+# Store screenshots, composed by tool/store-screenshots.sh (docs/store/README.md)
+/docs/store/*/*/images/

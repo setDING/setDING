@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Composes the phone and tablet screenshots of the Google Play listing
-# (ADR-0067, docs/store/play/README.md): each screen rendered by
-# app/test_screenshots/play_store_screenshots_test.dart is put into a drawn
-# device frame on the brand blue, under a two-line headline from
-# docs/store/play/<locale>/captions.txt ("regular|bold", one line per screen).
+# Composes the screenshots of the store listings (docs/store/README.md):
+# Google Play (phone, tablet; ADR-0067) and the App Store (iPhone, iPad,
+# Mac). Each screen rendered by app/test_screenshots/store_screenshots_test.dart
+# is put into a drawn device frame on the brand blue, under a two-line
+# headline from docs/store/captions/<locale>.txt ("regular|bold", one line per
+# screen).
 # The screens alternate between the light and the dark theme; the first and
 # the last are split diagonally into both. Run by tool/copy-screenshots.sh
 # after `make screenshots`.
@@ -13,7 +14,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SRC="$ROOT/app/build/screenshots"
-PLAY="$ROOT/docs/store/play"
+STORE="$ROOT/docs/store"
 FONTS="$ROOT/app/assets/fonts"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
@@ -27,8 +28,9 @@ calc() { python3 -c "print(round($1))"; }
 screens=(1_live 2_set 3_editor 4_style 5_overview 6_songs 7_drums 8_server)
 themes=(split light dark light dark light dark split)
 
-# compose <device> <output folder> <canvas w> <canvas h> <screen w> <bezel>
-#         <radius> <top> <font size>
+# compose <device> <output folder below docs/store/, with LOCALE for the
+#         locale> <canvas w> <canvas h> <screen w> <bezel> <radius> <top>
+#         <font size>
 # The screen runs off the bottom edge below the headline.
 compose() {
   local device=$1 folder=$2 W=$3 H=$4 SW=$5 BEZEL=$6 R=$7 TOP=$8 FS=$9
@@ -36,12 +38,12 @@ compose() {
     gradient:'#3D7BFF-#1A2F8F' "$TMP/bg.png"
   for pair in de-DE:de en-US:en; do
     local locale=${pair%%:*} lang=${pair#*:}
-    local out="$PLAY/$locale/images/$folder" i=0 regular bold
+    local out="$STORE/${folder//LOCALE/$locale}" i=0 regular bold
     while IFS='|' read -r regular bold; do
       local name=${screens[i]} theme=${themes[i]}
       i=$((i + 1))
-      local light="$SRC/${lang}_light_play_${device}_$name.png"
-      local dark="$SRC/${lang}_dark_play_${device}_$name.png"
+      local light="$SRC/${lang}_light_store_${device}_$name.png"
+      local dark="$SRC/${lang}_dark_store_${device}_$name.png"
       [ -e "$light" ] && [ -e "$dark" ] || continue
       mkdir -p "$out"
       local sh
@@ -87,13 +89,18 @@ compose() {
         -fill '#FFD34D' -annotate +0+"$(calc "$FS * 2.7")" "$bold" \
         -crop "${W}x${H}+0+0" +repage -alpha off "$out/$i.png"
       count=$((count + 1))
-    done < "$PLAY/$locale/captions.txt"
+    done < "$STORE/captions/$locale.txt"
   done
 }
 
 count=0
-# Phone 1080×1920 (9:16): the screen 820 px wide.
-compose phone phoneScreenshots 1080 1920 820 24 68 470 84
-# Tablet 2560×1600 (16:10), used for 7" and 10" tablets: the screen 1960 px.
-compose tablet tenInchScreenshots 2560 1600 1900 40 90 460 120
-echo "Composed $count store screenshots in docs/store/play"
+# Google Play: phone 1080×1920 (9:16) and tablet 2560×1600 (16:10), the
+# tablet images used for 7" and 10" tablets.
+compose phone play/LOCALE/images/phoneScreenshots 1080 1920 820 24 68 470 84
+compose tablet play/LOCALE/images/tenInchScreenshots 2560 1600 1900 40 90 460 120
+# App Store: iPhone 6.9" 1320×2868, iPad 13" 2752×2064 (landscape) and
+# Mac 2880×1800.
+compose iphone app-store/LOCALE/images/iphone 1320 2868 1000 30 90 600 100
+compose ipad app-store/LOCALE/images/ipad 2752 2064 2040 44 100 540 130
+compose mac app-store/LOCALE/images/mac 2880 1800 2000 44 60 560 120
+echo "Composed $count store screenshots in docs/store"

@@ -114,7 +114,8 @@ Forces:
 - 2026-11-27: Store listing assets in `docs/store/play/` (#1147), in the layout
   of fastlane supply: texts in German and English, icon and feature graphic
   from `make branding`, phone and tablet screenshots in both themes rendered
-  by a screenshot test and composed with a headline in a drawn device frame
+  by a screenshot test (with the App Store sizes too) and composed with a
+  headline in a drawn device frame
   (`tool/store-screenshots.sh`), rendered on demand and not checked in.
 
 ## Open points
