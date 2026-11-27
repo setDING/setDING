@@ -1,4 +1,18 @@
 {
+  "0.23.0": {
+    "de": [
+      "In die Besetzung eines Sets kannst du jetzt auch Personen ohne Konto aufnehmen, zum Beispiel Aushilfen, und ihnen eine persönliche Einladung schicken.",
+      "Teile Sets und Songs als Link: «Link teilen» im Menü öffnet sie direkt in der App.",
+      "Auf Android und iOS trittst du einer Band bei, indem du den QR-Code der Einladung scannst.",
+      "Gehaltene Schläge (.) in Akkordrastern erscheinen als Punkte, und Intro, Solo oder Outro bekommen ihren eigenen Stil."
+    ],
+    "en": [
+      "A set's lineup can now include people without an account, such as stand-ins, and you can send them a personal invitation.",
+      "Share sets and songs as links: “Share link” in the menu opens them right in the app.",
+      "On Android and iOS, join a band by scanning the invitation's QR code.",
+      "Held beats (.) in chord grids show as dots, and Intro, Solo or Outro get their own style."
+    ]
+  },
   "0.22.1": {
     "de": [],
     "en": []
