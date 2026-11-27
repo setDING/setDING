@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:drift/drift.dart' show Value;
-import 'package:chordpro/chordpro.dart' as cp show Key;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -38,8 +36,12 @@ import 'live_info_bar.dart';
 import 'live_item_page.dart';
 import 'live_keys.dart';
 import 'live_projection.dart';
+import 'live_stage_layout.dart';
 import 'live_stage_pages.dart';
+import 'live_turn_area.dart';
 import 'live_item.dart';
+import 'live_loader.dart';
+import 'live_set_overview.dart';
 
 export 'live_item.dart' show LiveItem;
 export 'live_keys.dart' show beatLongPress;
@@ -91,35 +93,7 @@ class LiveScreen extends ConsumerStatefulWidget {
     String setId, {
     int index = 0,
     bool firstSong = false,
-  }) async {
-    final sets = container.read(setRepositoryProvider);
-    final views = await sets.getItems(setId);
-    final set = await sets.getSet(setId);
-    // The arrangements of the set's band (ADR-0025).
-    final arrangements = set == null
-        ? const <String, BandArrangement>{}
-        : await container
-              .read(arrangementRepositoryProvider)
-              .forBand(set.bandId);
-    final items = [
-      for (final v in views)
-        if (v.item.type != SetItemType.song)
-          LiveItem.marker(v.item.icon, v.item.note)
-        else if (v.song != null)
-          LiveItem.song(
-            v.song!,
-            arrangement: arrangements[v.song!.id],
-            setTranspose: v.item.transpose,
-            setSequence: v.item.sequence,
-            setItemId: v.item.id,
-          ),
-    ];
-    if (items.isEmpty) return (items: items, start: 0);
-    final start = firstSong
-        ? items.indexWhere((i) => i.song != null).clamp(0, items.length - 1)
-        : index.clamp(0, items.length - 1);
-    return (items: items, start: start);
-  }
+  }) => loadLiveSet(container, setId, index: index, firstSong: firstSong);
 
   /// Opens a song by itself; [attachmentId] shows that PDF attachment
   /// instead of the personal live view choice (#507).
@@ -141,28 +115,7 @@ class LiveScreen extends ConsumerStatefulWidget {
     ProviderContainer container,
     String songId, {
     String? attachmentId,
-  }) async {
-    final song = await container.read(songRepositoryProvider).getSong(songId);
-    if (song == null) return const [];
-    // Outside a set the song keeps its own key and tempo; only the sequence
-    // of the band chosen on the sets tab applies (ADR-0025, #552).
-    final band = container.read(arrangementBandProvider(song.libraryId));
-    final arrangement = band == null
-        ? null
-        : await container
-              .read(arrangementRepositoryProvider)
-              .get(band.id, song.id);
-    final sequenceOnly = arrangement?.sequence == null
-        ? null
-        : arrangement!.copyWith(transpose: 0, tempo: const Value(null));
-    return [
-      LiveItem.song(
-        song,
-        arrangement: sequenceOnly,
-        attachmentId: attachmentId,
-      ),
-    ];
-  }
+  }) => loadLiveSong(container, songId, attachmentId: attachmentId);
 
   @override
   ConsumerState<LiveScreen> createState() => _LiveScreenState();
@@ -444,54 +397,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     }
   }
 
-  /// Horizontal distance of the current swipe.
-  double _swipe = 0;
-
-  /// A swipe to the left turns forward, to the right back: when it is fast
-  /// enough or long enough (a fifth of the page width).
-  void _onSwipeEnd(DragEndDetails details) {
-    final velocity = details.primaryVelocity ?? 0;
-    final distance = _swipe;
-    _swipe = 0;
-    if (velocity.abs() > 300 ? velocity < 0 : distance < -_width * 0.2) {
-      _stage.next();
-    } else if (velocity.abs() > 300 ? velocity > 0 : distance > _width * 0.2) {
-      _stage.previous();
-    }
-  }
-
   /// [context] is below the stage theme, which the sheet follows.
   Future<void> _showOverview(BuildContext context) async {
-    final l10n = AppLocalizations.of(context);
-    final target = await showModalBottomSheet<int>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (context) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.6,
-        builder: (context, controller) => ListView(
-          controller: controller,
-          children: [
-            ListTile(
-              title: Text(
-                l10n.liveSetOverview,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ),
-            for (var i = 0; i < _items.length; i++)
-              ListTile(
-                selected: i == _index,
-                leading: Text('${i + 1}'),
-                title: Text(_items[i].title(l10n)),
-                subtitle: _items[i].song?.songKey == null
-                    ? null
-                    : Text(_items[i].song!.songKey!),
-                onTap: () => Navigator.pop(context, i),
-              ),
-          ],
-        ),
-      ),
+    final target = await showLiveSetOverview(
+      context,
+      items: _items,
+      current: _index,
     );
     if (target != null) _stage.jumpTo(target);
   }
@@ -667,162 +578,106 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                     // or goes, e.g. when the tablet is turned.
                     final page = KeyedSubtree(
                       key: _pageAreaKey,
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          _width = constraints.maxWidth;
-                          return GestureDetector(
-                            behavior: HitTestBehavior.translucent,
-                            onTapUp: (d) => _onTap(d.localPosition),
-                            // Swipes turn pages like taps: the pages of a
-                            // song first, then the next/previous song.
-                            onHorizontalDragStart: (_) => _swipe = 0,
-                            onHorizontalDragUpdate: (d) =>
-                                _swipe += d.primaryDelta ?? 0,
-                            onHorizontalDragEnd: _onSwipeEnd,
-                            // A song laid out anew (e.g. larger text) may
-                            // scroll further or no longer scroll at all.
-                            child: NotificationListener<ScrollMetricsNotification>(
-                              onNotification: (_) {
-                                if (showProgress) _stage.scheduleProgress();
-                                return false;
-                              },
-                              child: RepaintBoundary(
-                                key: _view,
-                                child: PageView.builder(
-                                  controller: _stage.pageView,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  // The direct neighbours are built ahead (one
-                                  // page of cache on each side): the next song is
-                                  // fitted and its PDF opened (landscape: its
-                                  // pages rendered) before the turn, in idle
-                                  // time after the previous turn (issue #296).
-                                  // Items further away are not kept, so memory
-                                  // stays bounded in long sets.
-                                  allowImplicitScrolling: true,
-                                  itemCount: items.length,
-                                  onPageChanged: (i) => setState(() {
-                                    // A song turned to from the front starts at
-                                    // its first page.
-                                    if (i > _index) {
-                                      _stage.songPageFor(i).first();
-                                    }
-                                    // Small screens turn songs only: the song
-                                    // map of each starts at the top (#952).
-                                    if (_stage.compact) {
-                                      final sc = _stage.scroll(i);
-                                      if (sc != null && sc.hasClients) {
-                                        sc.jumpTo(0);
-                                      }
-                                    }
-                                    final back = i < _index;
-                                    _index = i;
-                                    _preparation.focus(i);
-                                    // The projection follows (ADR-0068);
-                                    // turning back into a song whose slides
-                                    // the turns move ends at its last slide
-                                    // (#1181).
-                                    _projection.itemShown(i, back: back);
-                                    // Only another set item sends its
-                                    // keyboard program, never a page within a
-                                    // song or a prepared neighbour (ADR-0039).
-                                    _midi.show(i, items[i].song?.id);
-                                    // Another item stops the beat (ADR-0026).
-                                    _beat.onItemShown(i);
-                                  }),
-                                  itemBuilder: (context, i) =>
-                                      _pageWidgets.putIfAbsent(
-                                        i,
-                                        () => PreparedPage(
-                                          preparation: _preparation[i],
-                                          child: LiveItemPage(
-                                            item: items[i],
-                                            index: i,
-                                            scrollController: _stage.scrollFor(
-                                              i,
-                                            ),
-                                            pdfController: _stage.pdfFor(i),
-                                            spreadController: _stage.spreadFor(
-                                              i,
-                                            ),
-                                            fitController: _stage.fitFor(i),
-                                            songPageController: _stage
-                                                .songPageFor(i),
-                                            preparation: _preparation[i],
-                                            onTap: _onTap,
-                                            annotations: _annotations,
-                                          ),
+                      child: LiveTurnArea(
+                        onTap: _onTap,
+                        onNext: _stage.next,
+                        onPrevious: _stage.previous,
+                        onWidth: (width) => _width = width,
+                        // A song laid out anew (e.g. larger text) may
+                        // scroll further or no longer scroll at all.
+                        child: NotificationListener<ScrollMetricsNotification>(
+                          onNotification: (_) {
+                            if (showProgress) _stage.scheduleProgress();
+                            return false;
+                          },
+                          child: RepaintBoundary(
+                            key: _view,
+                            child: PageView.builder(
+                              controller: _stage.pageView,
+                              physics: const NeverScrollableScrollPhysics(),
+                              // The direct neighbours are built ahead (one
+                              // page of cache on each side): the next song is
+                              // fitted and its PDF opened (landscape: its
+                              // pages rendered) before the turn, in idle
+                              // time after the previous turn (issue #296).
+                              // Items further away are not kept, so memory
+                              // stays bounded in long sets.
+                              allowImplicitScrolling: true,
+                              itemCount: items.length,
+                              onPageChanged: (i) => setState(() {
+                                // A song turned to from the front starts at
+                                // its first page.
+                                if (i > _index) {
+                                  _stage.songPageFor(i).first();
+                                }
+                                // Small screens turn songs only: the song
+                                // map of each starts at the top (#952).
+                                if (_stage.compact) {
+                                  final sc = _stage.scroll(i);
+                                  if (sc != null && sc.hasClients) {
+                                    sc.jumpTo(0);
+                                  }
+                                }
+                                final back = i < _index;
+                                _index = i;
+                                _preparation.focus(i);
+                                // The projection follows (ADR-0068);
+                                // turning back into a song whose slides
+                                // the turns move ends at its last slide
+                                // (#1181).
+                                _projection.itemShown(i, back: back);
+                                // Only another set item sends its
+                                // keyboard program, never a page within a
+                                // song or a prepared neighbour (ADR-0039).
+                                _midi.show(i, items[i].song?.id);
+                                // Another item stops the beat (ADR-0026).
+                                _beat.onItemShown(i);
+                              }),
+                              itemBuilder: (context, i) =>
+                                  _pageWidgets.putIfAbsent(
+                                    i,
+                                    () => PreparedPage(
+                                      preparation: _preparation[i],
+                                      child: LiveItemPage(
+                                        item: items[i],
+                                        index: i,
+                                        scrollController: _stage.scrollFor(i),
+                                        pdfController: _stage.pdfFor(i),
+                                        spreadController: _stage.spreadFor(i),
+                                        fitController: _stage.fitFor(i),
+                                        songPageController: _stage.songPageFor(
+                                          i,
                                         ),
+                                        preparation: _preparation[i],
+                                        onTap: _onTap,
+                                        annotations: _annotations,
                                       ),
-                                ),
-                              ),
+                                    ),
+                                  ),
                             ),
-                          );
-                        },
+                          ),
+                        ),
                       ),
                     );
                     return Stack(
                       children: [
                         Positioned.fill(
-                          child: compact
-                              ? Stack(
-                                  fit: StackFit.expand,
-                                  children: [
-                                    // The pages stay built for the page
-                                    // controller and the preparation, unseen
-                                    // unless they show the song map.
-                                    if (!compactMap) Offstage(child: page),
-                                    // Empty areas of the panel are the tap
-                                    // zones; the set list and the buttons keep
-                                    // their taps.
-                                    GestureDetector(
-                                      behavior: HitTestBehavior.opaque,
-                                      onTapUp: (d) =>
-                                          _onStageTap(d.localPosition.dx),
-                                      child: DrumPanel(
-                                        items: items,
-                                        current: _index,
-                                        onSelect: _stage.jumpTo,
-                                        direction: compactLandscapeStage
-                                            ? Axis.horizontal
-                                            : Axis.vertical,
-                                        view: drumView,
-                                        onView: (view) => ref
-                                            .read(settingsProvider.notifier)
-                                            .update(
-                                              (s) => s.copyWith(
-                                                drumPanelView: view,
-                                              ),
-                                            ),
-                                        songMap: compactMap ? page : null,
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              : !wide
-                              ? page
-                              : Row(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    SizedBox(
-                                      width: panelWidth,
-                                      // Empty areas of the panel are part of the tap zones;
-                                      // the set list and the buttons keep their taps.
-                                      child: GestureDetector(
-                                        behavior: HitTestBehavior.opaque,
-                                        onTapUp: (d) =>
-                                            _onStageTap(d.localPosition.dx),
-                                        child: DrumPanel(
-                                          items: items,
-                                          current: _index,
-                                          onSelect: _stage.jumpTo,
-                                        ),
-                                      ),
-                                    ),
-                                    const VerticalDivider(width: 1),
-                                    Expanded(child: page),
-                                  ],
-                                ),
+                          child: LiveStageLayout(
+                            page: page,
+                            items: items,
+                            current: _index,
+                            onSelect: _stage.jumpTo,
+                            onStageTap: _onStageTap,
+                            compact: compact,
+                            compactMap: compactMap,
+                            wide: wide,
+                            landscape: compactLandscapeStage,
+                            panelWidth: panelWidth,
+                            drumView: drumView,
+                            onView: (view) => ref
+                                .read(settingsProvider.notifier)
+                                .update((s) => s.copyWith(drumPanelView: view)),
+                          ),
                         ),
                         // Beat of the drummer mode (ADR-0026); take no taps.
                         const Positioned.fill(child: EdgeFlash()),
@@ -951,24 +806,13 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     );
   }
 
-  String _nextLabel(int index, AppLocalizations l10n) {
-    final item = _items[index];
-    final key = item.song?.songKey;
-    final title = item.title(l10n);
-    // For the drums the next song's tempo and time signature (ADR-0026).
-    final tempo = _beat.settings.showSongMap ? _beat.tempoOf(index) : null;
-    final beat = tempo == null
-        ? ''
-        : ' · ${l10n.bpm(tempo)} · ${_beat.meterOf(index)}';
-    if (key == null) return '$title$beat';
-    final parsed = cp.Key.tryParse(key);
-    final shown = parsed == null
-        ? key
-        : parsed
-              .transpose(item.bandTranspose + item.setTranspose)
-              .format(ref.read(settingsProvider).notation);
-    return '$title ($shown)$beat';
-  }
+  String _nextLabel(int index, AppLocalizations l10n) => liveItemLabel(
+    _items[index],
+    l10n,
+    beat: _beat,
+    index: index,
+    notation: ref.read(settingsProvider).notation,
+  );
 }
 
 /// Minimum width of the stage for the wide song map: beat and set on the
