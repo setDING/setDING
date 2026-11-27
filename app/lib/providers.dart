@@ -5,22 +5,17 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'data/annotation_repository.dart';
-import 'data/arrangement_repository.dart';
 import 'data/auto_backup.dart';
 import 'data/backup.dart';
 import 'data/band_copy.dart';
 import 'data/band_providers.dart';
-import 'data/band_view.dart';
 import 'data/database.dart';
 import 'data/import_export.dart';
 import 'data/lineup.dart';
-import 'data/play_history.dart';
 import 'data/set_archive.dart';
 import 'data/set_repository.dart';
 import 'data/song_archive.dart';
-import 'data/song_repository.dart';
-import 'data/song_review.dart';
+import 'data/song_providers.dart';
 import 'data/storage_providers.dart';
 import 'data/trash.dart';
 import 'platform/backup_folder.dart';
@@ -28,61 +23,15 @@ import 'platform/web_client.dart';
 import 'settings/settings.dart';
 import 'sync/auth_providers.dart';
 
+export 'data/annotation_providers.dart';
+export 'data/arrangement_providers.dart';
 export 'data/band_providers.dart';
+export 'data/play_history_providers.dart';
+export 'data/song_providers.dart';
 export 'data/storage_providers.dart';
 export 'platform/web_client.dart';
 
 // Songs of the current library, sets of the current band ----------------------
-
-/// Songs of one library. Operations on a single song (overlays, attachments,
-/// edits) use the song's own library, whichever repository is used.
-final librarySongRepositoryProvider = Provider.family<SongRepository, String>(
-  (ref, libraryId) => SongRepository(
-    ref.watch(databaseProvider),
-    ref.watch(attachmentStorageProvider),
-    libraryId: libraryId,
-    userId: ref.watch(authProvider.select((u) => u?.id)),
-  ),
-);
-
-/// Songs of the library chosen on the songs tab.
-final songRepositoryProvider = Provider<SongRepository>(
-  (ref) => ref.watch(
-    librarySongRepositoryProvider(ref.watch(currentLibraryIdProvider)),
-  ),
-);
-
-/// Review status and mistake reports of songs (ADR-0060).
-final songReviewRepositoryProvider = Provider<SongReviewRepository>(
-  (ref) => SongReviewRepository(
-    ref.watch(databaseProvider),
-    ref.watch(attachmentStorageProvider),
-    userId: ref.watch(authProvider.select((u) => u?.id)),
-    backend: ref.watch(syncBackendProvider),
-  ),
-);
-
-/// The songs of [libraryId] with open mistake reports (ADR-0060).
-final reportedSongIdsProvider = StreamProvider.autoDispose
-    .family<Set<String>, String>(
-      (ref, libraryId) =>
-          ref.watch(songReviewRepositoryProvider).watchReportedSongs(libraryId),
-    );
-
-/// The mistake reports of a song that are not deleted, newest first
-/// (ADR-0060).
-final songReportsProvider = StreamProvider.autoDispose
-    .family<List<SongReportRow>, String>(
-      (ref, songId) =>
-          ref.watch(songReviewRepositoryProvider).watchReports(songId),
-    );
-
-/// Songs of the current band's library, for its sets.
-final bandSongRepositoryProvider = Provider<SongRepository>(
-  (ref) => ref.watch(
-    librarySongRepositoryProvider(ref.watch(bandLibraryIdProvider)),
-  ),
-);
 
 final setRepositoryProvider = Provider<SetRepository>(
   (ref) => SetRepository(
@@ -162,257 +111,6 @@ final importExportProvider = Provider<ImportExportService>(
     ref.watch(setRepositoryProvider),
   ),
 );
-
-/// Order of the song list (stored per device).
-class SongSortNotifier extends Notifier<SongSort> {
-  static const _key = 'songSort';
-
-  @override
-  SongSort build() {
-    final stored = ref.watch(sharedPreferencesProvider).getString(_key);
-    return SongSort.values.asNameMap()[stored] ?? SongSort.title;
-  }
-
-  Future<void> select(SongSort sort) async {
-    state = sort;
-    await ref.read(sharedPreferencesProvider).setString(_key, sort.name);
-  }
-}
-
-final songSortProvider = NotifierProvider<SongSortNotifier, SongSort>(
-  SongSortNotifier.new,
-);
-
-/// Songs filtered by search text and tags (any of them; all songs when
-/// empty), in the chosen order.
-///
-/// A set compares by identity, so callers keep the same set instance
-/// until the selection changes (or pass `const {}`).
-final songsProvider = StreamProvider.autoDispose
-    .family<List<SongListEntry>, ({String query, Set<String> tags})>(
-      (ref, filter) => ref
-          .watch(songRepositoryProvider)
-          .watchSongList(
-            query: filter.query,
-            tags: filter.tags,
-            sort: ref.watch(songSortProvider),
-          ),
-    );
-
-/// Songs of the current band's library filtered by search text and tags,
-/// in the chosen order, for adding them to a set (#884): the song picker
-/// shows the band's library, not the one chosen on the songs tab.
-///
-/// A set compares by identity, as for [songsProvider].
-final bandSongsProvider = StreamProvider.autoDispose
-    .family<List<SongListEntry>, ({String query, Set<String> tags})>(
-      (ref, filter) => ref
-          .watch(bandSongRepositoryProvider)
-          .watchSongList(
-            query: filter.query,
-            tags: filter.tags,
-            sort: ref.watch(songSortProvider),
-          ),
-    );
-
-/// Where the search text matched the songs of the current band's library,
-/// for the song picker of a set (#884).
-final bandSearchHitsProvider = StreamProvider.autoDispose
-    .family<Map<String, SearchHit>, String>(
-      (ref, query) => query.trim().isEmpty
-          ? Stream.value(const {})
-          : ref.watch(bandSongRepositoryProvider).watchSearchHits(query),
-    );
-
-/// All tags used in the current band's library, for the song picker
-/// (#884).
-final bandTagsProvider = StreamProvider.autoDispose<List<String>>(
-  (ref) => ref.watch(bandSongRepositoryProvider).watchTags(),
-);
-
-/// The languages of the songs of the current band's library (ADR-0053),
-/// for the song picker (#884).
-final bandSongLanguagesProvider = StreamProvider.autoDispose<Set<String>>(
-  (ref) => ref.watch(bandSongRepositoryProvider).watchLanguages(),
-);
-
-/// The songs of the current band's library created last, for the
-/// overview (ADR-0045, #868).
-final newestSongsProvider = StreamProvider.autoDispose<List<SongEntry>>(
-  (ref) => ref.watch(bandSongRepositoryProvider).watchNewestSongs(),
-);
-
-/// All tags used in the library.
-/// Where a search matched the songs of the library (by song); empty
-/// without a search.
-final searchHitsProvider = StreamProvider.autoDispose
-    .family<Map<String, SearchHit>, String>(
-      (ref, query) => query.trim().isEmpty
-          ? Stream.value(const {})
-          : ref.watch(songRepositoryProvider).watchSearchHits(query),
-    );
-
-final tagsProvider = StreamProvider<List<String>>(
-  (ref) => ref.watch(songRepositoryProvider).watchTags(),
-);
-
-/// The languages of the songs of the current library (ADR-0053).
-final songLanguagesProvider = StreamProvider<Set<String>>(
-  (ref) => ref.watch(songRepositoryProvider).watchLanguages(),
-);
-
-/// How many songs of the current library share each group of language
-/// versions (ADR-0053).
-final workCountsProvider = StreamProvider<Map<String, int>>(
-  (ref) => ref.watch(songRepositoryProvider).watchWorkCounts(),
-);
-
-final songProvider = StreamProvider.autoDispose.family<SongEntry?, String>(
-  (ref, id) => ref.watch(songRepositoryProvider).watchSong(id),
-);
-
-final attachmentsProvider = StreamProvider.autoDispose
-    .family<List<AttachmentEntry>, String>(
-      (ref, songId) =>
-          ref.watch(songRepositoryProvider).watchAttachments(songId),
-    );
-
-final attachmentCountsProvider = StreamProvider<Map<String, int>>(
-  (ref) => ref.watch(songRepositoryProvider).watchAttachmentCounts(),
-);
-
-final overlayProvider = StreamProvider.autoDispose.family<SongOverlay, String>(
-  (ref, songId) => ref.watch(songRepositoryProvider).watchOverlay(songId),
-);
-
-/// Personal freehand annotations (ADR-0032).
-final annotationRepositoryProvider = Provider<AnnotationRepository>(
-  (ref) => AnnotationRepository(
-    ref.watch(databaseProvider),
-    userId: ref.watch(authProvider.select((u) => u?.id)),
-  ),
-);
-
-/// The strokes on a song's ChordPro text (`target` empty) or on one of its
-/// PDF attachments.
-final annotationsProvider = StreamProvider.autoDispose
-    .family<List<AnnotationStroke>, ({String songId, String target})>(
-      (ref, key) => ref
-          .watch(annotationRepositoryProvider)
-          .watch(key.songId, target: key.target),
-    );
-
-/// Estimated size in bytes of the strokes on a song's text or attachment,
-/// against [annotationMaxBytes].
-final annotationSizeProvider = StreamProvider.autoDispose
-    .family<int, ({String songId, String target})>(
-      (ref, key) => ref
-          .watch(annotationRepositoryProvider)
-          .watchSize(key.songId, target: key.target),
-    );
-
-/// Number of strokes on a song (text and attachments).
-final annotationCountProvider = StreamProvider.autoDispose.family<int, String>(
-  (ref, songId) => ref.watch(annotationRepositoryProvider).watchCount(songId),
-);
-
-/// Band arrangements (ADR-0025).
-final arrangementRepositoryProvider = Provider<ArrangementRepository>(
-  (ref) => ArrangementRepository(
-    ref.watch(databaseProvider),
-    userId: ref.watch(authProvider.select((u) => u?.id)),
-  ),
-);
-
-/// The band whose arrangement the song screen shows for songs of
-/// [libraryId]: the band chosen on the sets tab, if it plays from that
-/// library (ADR-0025); null otherwise. It applies in sets and, for the
-/// sequence only, to a single song played live (#552).
-final arrangementBandProvider = Provider.family<BandView?, String>((
-  ref,
-  libraryId,
-) {
-  final band = ref.watch(currentBandProvider);
-  return !band.isLocal && band.libraryId == libraryId ? band : null;
-});
-
-/// The bands of the user that play from [libraryId], to choose the band of
-/// the arrangement panel from (#556).
-final arrangementBandsProvider = Provider.family<List<BandView>, String>((
-  ref,
-  libraryId,
-) {
-  final bands = ref.watch(bandsProvider).value ?? const <BandView>[];
-  return [
-    for (final b in bands)
-      if (!b.isLocal && b.libraryId == libraryId) b,
-  ];
-});
-
-/// The arrangement of a band for a song, or null.
-final arrangementProvider = StreamProvider.autoDispose
-    .family<BandArrangement?, ({String band, String song})>(
-      (ref, key) =>
-          ref.watch(arrangementRepositoryProvider).watch(key.band, key.song),
-    );
-
-/// The arrangements of a band by song.
-final bandArrangementsProvider = StreamProvider.autoDispose
-    .family<Map<String, BandArrangement>, String>(
-      (ref, bandId) =>
-          ref.watch(arrangementRepositoryProvider).watchBand(bandId),
-    );
-
-/// The song play history of the bands (ADR-0046).
-final playHistoryRepositoryProvider = Provider<PlayHistoryRepository>(
-  (ref) => PlayHistoryRepository(ref.watch(databaseProvider)),
-);
-
-/// The plays of a song by a band, newest first (ADR-0046).
-final songPlaysProvider = StreamProvider.autoDispose
-    .family<SongPlays, ({String band, String song})>(
-      (ref, key) => ref
-          .watch(playHistoryRepositoryProvider)
-          .watchSongPlays(key.band, key.song),
-    );
-
-/// The repertoire of a band: the songs of its library with their plays
-/// (ADR-0046).
-final repertoireProvider = StreamProvider.autoDispose
-    .family<Repertoire, ({String band, String library})>(
-      (ref, key) => ref
-          .watch(playHistoryRepositoryProvider)
-          .watchRepertoire(key.band, key.library),
-    );
-
-/// How the other bands of the organization played a song (ADR-0046).
-final otherBandPlaysProvider = StreamProvider.autoDispose
-    .family<List<OrgPlay>, ({String song, String? exceptBand})>(
-      (ref, key) => ref
-          .watch(playHistoryRepositoryProvider)
-          .watchOtherBands(key.song, exceptBandId: key.exceptBand),
-    );
-
-/// When the plays across an organization's bands were fetched last.
-final orgPlaysFetchedProvider = StreamProvider.autoDispose
-    .family<DateTime?, String>(
-      (ref, orgId) =>
-          ref.watch(playHistoryRepositoryProvider).watchOrgPlaysFetched(orgId),
-    );
-
-/// The songs of a library no band played (ADR-0046).
-final libraryUsageProvider = StreamProvider.autoDispose
-    .family<({List<SongEntry> unplayed, int total}), String>(
-      (ref, libraryId) =>
-          ref.watch(playHistoryRepositoryProvider).watchLibraryUsage(libraryId),
-    );
-
-/// When a band last played each song (ADR-0046).
-final lastPlayedProvider = StreamProvider.autoDispose
-    .family<Map<String, DateTime>, String>(
-      (ref, bandId) =>
-          ref.watch(playHistoryRepositoryProvider).watchLastPlayed(bandId),
-    );
 
 /// The next gig of each song in the current band's sets, for the song list
 /// of [libraryId]; empty when the band plays from another library.
@@ -587,8 +285,3 @@ final problemSongCountsProvider = StreamProvider.autoDispose<Map<String, int>>(
 final reviewSongCountsProvider = StreamProvider.autoDispose<Map<String, int>>(
   (ref) => ref.watch(setRepositoryProvider).watchReviewSongCounts(),
 );
-
-final storageUsageProvider = FutureProvider<int>((ref) async {
-  ref.watch(attachmentCountsProvider);
-  return ref.watch(attachmentStorageProvider).usedBytes();
-});
