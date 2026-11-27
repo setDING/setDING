@@ -1,0 +1,63 @@
+---
+title: setDING-Konto löschen
+description: Wie du dein setDING-Konto und seine Daten löschst, was gelöscht wird und was bleibt.
+---
+
+import { Image } from 'astro:assets';
+import deleteAccount from '../../../../docs/screenshots/delete_account_de.png';
+
+Diese Seite erklärt, wie du dein Konto bei **setDING** löschst, der App für die
+Akkorde der Songs einer Band, herausgegeben vom Projekt setDING (siehe
+[Impressum](/legal-notice/)). Sie gilt für Konten auf dem setDING-Server
+`api.setding.app`, mit dem die App standardmässig verbunden ist.
+
+## So löschst du dein Konto
+
+Du brauchst deine E-Mail-Adresse und dein Passwort. Zum Löschen braucht es eine
+Verbindung zum Server.
+
+**In der App** (Android, Windows, Linux):
+
+1. Öffne **Einstellungen** → **Konto & Synchronisation**.
+2. Tippe ganz unten im roten Bereich **Gefahrenzone** auf **Konto löschen**.
+3. Gib dein Passwort ein und bestätige mit **Konto löschen**.
+
+**Ohne App:** Melde dich im Web-Client unter
+[app.setding.app](https://app.setding.app) mit E-Mail-Adresse und Passwort an und
+gehe dort gleich vor. Du musst nichts installieren.
+
+**Per E-Mail:** Kannst du dich nicht mehr anmelden, schreib von der E-Mail-Adresse
+deines Kontos an **info@setDING.app** und bitte uns, es zu löschen. Wir löschen das
+Konto innerhalb von 30 Tagen und bestätigen es dir.
+
+Bist du **einziger Admin** einer Organisation, mach zuerst jemand anderen zum Admin
+oder schliesse die Organisation (siehe [Organisation](/bands/organizations/)); die
+App sagt dir, welche Organisationen betroffen sind.
+
+<Image src={deleteAccount} alt="Der Dialog «Konto löschen?» mit dem Passwort zur Bestätigung" />
+
+## Was gelöscht wird
+
+Sofort und endgültig:
+
+- dein Konto: Name, E-Mail-Adresse und Passwort,
+- deine persönlichen Anpassungen, Annotationen und persönlichen Einstellungen,
+- deine Mitgliedschaften in Organisationen und Bands,
+- die offenen Einladungen, die du erstellt hast.
+
+Du wirst auf allen Geräten abgemeldet. Das Gerät, auf dem du das Konto löschst,
+entfernt auch die Daten deiner Organisationen; deine lokale Bibliothek auf dem
+Gerät bleibt, bis du die App entfernst.
+
+## Was bleibt
+
+- **Songs, Anhänge, Sets und Spielverlauf**, die du erstellt oder bearbeitet hast,
+  gehören deiner Organisation und bleiben für die anderen Mitglieder erhalten. Sie
+  zeigen nicht mehr an, wer sie zuletzt geändert hat.
+- **Backups** des Servers behalten bis zu **14 Tage** eine Kopie der gelöschten
+  Daten; danach sind sie weg.
+- **Server-Protokolle** (IP-Adresse, Zeit, Anfrage) werden nach 7 Tagen gelöscht.
+
+Mehr in der [Datenschutzerklärung](/privacy/). Ein Konto auf einem
+[eigenen Server](/self-hosting/overview/) löschst du gleich; um dessen Backups
+kümmert sich, wer den Server betreibt.

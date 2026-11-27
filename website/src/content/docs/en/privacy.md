@@ -90,9 +90,10 @@ keep a copy for up to 14 days.
 ## Deleting your account
 
 In the app, you delete your account under **Settings** → **Account & sync** →
-**Delete account** (see [Account](/en/settings/account/)). If you no longer have access to
-the app, write to the address under [Controller](#controller); we then delete the
-account within 30 days.
+**Delete account** (see [Account](/en/settings/account/)), without the app in the web
+client at [app.setding.app](https://app.setding.app). If you can no longer sign in,
+write to the address under [Controller](#controller); we then delete the account
+within 30 days. All steps are on [Delete your account](/en/delete-account/).
 
 Deleted are your account, your personal adjustments, annotations and settings and
 your memberships. Songs and sets you created or edited belong to the organization

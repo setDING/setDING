@@ -1,0 +1,63 @@
+---
+title: Delete your setDING account
+description: How to delete your setDING account and its data, what is deleted and what is kept.
+---
+
+import { Image } from 'astro:assets';
+import deleteAccount from '../../../../../docs/screenshots/delete_account.png';
+
+This page explains how to delete your account in **setDING**, the app for the
+chords of a band's songs, published by the setDING project (see the
+[legal notice](/en/legal-notice/)). It applies to accounts on the setDING server
+`api.setding.app`, which the app uses by default.
+
+## How to delete your account
+
+You need your email address and password. Deleting needs a connection to the
+server.
+
+**In the app** (Android, Windows, Linux):
+
+1. Open **Settings** → **Account & sync**.
+2. At the very end, in the red **Danger zone**, tap **Delete account**.
+3. Enter your password and confirm with **Delete account**.
+
+**Without the app:** sign in to the web client at
+[app.setding.app](https://app.setding.app) with your email address and password
+and take the same steps there. You do not need to install anything.
+
+**By email:** if you can no longer sign in, write to **info@setDING.app** from the
+email address of your account and ask us to delete it. We delete the account within
+30 days and confirm it to you.
+
+If you are the **only admin** of an organization, first make someone else admin or
+close the organization (see [Organization](/en/bands/organizations/)); the app tells
+you which organizations are affected.
+
+<Image src={deleteAccount} alt="The “Delete account?” dialog with the password to confirm" />
+
+## What is deleted
+
+At once and for good:
+
+- your account: name, email address and password,
+- your personal adjustments, annotations and personal settings,
+- your memberships in organizations and bands,
+- the open invitations you created.
+
+You are signed out on all devices. The device you delete the account on also
+removes the data of your organizations; your local library on the device stays
+until you remove the app.
+
+## What is kept
+
+- **Songs, attachments, sets and play history** you created or edited belong to
+  your organization and stay with it for the other members. They no longer show
+  who changed them last.
+- **Backups** of the server keep a copy of the deleted data for up to **14 days**;
+  then it is gone.
+- **Server logs** (IP address, time, request) are deleted after 7 days.
+
+More in the [privacy policy](/en/privacy/). An account on a
+[server you run yourself](/en/self-hosting/overview/) is deleted the same way; its
+operator is responsible for its backups.
