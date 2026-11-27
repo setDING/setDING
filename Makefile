@@ -16,6 +16,7 @@
 #   make apk        build an Android APK for manual installation (sideloading)
 #   make android-install  install the local build as "setDING Beta" next to a release
 #   make android-keystore  create the Android release key (owner, once)
+#   make android-upload-keystore  create the Google Play upload key (owner, once)
 #   make release    build the Linux release package (runs on any x86-64 Linux)
 #   make sbom       build the Linux release with its CycloneDX SBOM and validate it
 #   make changelog  draft the CHANGELOG.md section of the next release from the commits
@@ -73,6 +74,8 @@ BUILD_NUMBER  ?=
 
 # Android release key (make android-keystore, ADR-0021); never inside the repository.
 ANDROID_KEYSTORE ?= $(HOME)/.local/share/setding/android-release.jks
+# Google Play upload key (make android-upload-keystore, ADR-0067).
+ANDROID_UPLOAD_KEYSTORE ?= $(HOME)/.local/share/setding/play-upload.jks
 
 # The owner's servers (ADR-0014, ADR-0063 §7, docs/operations/server.md), SSH
 # targets without defaults, set in the git-ignored local.mk:
@@ -112,7 +115,7 @@ BACKEND_REGISTRATION ?= open
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := SETDING_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build web web-serve site site-dev deps upgrade upgrade-guard apk android-install android-keystore release release-linux release-check sbom changelog reset data-dir backend check check-full release-gate test codegen l10n coverage android-test web-test e2e perf screenshots branding examples doctor clean ci-image \
+.PHONY: help setup dev start build web web-serve site site-dev deps upgrade upgrade-guard apk android-install android-keystore android-upload-keystore release release-linux release-check sbom changelog reset data-dir backend check check-full release-gate test codegen l10n coverage android-test web-test e2e perf screenshots branding examples doctor clean ci-image \
 	server-target server-bundle server-image server-install server-release server-site server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
 
 help: ## Show this help
@@ -157,6 +160,9 @@ android-install: ## Install the local build as "setDING Beta" (app.setding.beta)
 
 android-keystore: ## Create the Android release key and store it as GitHub secrets (owner only, once)
 	$(ROOT)/tool/release/android-keystore.sh $(ANDROID_KEYSTORE)
+
+android-upload-keystore: ## Create the Google Play upload key and store it as GitHub secrets (owner only, once)
+	$(ROOT)/tool/release/android-keystore.sh $(ANDROID_UPLOAD_KEYSTORE) upload
 
 release: release-linux ## Build the release packages locally (Linux; a vX.Y.Z tag builds all platforms in CI)
 
