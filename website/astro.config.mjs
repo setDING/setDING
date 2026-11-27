@@ -3,6 +3,7 @@
 // languages use the same page paths, so the language switcher finds each page.
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import starlightImageZoom from 'starlight-image-zoom';
 import starlightLinksValidator from 'starlight-links-validator';
 import examples from './src/examples-integration.mjs';
 
@@ -73,7 +74,8 @@ export default defineConfig({
         },
       ],
       lastUpdated: false,
-      plugins: [starlightLinksValidator()],
+      // Every image opens large on click or tap (#1157).
+      plugins: [starlightImageZoom(), starlightLinksValidator()],
     }),
   ],
 });

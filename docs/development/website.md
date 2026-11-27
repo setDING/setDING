@@ -35,7 +35,8 @@ do not compile and on broken internal links.
   header).
 - Screenshots come from `docs/screenshots/` (`make screenshots`); import them in MDX
   (see `index.mdx`) so Astro converts and sizes them. Do not copy them into
-  `website/`.
+  `website/`. Every image can be enlarged on click (`starlight-image-zoom`), so
+  its alt text is also the caption of the enlarged image.
 - **Example songs** to try a feature live in `docs/examples/` as `<name>-de.cho` and
   `<name>-en.cho` (same chords, original lyrics), each with a song archive
   `<name>.setDING.zip` written by `make examples`. A page shows its song with

@@ -19,7 +19,12 @@ hero:
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { Image } from 'astro:assets';
 import live from '../../../../../docs/screenshots/live.png';
-import lineup from '../../../../../docs/screenshots/set_lineup.png';
+import lineupDialog from '../../../../../docs/screenshots/lineup_dialog.png';
+import lineupNotify from '../../../../../docs/screenshots/lineup_notify.png';
+import sequence from '../../../../../docs/screenshots/sequence.png';
+import songsPlayed from '../../../../../docs/screenshots/songs_played.png';
+import songReport from '../../../../../docs/screenshots/song_report_sheet.png';
+import songsReview from '../../../../../docs/screenshots/songs_review.png';
 import why1 from '../../../../../docs/screenshots/why_1.png';
 import why2 from '../../../../../docs/screenshots/why_2.png';
 import why3 from '../../../../../docs/screenshots/why_3.png';
@@ -89,23 +94,45 @@ import why8 from '../../../../../docs/screenshots/why_8.png';
 Many chord apps are a personal songbook you can share. setDING thinks of the whole
 band: everyone who rehearses, plays the gig, fills in and looks after the songs.
 
-- **A lineup per set** – who plays this gig, with substitutes from other bands of
-  the organization, and a message to everyone in the lineup.
-- **The band's arrangement** – key, sequence and tempo per band, without changing
-  the song for the other bands.
-- **Last played** – the key, tempo and sequence of every gig are
-  kept, along with the repertoire: most played, not played for a while, never
-  played.
-- **Report a mistake** – everyone in the organization reports a wrong chord right on
-  the song; whoever looks after the library sees and resolves the reports.
-- **Review songs** – imported songs stay marked until someone has checked and
-  approved them.
+<CardGrid>
+  <Card title="A lineup for every set" icon="puzzle">
+    <div class="screens">
+      <Image src={lineupDialog} alt="The Lineup dialog with Anna, Beat and Carla as a substitute" />
+      <Image src={lineupNotify} alt="The message to everyone in the lineup with date, place and lineup" />
+    </div>
 
-<Image src={lineup} alt="A set with the line Lineup: Anna, Beat, Carla (Substitute)" />
+    Who plays this gig, substitutes from other bands of the organization
+    included – and a message to everyone in the lineup.
+    [Lineup and substitutes](/en/sets/lineup/)
+  </Card>
+  <Card title="The band's arrangement" icon="random">
+    <div class="screens">
+      <Image src={sequence} alt="The sequence of a song for this set: verse, chorus, bridge" />
+    </div>
 
-More: [Lineup and substitutes](/en/sets/lineup/),
-[Key and sequence](/en/sets/key-and-sequence/) and
-[Checking songs and reporting mistakes](/en/songs/review/).
+    Key, sequence and tempo per band, without changing the song for the other
+    bands. [Key and sequence](/en/sets/key-and-sequence/)
+  </Card>
+  <Card title="Last played" icon="clock">
+    <div class="screens">
+      <Image src={songsPlayed} alt="The song list with the Played filter: never played, not played for a while" />
+    </div>
+
+    The key, tempo and sequence of every gig are kept, together with the
+    repertoire: most played, not played for a while, never played.
+    [How did we play it last time?](/en/sets/key-and-sequence/#how-did-we-play-it-last-time)
+  </Card>
+  <Card title="Report mistakes, review songs" icon="comment-alt">
+    <div class="screens">
+      <Image src={songReport} alt="Reporting a mistake on a song: kind of mistake and a comment" />
+      <Image src={songsReview} alt="The song list with the To review and Reported filters" />
+    </div>
+
+    Anyone can report a wrong chord right on the song; whoever looks after the
+    library resolves the reports. Imported songs stay marked until someone
+    approves them. [Review songs and report mistakes](/en/songs/review/)
+  </Card>
+</CardGrid>
 
 ## Get started
 
