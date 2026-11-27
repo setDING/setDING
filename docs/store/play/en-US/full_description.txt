@@ -1,0 +1,42 @@
+The band leader puts the set together once, and everyone in the band has it on their tablet, phone or computer – the right songs, in the right order, in the right key. On every stage, even without Wi-Fi.
+
+MADE FOR THE STAGE
+• Live mode in full screen; the screen stays on for the whole gig
+• Turn pages with a tap, a swipe or a Bluetooth foot pedal
+• Your keyboard switches to the right sound for every song over MIDI
+• Works completely offline
+
+SETS THE WHOLE BAND SHARES
+• Drag and drop songs into a set, add breaks and notes
+• Set the key and the sequence per song
+• Every member gets the set on their device automatically
+• setDING shows when something is still missing for a gig without a network
+• Choose who plays a set, substitutes from other bands included
+
+MADE FOR DRUMMERS TOO
+Tempo, time signature and song sequence instead of chords, a count-in and a tight click on your in-ears.
+
+EVERY MUSICIAN SEES IT THEIR WAY
+• Transpose with one tap, set a capo, change the font size
+• B or H notation, Nashville numbers and Roman numerals
+• Cues just for your instrument or your voice
+• Freehand notes right on the sheet
+None of it changes the song for the rest of the band.
+
+YOUR SONGS, YOUR FORMAT
+• Songs in the open ChordPro format
+• Import them one by one or as a ZIP, attach PDF sheet music
+• Melodies in ABC or LilyPond, language versions of a song
+• Built-in editor with a live preview
+• Report mistakes right on the song, with a marked-up screenshot
+
+FOR BANDS, SCHOOLS AND CHURCHES
+Several bands of an organization share one song library. Invite members with a link or a QR code. Roles decide who looks after the songs and who plans sets.
+
+YOUR DATA STAYS YOURS
+• Without an account, everything stays on your device
+• No ads, no tracking, no analytics
+• Servers in Switzerland – or run the server yourself, with Docker or without
+• Free and open source under the MIT licence
+
+Guide and more: https://setding.app/en/

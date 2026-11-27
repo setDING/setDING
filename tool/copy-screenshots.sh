@@ -151,8 +151,13 @@ for ((i = 0; i < ${#map[@]}; i += 2)); do
   copy "en_$shot" "$name"
   copy "de_$shot" "${name}_de"
 done
-if [ "$copied" = 0 ]; then
+if [ "$copied" = 0 ] && ! compgen -G "$SRC/*_play_phone_*.png" >/dev/null; then
   echo "No screenshot of the list was rendered" >&2
   exit 1
 fi
 echo "Copied $copied screenshots to docs/screenshots"
+
+# The Google Play phone screenshots are composed, not copied (ADR-0067).
+if compgen -G "$SRC/*_play_phone_*.png" >/dev/null; then
+  "$ROOT/tool/store-screenshots.sh"
+fi

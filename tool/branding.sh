@@ -119,6 +119,29 @@ magick "$OUT"/tmp-ico-{16,24,32,48,64,128,256}.png \
 svg -w 256 -h 256 "$SRC/mark.svg" -o "$APP/linux/runner/resources/app_icon.png"
 cp "$SRC/mark.svg" "$APP/linux/runner/resources/app_icon.svg"
 
+# Google Play listing (ADR-0067, docs/store/play/README.md): the 512 px icon,
+# opaque and full-bleed like iOS (Play masks the corners), and the feature
+# graphic, the dark logo on a night-blue glow, without text so it fits every
+# language.
+PLAY="$ROOT/docs/store/play"
+mkdir -p "$PLAY"
+full 512 1 "$PLAY/icon-512.png"
+cat > "$OUT/tmp-feature.svg" <<'SVG'
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500">
+  <defs>
+    <radialGradient id="r" cx="0.5" cy="0.45" r="0.75">
+      <stop offset="0" stop-color="#1E2A5E"/>
+      <stop offset="1" stop-color="#121417"/>
+    </radialGradient>
+  </defs>
+  <rect width="1024" height="500" fill="url(#r)"/>
+</svg>
+SVG
+svg "$OUT/tmp-feature.svg" -o "$OUT/tmp-feature.png"
+svg -w 720 "$SRC/logo-dark.svg" -o "$OUT/tmp-logo.png"
+magick "$OUT/tmp-feature.png" "$OUT/tmp-logo.png" -gravity center -composite \
+  -alpha off "$PLAY/feature-1024x500.png"
+
 rm -f "$OUT"/tmp-*
 
 cd "$APP"

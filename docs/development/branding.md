@@ -153,6 +153,7 @@ elsewhere the rounded tile is used as it is:
 | Windows | `windows/runner/resources/app_icon.ico` (16–256 px) |
 | Linux | `linux/runner/resources/app_icon.png` and `.svg`, installed into the bundle's `data/`. The window icon is set in `my_application.cc`, which only works under X11. Under Wayland the icon comes from the desktop entry that `install-desktop-entry.sh` (in `linux/packaging/`, shipped in the bundle) installs. `make start` and `make dev` install a hidden entry if there is none yet. |
 | Web | `favicon.png`, `icons/Icon-*.png` (incl. maskable) |
+| Google Play | `docs/store/play/icon-512.png` (opaque, full-bleed like iOS; Play masks the corners) and `feature-1024x500.png` (the dark logo on a night-blue glow, no text), see [the listing](../store/play/README.md) |
 
 ImageMagick writes no date chunks, so running `make branding` without
 changing the sources leaves every file unchanged.
