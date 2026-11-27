@@ -64,3 +64,6 @@ server/pb_hooks/setding-version.txt
 
 # Python bytecode (tool/release/changelog.py tests)
 __pycache__/
+
+# Store screenshots, composed by tool/store-screenshots.sh (docs/store/README.md)
+/docs/store/*/*/images/

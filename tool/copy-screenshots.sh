@@ -151,8 +151,13 @@ for ((i = 0; i < ${#map[@]}; i += 2)); do
   copy "en_$shot" "$name"
   copy "de_$shot" "${name}_de"
 done
-if [ "$copied" = 0 ]; then
+if [ "$copied" = 0 ] && ! compgen -G "$SRC/*_store_*.png" >/dev/null; then
   echo "No screenshot of the list was rendered" >&2
   exit 1
 fi
 echo "Copied $copied screenshots to docs/screenshots"
+
+# The store screenshots are composed, not copied (docs/store/README.md).
+if compgen -G "$SRC/*_store_*.png" >/dev/null; then
+  "$ROOT/tool/store-screenshots.sh"
+fi

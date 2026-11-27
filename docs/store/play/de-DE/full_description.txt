@@ -1,0 +1,42 @@
+Die Bandleitung stellt das Set einmal zusammen, und alle in der Band haben es auf Tablet, Handy oder Computer – die richtigen Songs, in der richtigen Reihenfolge, in der richtigen Tonart. Auf jeder Bühne, auch ohne WLAN.
+
+FÜR DIE BÜHNE GEMACHT
+• Live-Modus im Vollbild, der Bildschirm bleibt an
+• Umblättern per Tippen, Wischen oder mit einem Bluetooth-Fusspedal
+• Das Keyboard wechselt per MIDI bei jedem Song zum passenden Sound
+• Funktioniert komplett offline
+
+SETS FÜR DIE GANZE BAND
+• Songs per Drag & Drop zum Set zusammenstellen, Pausen und Notizen einfügen
+• Tonart und Ablauf pro Song festlegen
+• Alle in der Band bekommen das Set automatisch auf ihr Gerät
+• setDING zeigt, wenn für den Auftritt ohne Netz noch etwas fehlt
+• Besetzung pro Set, auch mit Aushilfen aus anderen Bands
+
+AUCH FÜR DAS SCHLAGZEUG
+Tempo, Taktart und Songablauf statt Akkorde, Einzählen und ein exakter Klick in den In-Ear.
+
+DU SIEHST ES AUF DEINE ART
+• Transponieren mit einem Tipp, Kapodaster, Schriftgrösse
+• B- oder H-Notation, Nashville-Zahlen und Stufen
+• Hinweise nur für dein Instrument oder deine Stimme
+• Freihand-Notizen direkt auf dem Blatt
+Nichts davon ändert den Song für den Rest der Band.
+
+DEINE SONGS, DEIN FORMAT
+• Songs im offenen ChordPro-Format
+• Import einzeln oder als ZIP, PDF-Noten anhängen
+• Melodien in ABC oder LilyPond, Sprachversionen eines Songs
+• Eingebauter Editor mit Live-Vorschau
+• Fehler direkt am Song melden, mit markiertem Screenshot
+
+FÜR BANDS, SCHULEN UND KIRCHEN
+Mehrere Bands einer Organisation teilen eine Song-Bibliothek. Mitglieder per Link oder QR-Code einladen. Rollen legen fest, wer Songs pflegt und Sets plant.
+
+DEINE DATEN BLEIBEN DEINE
+• Ohne Konto bleibt alles auf deinem Gerät
+• Keine Werbung, kein Tracking, keine Analyse-Tools
+• Server in der Schweiz – oder betreibe ihn selbst, mit oder ohne Docker
+• Kostenlos und Open Source unter der MIT-Lizenz
+
+Anleitung und mehr: https://setding.app

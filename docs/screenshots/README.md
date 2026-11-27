@@ -30,3 +30,7 @@ changed since the last release ([releases.md](../development/releases.md)).
 The test gate (`make check`) runs the same tests without writing files: the screens
 are built, driven, laid out and painted, but not rasterised and PNG-encoded, so a UI
 change that breaks them fails the check at a fraction of the cost.
+
+The screenshots of the store listings (Google Play, App Store) are rendered by
+`store_screenshots_test.dart` and composed into `docs/store/` instead
+(`make screenshots ONLY="^store "`, see [its README](../store/README.md)).

@@ -81,14 +81,23 @@ Future<void> _loadFonts() async {
 /// `build/screenshots/<name>.png`. Without it (the test gate), the screen is
 /// laid out and painted by the pump, but not rasterised and PNG-encoded,
 /// which made up most of the time of these tests.
-Future<void> shot(WidgetTester tester, String name) async {
+///
+/// The image has the logical size of the view times [pixelRatio]; pass the
+/// view's device pixel ratio for an image in physical pixels.
+Future<void> shot(
+  WidgetTester tester,
+  String name, {
+  double pixelRatio = 1,
+}) async {
   await tester.pumpAndSettle();
   final boundary = tester.renderObject<RenderRepaintBoundary>(
     find.byType(RepaintBoundary).first,
   );
   expect(boundary.debugNeedsPaint, isFalse);
   if (!_write) return;
-  final image = await tester.runAsync(() => boundary.toImage());
+  final image = await tester.runAsync(
+    () => boundary.toImage(pixelRatio: pixelRatio),
+  );
   final bytes = await tester.runAsync(
     () => image!.toByteData(format: ui.ImageByteFormat.png),
   );

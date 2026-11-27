@@ -111,12 +111,16 @@ Forces:
   account. Owner decisions: Play in addition to Obtainium; Play App Signing with the
   existing release key; CI uploads the AAB to the internal track, promotion by hand.
 - 2026-11-27: Accepted by the owner. Package name in the Play Console: `app.setding`.
+- 2026-11-27: Store listing assets in `docs/store/play/` (#1147), in the layout
+  of fastlane supply: texts in German and English, icon and feature graphic
+  from `make branding`, phone and tablet screenshots in both themes rendered
+  by a screenshot test (with the App Store sizes too) and composed with a
+  headline in a drawn device frame
+  (`tool/store-screenshots.sh`), rendered on demand and not checked in.
 
 ## Open points
 
 - Personal or organization developer account (closed-test requirement).
-- Store listing texts and graphics (feature graphic 1024×500, phone and tablet
-  screenshots).
 - Implementation: workflow, upload key and releases guide #1139, update-check
   hint for Play installs #1140, website installation page #1141, Play Console
   setup by the owner #1142.
