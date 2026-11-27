@@ -232,6 +232,9 @@ title.
     This also gives invitation links on Windows what ADR-0005 planned.
   - The Android integration test of App Links moves to its own issue (#1122,
     owner decision): `make android-test` has no way yet to fire a link.
+- 2026-11-27: Website page (#1116): *Share a link to a set* on the page of
+  sharing sets (de and en), with screenshots of *Share link* and *Not
+  available on this device*, and the browser's back, forward and reload.
 
 ## Open points
 

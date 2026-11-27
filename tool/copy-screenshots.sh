@@ -136,6 +136,8 @@ map=(
   song_attachment_menu 55_song_attachment_menu
   song_sources 56_song_sources
   chord_grid 57_chord_grid
+  set_share_link 61_set_share_link
+  link_not_available 61b_link_not_available
 )
 
 copied=0
