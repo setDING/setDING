@@ -277,20 +277,41 @@ asset.
    (`gh workflow run release.yml --ref main`), download the `play` artifact and
    upload the AAB to the internal track in the Play Console. The API cannot create
    the app's first release.
-5. **Service account:** in Google Cloud, create a service account with a JSON key
-   in a project linked to the Play developer account; in the Play Console
-   (*Users and permissions*) invite its address with access to setDING only and
-   the permission to release to testing tracks. Store the key:
+5. **Service account** (after step 2: the app must exist to grant access to it).
+   The `play` job signs in with it instead of a person. No link between a Google
+   Cloud project and the Play developer account is needed any more (the former
+   *API access* page of the Play Console is gone).
+   1. In the [Google Cloud console](https://console.cloud.google.com), with the
+      Google account of the Play Console, create a project (e.g. `setding-play`;
+      free, only a container for the service account).
+   2. *APIs & Services → Library*: enable the **Google Play Android Developer
+      API**.
+   3. *IAM & Admin → Service accounts → Create service account*, e.g.
+      `play-upload`; skip the roles and user access (it needs no Google Cloud
+      roles). Copy its address
+      (`play-upload@setding-play.iam.gserviceaccount.com`).
+   4. On the service account: *Keys → Add key → Create new key → JSON*. The
+      downloaded file is its password. In a Google Workspace organization the
+      policy `iam.disableServiceAccountKeyCreation` may forbid keys.
+   5. In the Play Console, *Users and permissions → Invite new users*: the
+      service account's address, under *App permissions* only setDING with only
+      **Release apps to testing tracks** (promotion to production stays with the
+      owner), no account permissions. A service account does not have to accept the
+      invitation; the permission can take a few hours to apply (until then the
+      API answers "The caller does not have permission").
+   6. Store the key and then remove the downloaded file (keep a copy with the
+      other keys):
 
-   ```bash
-   gh secret set PLAY_SERVICE_ACCOUNT_JSON < service-account.json
-   ```
+      ```bash
+      gh secret set PLAY_SERVICE_ACCOUNT_JSON < ~/Downloads/setding-play-xxxxxxxx.json
+      ```
 
-   then delete the local file (or keep it with the other keys).
 6. While the app is still a **draft** in the Play Console (before its first
    review), Play only accepts draft releases: set
    `gh variable set PLAY_RELEASE_STATUS --body draft` and delete the variable
-   (`gh variable delete PLAY_RELEASE_STATUS`) once the app is reviewed.
+   (`gh variable delete PLAY_RELEASE_STATUS`) once the app is reviewed. A draft
+   release is rolled out by hand in the Play Console (*Review release → Start
+   rollout*).
 
 Personal developer accounts must also run a closed test with at least 12 testers
 for 14 days before they may publish to production; see #1142 for the listing and
