@@ -146,9 +146,11 @@ SETDING_APPLE_TEAM_ID=ABCDE12345
 ```
 
 Then `sudo systemctl restart setding` and check
-`https://api.setding.app/.well-known/assetlinks.json`. Without the file, both URLs
+`https://api.setding.app/.well-known/assetlinks.json` and, with the web client,
+`https://app.setding.app/.well-known/assetlinks.json`: links to sets and songs
+(ADR-0065) use the web client's hostname, so Android verifies the app there too. Without the file, both URLs
 return 404 and links still work through the landing page, the `setding://` scheme,
-pasting and the QR code. Cloudflare must not challenge `/invite/*` and `/.well-known/*`
+pasting and the QR code. Cloudflare must not challenge `/invite/*`, `/sets/*`, `/songs/*` and `/.well-known/*`
 (only `/_/*` is behind Access, see step 3).
 
 **Invitation key:** `install.sh` adds a random `SETDING_INVITE_KEY` to

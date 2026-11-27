@@ -178,9 +178,8 @@ void main() {
         })).expectStatus(200);
 
         // Used: neither a second organization nor a sign-up.
-        final again = await (await pb.signUpVia(
-          token,
-        )).send('POST', '/api/setding/invites/$token/redeem');
+        final again = await (await pb.signUpVia(token))
+            .send('POST', '/api/setding/invites/$token/redeem');
         expect(again.status, 410);
         expect(
           (await pb.guest.post(

@@ -67,6 +67,15 @@ Type: filesandordirs; Name: "{app}\data"
 [Files]
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
+[Registry]
+; setding:// links open the app: invitations (ADR-0005) and sets and songs
+; (ADR-0065). Per user, like the installation (PrivilegesRequired=lowest);
+; removed with the app.
+Root: HKA; Subkey: "Software\Classes\setding"; ValueType: string; ValueName: ""; ValueData: "URL:setDING"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\setding"; ValueType: string; ValueName: "URL Protocol"; ValueData: ""
+Root: HKA; Subkey: "Software\Classes\setding\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\setding.exe,0"
+Root: HKA; Subkey: "Software\Classes\setding\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\setding.exe"" ""%1"""
+
 [Icons]
 Name: "{autoprograms}\setDING"; Filename: "{app}\setding.exe"
 Name: "{autodesktop}\setDING"; Filename: "{app}\setding.exe"; Tasks: desktopicon

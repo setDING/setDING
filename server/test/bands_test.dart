@@ -1,6 +1,7 @@
 import 'package:test/test.dart';
 
 import 'support/fixtures.dart';
+
 import 'package:setding_server/pocketbase_harness.dart';
 
 void main() {
@@ -232,9 +233,8 @@ void main() {
         final ids = (await f.member.list('users')).map((u) => u['id']);
         expect(ids, unorderedEquals([f.admin.id, f.member.id]));
         expect((await f.member.view('users', f.outsider.id)).status, 404);
-        final outsiderSees = (await f.outsider.list(
-          'users',
-        )).map((u) => u['id']);
+        final outsiderSees = (await f.outsider.list('users'))
+            .map((u) => u['id']);
         expect(outsiderSees, [f.outsider.id]);
       },
     );

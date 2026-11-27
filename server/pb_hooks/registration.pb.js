@@ -28,6 +28,11 @@ routerAdd("GET", "/api/setding/config", (e) => {
     serverVersion: require(`${__hooks}/lib/compat.js`).serverVersion(),
     // Newest app release, for the update hint (ADR-0036).
     latestClientVersion: require(`${__hooks}/lib/compat.js`).latestClientVersion(),
+    // Base of links to sets and songs (ADR-0065): the web client's URL when
+    // it is installed, so a link opens in a browser too, else the server's.
+    linkBase: require(`${__hooks}/lib/web.js`).available()
+      ? require(`${__hooks}/lib/web.js`).webUrl()
+      : require(`${__hooks}/lib/invites.js`).baseUrl(e.app),
   });
 });
 

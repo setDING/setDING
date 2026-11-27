@@ -6587,4 +6587,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get linkSignInMessage => 'Melde dich an, um es zu sehen.';
+
+  @override
+  String get linkShare => 'Link teilen';
+
+  @override
+  String get linkCopied => 'Link kopiert';
 }

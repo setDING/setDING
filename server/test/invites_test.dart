@@ -230,9 +230,8 @@ void main() {
 
       final t2 = await token(f);
       final id2 =
-          (await f.admin.list(
-                'invites',
-              )).firstWhere((i) => i['revoked'] == false)['id']
+          (await f.admin.list('invites'))
+                  .firstWhere((i) => i['revoked'] == false)['id']
               as String;
       (await pb.superuser.patch('invites', id2, {
         'expires': '2020-01-01 00:00:00.000Z',
@@ -475,6 +474,9 @@ void main() {
       apple.expectStatus(200);
       expect(apple.raw.body, contains('TEAM123.app.setding'));
       expect(apple.raw.body, contains('/invite/*'));
+      // Links to sets and songs (ADR-0065).
+      expect(apple.raw.body, contains('/sets/*'));
+      expect(apple.raw.body, contains('/songs/*'));
     });
   });
 }

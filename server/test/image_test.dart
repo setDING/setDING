@@ -154,18 +154,16 @@ void main() {
   });
 
   test('runs as the non-root user with the version and the labels', () async {
-    final config =
-        jsonDecode(
-              ((await _run('docker', [
-                    'image',
-                    'inspect',
-                    '-f',
-                    '{{json .Config}}',
-                    image,
-                  ])).stdout
-                  as String),
-            )
-            as Map<String, dynamic>;
+    final config = jsonDecode(
+      ((await _run('docker', [
+            'image',
+            'inspect',
+            '-f',
+            '{{json .Config}}',
+            image,
+          ])).stdout
+          as String),
+    ) as Map<String, dynamic>;
     expect(config['User'], '65532:65532');
     expect(
       (config['Labels'] as Map)['org.opencontainers.image.version'],

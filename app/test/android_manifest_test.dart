@@ -71,4 +71,26 @@ void main() {
       expect(disabled, themes, reason: file.path);
     }
   });
+
+  test('links to sets and songs open the app (ADR-0065)', () {
+    final manifest = File('android/app/src/main/AndroidManifest.xml')
+        .readAsStringSync();
+    // App Links on the web client's host, verified like the invitations.
+    final filter = RegExp(
+      r'<intent-filter android:autoVerify="true">(?:(?!</intent-filter>).)*'
+      r'android:host="app\.setding\.app"(?:(?!</intent-filter>).)*'
+      r'</intent-filter>',
+      dotAll: true,
+    ).firstMatch(manifest)?.group(0);
+    expect(filter, isNotNull);
+    for (final prefix in ['/sets/', '/songs/', '/invite/']) {
+      expect(filter, contains('android:pathPrefix="$prefix"'));
+    }
+    for (final host in ['invite', 'sets', 'songs']) {
+      expect(
+        manifest,
+        contains('android:scheme="setding" android:host="$host"'),
+      );
+    }
+  });
 }

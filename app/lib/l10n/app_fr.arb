@@ -1643,5 +1643,7 @@
   "linkNotAvailableTitle": "Non disponible sur cet appareil",
   "linkNotAvailableMessage": "Il n’est pas encore synchronisé sur cet appareil, ou tu n’y as pas accès.",
   "linkNoAccessMessage": "Non disponible : il a été supprimé, ou tu n’y as pas accès.",
-  "linkSignInMessage": "Connecte-toi pour le voir."
+  "linkSignInMessage": "Connecte-toi pour le voir.",
+  "linkShare": "Partager le lien",
+  "linkCopied": "Lien copié"
 }
