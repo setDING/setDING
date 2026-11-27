@@ -128,10 +128,16 @@ Forces:
   `r0adkll/upload-google-play` (MIT, pinned to a commit because it receives the
   service account key). `PLAY_RELEASE_STATUS=draft` covers the time while the
   app is still a draft in the Play Console.
+- 2026-11-27: The Play developer account is a **personal** account, so production
+  access needs a closed test with at least 12 testers for 14 days first. The
+  owner set up the app in the Play Console (#1142): Play App Signing with the
+  release key (fingerprint checked), the first AAB in internal testing, the
+  service account, the store listing with screenshots, a review account and the
+  App content forms (answers in `docs/store/play/console.md`).
 
 ## Open points
 
-- Personal or organization developer account (closed-test requirement).
+- Closed test with at least 12 testers for 14 days, then production access (#1142).
 - Implementation: workflow, upload key and releases guide #1139 (done), update-check
   hint for Play installs #1140 (done), website installation page #1141, Play Console
   setup by the owner #1142.
