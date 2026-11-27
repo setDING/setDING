@@ -175,6 +175,14 @@ Forces:
   in document order, including sections without a label. `lyricSlides` splits a
   section into the fewest slides of at most *lines per slide* text lines, of about
   equal length, and gives a language pair the slide count of the longer one.
+- 2026-11-27: Server and state stream (#1167): `app/lib/projection/`, default port
+  8231 (a free port when taken), bound to all IPv6 and IPv4 interfaces; routes
+  `/p/<token>` and `/p/<token>/lower-third` (the page) and `/p/<token>/events`
+  (SSE, `event: state` with the JSON of `ProjectionState`, format version `v: 1`,
+  a comment as heartbeat every 5 s); only `GET`, token compared in constant time,
+  at most 32 streams (503 beyond), `Cache-Control: no-store`, `nosniff`, a
+  Content Security Policy without external sources. The page asset follows in
+  #1168.
 
 ## Open points
 
