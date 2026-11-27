@@ -5,11 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../data/backup.dart';
+import '../../data/backup_providers.dart';
+import '../../data/band_providers.dart';
 import '../../data/band_view.dart';
 import '../../data/database.dart';
 import '../../data/song_archive.dart';
+import '../../data/song_providers.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
+import '../../platform/web_client.dart';
 import '../../sync/sync_controller.dart' show attachmentFetcherProvider;
 import '../sets/set_archive_dialogs.dart';
 import '../widgets/dialogs.dart';

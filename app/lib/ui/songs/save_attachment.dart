@@ -6,8 +6,9 @@ import '../../data/attachment_storage.dart';
 import '../../data/backup.dart' show BackupFileMissingException;
 import '../../data/database.dart';
 import '../../data/import_export.dart' show safeFileName;
+import '../../data/storage_providers.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
+import '../../platform/web_client.dart';
 import '../../sync/sync_controller.dart';
 import '../widgets/export_file.dart';
 

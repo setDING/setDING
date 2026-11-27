@@ -1,11 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/band_providers.dart';
 import '../../data/contact_repository.dart';
 import '../../data/database.dart';
 import '../../data/person_name.dart';
+import '../../data/set_providers.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../../settings/settings.dart' show nameFormatProvider;
 import '../widgets/section_header.dart';
 import 'contact_dialog.dart';

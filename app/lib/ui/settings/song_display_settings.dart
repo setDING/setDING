@@ -5,9 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../data/song_providers.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../settings/settings.dart';
-import '../../providers.dart';
 import '../live/live_theme.dart';
 import '../render/render_cache.dart';
 import '../render/song_display_colors.dart';

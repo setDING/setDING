@@ -3,11 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../data/band_providers.dart';
 import '../../data/database.dart';
+import '../../data/set_providers.dart';
 import '../../data/set_repository.dart';
+import '../../data/trash_providers.dart';
 import '../../l10n/generated/app_localizations.dart';
+import '../../ui/sets/sets_tab_providers.dart';
 import 'lineup_view.dart';
-import '../../providers.dart';
 import '../account/sync_refresh.dart';
 import '../bands/band_switcher.dart';
 import '../bands/no_band_hint.dart';

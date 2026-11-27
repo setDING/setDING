@@ -4,8 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../data/band_view.dart';
 import '../../data/database.dart';
+import '../../data/play_history_providers.dart';
+import '../../data/song_providers.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../sets/sets_screen.dart' show formatGigDate;
 import '../widgets/dialogs.dart';
 import '../widgets/page_width.dart';

@@ -9,7 +9,7 @@ import 'package:go_router/go_router.dart';
 
 import 'l10n/generated/app_localizations.dart';
 import 'midi/midi_connection.dart';
-import 'providers.dart';
+import 'platform/web_client.dart';
 import 'settings/settings.dart';
 import 'sync/auth_providers.dart';
 import 'sync/sync_controller.dart';

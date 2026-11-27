@@ -3,8 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../data/auto_backup.dart';
+import '../../data/backup_providers.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../settings/settings_layout.dart';
 import '../widgets/dialogs.dart';
 import 'folder_path_text.dart';

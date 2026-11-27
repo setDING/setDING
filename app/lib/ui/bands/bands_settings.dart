@@ -4,8 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../data/band_providers.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import 'bands_screen.dart';
 import '../routes.dart';
 

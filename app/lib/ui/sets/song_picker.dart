@@ -3,10 +3,13 @@ import 'dart:async';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/arrangement_providers.dart';
+import '../../data/band_providers.dart';
 import '../../data/database.dart';
+import '../../data/play_history_providers.dart';
+import '../../data/song_providers.dart';
 import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../songs/song_language.dart';
 import '../songs/song_list.dart';

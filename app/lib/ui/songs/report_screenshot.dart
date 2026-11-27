@@ -8,9 +8,9 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../data/annotation.dart';
 import '../../data/database.dart';
+import '../../data/song_providers.dart';
 import '../../data/song_review.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../annotations/annotation_paint.dart';
 import '../annotations/annotation_placement.dart';
 

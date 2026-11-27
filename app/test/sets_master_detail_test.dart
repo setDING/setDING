@@ -2,11 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:setding/ui/home_tab.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:setding/providers.dart';
 import 'package:setding/ui/live/live_play_button.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/ui/sets/set_screen.dart';
 import 'package:setding/ui/sets/sets_screen.dart';
+import 'package:setding/ui/sets/sets_tab_providers.dart';
 
 import 'test_app.dart';
 

@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../data/backup_providers.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../../sync/auth_providers.dart' show authProvider;
 import '../settings/settings_layout.dart';

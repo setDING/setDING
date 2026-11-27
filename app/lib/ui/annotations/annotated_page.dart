@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../data/annotation.dart';
-import '../../providers.dart';
+import '../../data/annotation_providers.dart';
 import '../../settings/settings.dart';
 import 'annotation_editor.dart';
 import 'annotation_layer.dart';

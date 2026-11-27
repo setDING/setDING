@@ -2,8 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/account_cleanup.dart' show soleAdminOrganizations;
+import '../../data/storage_providers.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../../sync/auth_providers.dart';
 import '../../sync/sync_backend.dart';
 import '../widgets/dialogs.dart';

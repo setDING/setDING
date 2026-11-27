@@ -4,11 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../data/backup.dart';
+import '../../data/backup_providers.dart';
+import '../../data/band_providers.dart';
 import '../../data/import_export.dart';
 import '../../data/set_archive.dart';
 import '../../data/song_archive.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../backup/full_backup.dart';
 import '../sets/set_archive_dialogs.dart';

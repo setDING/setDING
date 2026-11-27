@@ -10,9 +10,12 @@
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:setding/data/band_providers.dart';
 import 'package:setding/data/band_role.dart';
+import 'package:setding/data/set_providers.dart';
+import 'package:setding/data/song_providers.dart';
+import 'package:setding/data/trash_providers.dart';
 import 'package:setding/main.dart' as app;
-import 'package:setding/providers.dart';
 import 'package:setding/sync/sync_controller.dart';
 import 'package:setding/ui/home_screen.dart';
 

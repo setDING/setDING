@@ -2,10 +2,11 @@ import 'package:chordpro/chordpro.dart' as cp;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../data/arrangement_providers.dart';
+import '../../data/band_providers.dart';
 import '../../data/band_view.dart';
 import '../../data/database.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../render/song_header.dart';
 import '../widgets/dialogs.dart';

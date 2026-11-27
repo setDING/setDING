@@ -1,8 +1,10 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/arrangement_providers.dart';
 import '../../data/database.dart';
-import '../../providers.dart';
+import '../../data/set_providers.dart';
+import '../../data/song_providers.dart';
 import 'live_item.dart';
 
 /// The items of the set [setId] and the index to start at: [index], or
