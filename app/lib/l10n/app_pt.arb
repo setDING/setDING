@@ -241,6 +241,8 @@
   "projectionRenewed": "Novo endereço criado. O antigo já não funciona.",
   "settingsProjectionAddress": "Novo endereço de projeção",
   "settingsProjectionAddressHint": "O endereço mantém-se neste dispositivo, para que o projetor e o OBS o guardem. Um novo endereço bloqueia as ligações antigas.",
+  "settingsProjectionShowLabel": "Mostrar a secção",
+  "settingsProjectionShowLabelHint": "Em pequeno sobre a letra, p. ex. «Estrofe 1» ou «Refrão».",
   "liveSongPage": "Página {page}/{count}",
   "livePosition": "{current} / {total}",
   "settingsSectionGeneral": "Geral",

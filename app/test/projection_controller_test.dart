@@ -281,6 +281,34 @@ Chorus line
     expect(host.tokens, hasLength(2), reason: 'not running: no restart');
   });
 
+  test(
+    'the section label: its own, else the name of its kind (#1185)',
+    () async {
+      final labelled = ProjectionController(
+        host,
+        labeler: (kind) => kind == SectionKind.chorus ? 'Refrain' : null,
+      );
+      await labelled.start('<html>', token: 'a' * 22);
+      final s = parseChordPro(
+        '{start_of_verse: Verse 1}\nOne\n{end_of_verse}\n'
+        '{start_of_chorus}\nTwo\n{end_of_chorus}\n'
+        '{start_of_verse}\nThree\n{end_of_verse}\n',
+      );
+      labelled.show(item(s));
+      expect(host.last['label'], 'Verse 1');
+      labelled.next();
+      expect(host.last['label'], 'Refrain', reason: 'the default of its kind');
+      labelled.next();
+      expect(host.last.containsKey('label'), isFalse, reason: 'none known');
+      labelled.previous();
+      labelled.options = const ProjectionOptions(showLabel: false);
+      expect(host.last.containsKey('label'), isFalse, reason: 'switched off');
+      labelled.options = const ProjectionOptions(markersAsText: true);
+      labelled.show(const ProjectionMarker('Prayer'));
+      expect(host.last.containsKey('label'), isFalse);
+    },
+  );
+
   test('the song page reports the first section of the shown page', () {
     final pages = SongPageController();
     addTearDown(pages.dispose);

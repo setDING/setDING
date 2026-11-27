@@ -58,6 +58,16 @@
   .line { overflow-wrap: break-word; }
   #content.nowrap .line { white-space: nowrap; }
   .gap { height: 0.6em; }
+  /* The section of the slide (#1185): small and dimmed above the lyrics. */
+  #label {
+    padding: 3vh 5vw 0;
+    color: var(--dim);
+    font-size: 2.4vh;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: var(--align);
+  }
+  #label:empty { display: none; }
   #next {
     padding: 0 5vw 1vh;
     color: var(--dim);
@@ -129,10 +139,19 @@
     color: rgba(255, 255, 255, 0.7);
   }
   html.lower-third .pair.stacked { grid-template-columns: 1fr 1fr; gap: 0 3vw; }
+  html.lower-third #label {
+    position: absolute;
+    left: 1.5vw;
+    top: 0.6vh;
+    padding: 0;
+    font-size: 1.4vh;
+    color: rgba(255, 255, 255, 0.7);
+  }
   html.lower-third #next, html.lower-third #fullscreen, html.lower-third #status { display: none; }
 </style>
 </head>
 <body>
+<div id="label"></div>
 <div id="stage"><div id="content"></div></div>
 <div id="next"></div>
 <div id="copyright"></div>
@@ -153,8 +172,12 @@
   var next = document.getElementById('next');
   var copyright = document.getElementById('copyright');
   var status = document.getElementById('status');
+  var label = document.getElementById('label');
   // In the lower third the copyright sits in the band, beside the text.
-  if (lowerThird) stage.appendChild(copyright);
+  if (lowerThird) {
+    stage.appendChild(copyright);
+    stage.appendChild(label);
+  }
   var state = { blank: true, lines: [] };
 
   function lines(list, cls) {
@@ -239,6 +262,7 @@
     // As written in {copyright}, which usually has its own "©".
     copyright.textContent = songShown && state.copyright ? state.copyright : '';
     next.textContent = songShown && state.next ? state.next.filter(Boolean).join(' / ') : '';
+    label.textContent = songShown && state.label ? state.label : '';
     document.title = songShown && state.title ? state.title : 'setDING';
     fit();
     content.classList.remove('hidden');

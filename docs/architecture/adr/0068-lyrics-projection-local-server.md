@@ -239,6 +239,11 @@ Forces:
   (a running projection restarts with it) and in the projection settings renews
   it, and old links get 404. Trade-off: a link someone once had keeps working on
   the local network until renewed, which the owner accepted.
+- 2026-11-27: Owner request (#1185): the slide's section is shown small and dimmed
+  above the lyrics (in the lower third in the band's corner): the section's own
+  label, else the name of its kind in the app's language as live mode shows it
+  (*Verse*, *Chorus*, *Bridge*), none for other sections and for markers. A device
+  setting *Show the section*, on by default.
 
 ## Open points
 

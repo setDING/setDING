@@ -264,6 +264,8 @@
   "projectionRenewed": "New address created. The old one no longer works.",
   "settingsProjectionAddress": "New projection address",
   "settingsProjectionAddressHint": "The address stays the same on this device, so projector and OBS keep it. A new address locks out old links.",
+  "settingsProjectionShowLabel": "Show the section",
+  "settingsProjectionShowLabelHint": "Small above the lyrics, e.g. “Verse 1” or “Chorus”.",
   "liveSongPage": "Page {page}/{count}",
   "livePosition": "{current} / {total}",
   "settingsSectionGeneral": "General",

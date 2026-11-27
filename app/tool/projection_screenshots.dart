@@ -43,8 +43,13 @@ Future<void> main(List<String> args) async {
     second: second == null ? null : lyricSections(second),
   ).first;
 
-  ProjectionState state(Song song, LyricSlide s) =>
-      ProjectionState.slide(s, title: song.title, copyright: song.copyright);
+  // Sections without a label are named as in the app (#1185).
+  ProjectionState state(Song song, LyricSlide s) => ProjectionState.slide(
+    s,
+    title: song.title,
+    copyright: song.copyright,
+    defaultLabel: identical(song, de) ? 'Strophe' : 'Verse',
+  );
 
   final shots = <(String, ProjectionState, String)>[
     ('projection_page', state(en, slide(en)), ''),

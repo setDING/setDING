@@ -339,6 +339,19 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('a section without a label is named in the app language '
+      '(#1185)', (tester) async {
+    await start(
+      tester,
+      sources: [
+        '{title: One}\n{start_of_chorus}\nChorus line\n{end_of_chorus}',
+      ],
+    );
+    await startProjection(tester);
+    expect(host.last['label'], 'Chorus');
+    await app.dispose(tester);
+  });
+
   testWidgets('no projection where the platform cannot serve it', (
     tester,
   ) async {

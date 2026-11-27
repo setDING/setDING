@@ -425,6 +425,8 @@
   "projectionRenewed": "Neue Adresse erstellt. Die alte funktioniert nicht mehr.",
   "settingsProjectionAddress": "Neue Projektionsadresse",
   "settingsProjectionAddressHint": "Die Adresse bleibt auf diesem Gerät gleich, damit Beamer und OBS sie behalten. Eine neue Adresse sperrt alte Links.",
+  "settingsProjectionShowLabel": "Abschnitt anzeigen",
+  "settingsProjectionShowLabelHint": "Klein über dem Text, z.B. «Strophe 1» oder «Refrain».",
   "@projectionNoCopyright": {
     "description": "Hint in live mode: the song has no {copyright} directive. The braces are quoted so they are shown literally."
   },

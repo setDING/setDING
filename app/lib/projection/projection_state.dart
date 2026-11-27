@@ -36,17 +36,21 @@ class ProjectionState {
   }) : this(marker: text, style: style);
 
   /// A slide of a song (ADR-0068 §5, §8, §9), with [next] as the preview.
+  /// Its label is the section's own, else [defaultLabel] (the name of its
+  /// kind, #1185); none without [showLabel].
   factory ProjectionState.slide(
     LyricSlide slide, {
     String? title,
     String? copyright,
     LyricSlide? next,
+    bool showLabel = true,
+    String? defaultLabel,
     ProjectionStyle style = const ProjectionStyle(),
   }) => ProjectionState(
     style: style,
     title: title,
     copyright: copyright,
-    label: slide.source.label,
+    label: showLabel ? slide.source.label ?? defaultLabel : null,
     lines: slide.lines,
     second: slide.second,
     next: next?.lines,
@@ -61,7 +65,7 @@ class ProjectionState {
   /// `{copyright}` of the song, shown on the slide.
   final String? copyright;
 
-  /// The section's label (`Verse 1`), if it has one.
+  /// The section's label (`Verse 1`), shown small above the lyrics.
   final String? label;
 
   /// The lines of the slide (`''` = paragraph break).

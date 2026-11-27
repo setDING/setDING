@@ -177,6 +177,7 @@ class AppSettings {
     this.projectionSecondLanguage = '',
     this.projectionPreview = false,
     this.projectionTurnsSlides = false,
+    this.projectionShowLabel = true,
   });
 
   final LanguageMode language;
@@ -363,6 +364,9 @@ class AppSettings {
   /// first, then the page or the song (#1181).
   final bool projectionTurnsSlides;
 
+  /// The section of a slide shown small above the lyrics (#1185).
+  final bool projectionShowLabel;
+
   /// The live mode's program picker sends each choice to the keyboard at
   /// once, to hear it before saving (#607); off by default.
   final bool midiPreview;
@@ -521,6 +525,7 @@ class AppSettings {
     String? projectionSecondLanguage,
     bool? projectionPreview,
     bool? projectionTurnsSlides,
+    bool? projectionShowLabel,
   }) => AppSettings(
     language: language ?? this.language,
     notation: notation ?? this.notation,
@@ -586,6 +591,7 @@ class AppSettings {
         projectionSecondLanguage ?? this.projectionSecondLanguage,
     projectionPreview: projectionPreview ?? this.projectionPreview,
     projectionTurnsSlides: projectionTurnsSlides ?? this.projectionTurnsSlides,
+    projectionShowLabel: projectionShowLabel ?? this.projectionShowLabel,
   );
 
   /// Which settings follow the person (synced with the account) and which
@@ -671,6 +677,7 @@ class AppSettings {
     'projectionSecondLanguage': SettingSyncScope.device,
     'projectionPreview': SettingSyncScope.device,
     'projectionTurnsSlides': SettingSyncScope.device,
+    'projectionShowLabel': SettingSyncScope.device,
   };
 
   /// The keys of [scope].
@@ -743,6 +750,7 @@ class AppSettings {
     'projectionSecondLanguage': projectionSecondLanguage,
     'projectionPreview': projectionPreview,
     'projectionTurnsSlides': projectionTurnsSlides,
+    'projectionShowLabel': projectionShowLabel,
   };
 
   /// Settings from JSON values; a missing key, a value of the wrong type or
@@ -909,6 +917,7 @@ class AppSettings {
         'projectionTurnsSlides',
         d.projectionTurnsSlides,
       ),
+      projectionShowLabel: flag('projectionShowLabel', d.projectionShowLabel),
       midiTakeOver: flag('midiTakeOver', d.midiTakeOver),
       songDisplay: switch (json['songDisplay']) {
         final String v => SongDisplay.fromJsonString(v),

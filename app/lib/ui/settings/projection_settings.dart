@@ -69,6 +69,14 @@ class ProjectionSettings extends ConsumerWidget {
           options: {for (final n in projectionLineChoices) n: '$n'},
           onChanged: (v) => update((s) => s.copyWith(projectionLines: v)),
         ),
+        SettingsSwitch(
+          tileKey: const Key('settings-projection-label'),
+          icon: Icons.label_important_outline,
+          title: l10n.settingsProjectionShowLabel,
+          hint: l10n.settingsProjectionShowLabelHint,
+          value: s.projectionShowLabel,
+          onChanged: (v) => update((s) => s.copyWith(projectionShowLabel: v)),
+        ),
         SettingsChoice(
           tileKey: const Key('settings-projection-copyright'),
           icon: Icons.copyright,

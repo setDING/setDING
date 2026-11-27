@@ -854,6 +854,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Die Adresse bleibt auf diesem Gerät gleich, damit Beamer und OBS sie behalten. Eine neue Adresse sperrt alte Links.';
 
   @override
+  String get settingsProjectionShowLabel => 'Abschnitt anzeigen';
+
+  @override
+  String get settingsProjectionShowLabelHint =>
+      'Klein über dem Text, z.B. «Strophe 1» oder «Refrain».';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Seite $page/$count';
   }
