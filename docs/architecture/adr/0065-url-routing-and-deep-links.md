@@ -236,12 +236,18 @@ title.
   sharing sets (de and en), with screenshots of *Share link* and *Not
   available on this device*, and the browser's back, forward and reload.
 
+- 2026-11-27: Android integration test of links (#1122,
+  `app/integration_test/deep_link_test.dart`): `make android-test` fires
+  links with `adb shell am start` when a test asks for one through the
+  device's log. App Links and `setding://` links open the set, invitation
+  links the join screen, in the running app. Domain verification is not
+  part of it (the test app has its own package).
+
 ## Open points
 
 - On the web, the browser's back button while a dialog is open closes the
   dialog together with the screen below it (dialogs add no history entry).
 - iOS Universal Links need the Apple Developer Team ID (open since ADR-0005).
-- Android integration test: an App Link opens its set (#1122).
 - Windows `setding://` links: tested on Windows.
 - Should the song list's search and filters be part of the URL
   (`/songs?q=…`)?

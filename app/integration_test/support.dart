@@ -1,5 +1,6 @@
 // Helpers of the Android integration tests (make android-test,
 // docs/development/android-tests.md).
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -57,4 +58,16 @@ $objects
 trailer<</Root 1 0 R>>
 %%EOF
 ''');
+}
+
+/// Whether the runner fires the links of [openLink] (make android-test).
+const linksFromRunner = bool.fromEnvironment('SETDING_ITEST_LINKS');
+
+/// Asks the runner of make android-test to open [link] on the device as a
+/// link from outside the app (`adb shell am start -a VIEW -d <link>`), as a
+/// chat or the browser would. The request goes through the device's log,
+/// which tool/android-test.sh watches; the root zone's print bypasses the
+/// test's own print capture and reaches the log.
+void openLink(String link) {
+  Zone.root.print('setding-itest-open-link: $link');
 }
