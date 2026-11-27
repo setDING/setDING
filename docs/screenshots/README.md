@@ -34,3 +34,5 @@ change that breaks them fails the check at a fraction of the cost.
 The screenshots of the store listings (Google Play, App Store) are rendered by
 `store_screenshots_test.dart` and composed into `docs/store/` instead
 (`make screenshots ONLY="^store "`, see [its README](../store/README.md)).
+The same run writes `why_<n>[_de].png` here, the store's tablet screens without
+the headline, for the cards of the landing page.
