@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 with the setDING-specific bump rules of
 [ADR-0028](docs/architecture/adr/0028-versioning-scheme.md).
 
+## [0.24.0-beta.1] - 2026-11-27
+
+Pre-release to try the lyrics projection on devices before the final 0.24.0 (installed with Obtainium with *Include prereleases*; not on Google Play).
+
+### Added
+
+- **Project the lyrics** from live mode (ADR-0068): *Project lyrics* in the live controls serves the lyrics without chords to any browser in the same network – a projector laptop, a TV or OBS – with a QR code to open it. The slides follow the set and the page of the song; a projection bar moves to the previous or next slide, blanks the screen and shows a hint when a song has no `{copyright}`. Native apps only, not the web client ([#1173](https://github.com/setDING/setDING/pull/1173), [#1174](https://github.com/setDING/setDING/pull/1174), [#1175](https://github.com/setDING/setDING/pull/1175), [#1176](https://github.com/setDING/setDING/pull/1176))
+- Projection settings: colours, font, alignment, lines per slide, copyright on every or on the first and last slide, a second language from the song's language versions, set markers as text, a preview of the next slide, and the section (*Verse 1*, *Chorus*) small above the lyrics ([#1177](https://github.com/setDING/setDING/pull/1177), [#1186](https://github.com/setDING/setDING/pull/1186))
+- A lower-third page with a transparent background for livestreams in OBS ([#1175](https://github.com/setDING/setDING/pull/1175))
+- *Turning pages moves the slides*: the page turner first moves through the slides of a song, then to the next song ([#1182](https://github.com/setDING/setDING/pull/1182))
+- The projection bar names the projected section above the slide position, e.g. *Chorus* over *3/8* ([#1190](https://github.com/setDING/setDING/pull/1190))
+- The projection address stays the same on a device; *New address* locks out old links ([#1184](https://github.com/setDING/setDING/pull/1184))
+- Installs from Google Play are pointed to Google Play for updates ([#1151](https://github.com/setDING/setDING/pull/1151))
+- Pre-releases through Obtainium and the test server ([#1179](https://github.com/setDING/setDING/pull/1179))
+
 ## [0.23.1] - 2026-11-27
 
 The release build of 0.23.0 failed, so 0.23.0 was never published: **this is the first release with the changes listed under [0.23.0](https://github.com/setDING/setDING/blob/main/CHANGELOG.md#0230---2026-11-27)** (people without an account in the lineup, share links for sets and songs, QR code scan to join, and more).
@@ -510,6 +525,7 @@ The release build of 0.23.0 failed, so 0.23.0 was never published: **this is the
 
 - First release, built on GitHub Actions for Linux, Android and Windows ([#138](https://github.com/setDING/setDING/pull/138))
 
+[0.24.0-beta.1]: https://github.com/setDING/setDING/compare/v0.23.1...v0.24.0-beta.1
 [0.23.1]: https://github.com/setDING/setDING/compare/v0.22.1...v0.23.1
 [0.23.0]: https://github.com/setDING/setDING/compare/v0.22.1...v0.23.0
 [0.22.1]: https://github.com/setDING/setDING/compare/v0.22.0...v0.22.1
