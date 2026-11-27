@@ -446,6 +446,152 @@ void main() {
     });
   });
 
+  group('losing the right to invite (issue #1193)', () {
+    Future<Map<String, dynamic>> invite(
+      Client client,
+      String orgId, {
+      String? band,
+      String? contact,
+    }) async {
+      final r = await client.send(
+        'POST',
+        '/api/setding/invites',
+        body: {'organization': orgId, 'band': ?band, 'contact': ?contact},
+      );
+      r.expectStatus(200);
+      return r.json;
+    }
+
+    Future<Map<String, dynamic>> orgMembership(
+      BandFixture f,
+      User user,
+    ) async => (await pb.superuser.list(
+      'org_memberships',
+      filter: 'organization = "${f.orgId}" && user = "${user.id}"',
+    )).single;
+
+    /// Checks on the server that the invitation is revoked and that
+    /// redeeming it answers 410.
+    Future<void> expectRevoked(Map<String, dynamic> link) async {
+      final stored = await pb.superuser.view('invites', link['id'] as String);
+      expect(stored.json['revoked'], isTrue, reason: 'invite ${link['id']}');
+      final r = await redeem(await pb.signUp(), link['token'] as String);
+      expect(r.status, 410);
+      expect(r.field('data.token.code'), 'revoked');
+    }
+
+    /// Checks on the server that the invitation is still open and works.
+    Future<void> expectValid(Map<String, dynamic> link) async {
+      final stored = await pb.superuser.view('invites', link['id'] as String);
+      expect(stored.json['revoked'], isFalse, reason: 'invite ${link['id']}');
+      (await redeem(
+        await pb.signUp(),
+        link['token'] as String,
+      )).expectStatus(200);
+    }
+
+    test('a demoted band leader loses their band invitations', () async {
+      final f = await BandFixture.create(pb);
+      final leader = await f.addLeader();
+      final mine = await invite(leader, f.orgId, band: f.id);
+      final admins = await invite(f.admin, f.orgId, band: f.id);
+      final membership = await f.membershipOf(leader);
+      (await f.admin.patch('memberships', membership['id'] as String, {
+        'role': 'planner',
+      })).expectStatus(200);
+      await expectRevoked(mine);
+      await expectValid(admins);
+    });
+
+    test(
+      'a band leader removed from the band loses their invitations',
+      () async {
+        final f = await BandFixture.create(pb);
+        final leader = await f.addLeader();
+        final mine = await invite(leader, f.orgId, band: f.id);
+        final membership = await f.membershipOf(leader);
+        (await f.admin.patch('memberships', membership['id'] as String, {
+          'deleted': true,
+        })).expectStatus(200);
+        await expectRevoked(mine);
+      },
+    );
+
+    test('an organization admin who stops leading the band keeps their '
+        'invitations', () async {
+      final f = await BandFixture.create(pb);
+      // A second leader, so the band keeps an admin.
+      await f.addLeader();
+      final mine = await invite(f.admin, f.orgId, band: f.id);
+      final membership = await f.membershipOf(f.admin);
+      (await f.admin.patch('memberships', membership['id'] as String, {
+        'role': 'member',
+      })).expectStatus(200);
+      await expectValid(mine);
+    });
+
+    test('a demoted organization admin keeps only the invitations of bands '
+        'they still lead', () async {
+      final f = await BandFixture.create(pb);
+      final other = await f.admin.post('bands', {
+        'name': 'Other band',
+        'organization': f.orgId,
+      });
+      other.expectStatus(200);
+      final otherId = other.json['id'] as String;
+      final admin2 = await pb.signUp('Second admin');
+      await BandFixture.addOrgMember(pb, f.orgId, admin2, role: 'admin');
+      await BandFixture.addMember(pb, f.id, admin2, role: 'admin');
+      final orgLink = await invite(admin2, f.orgId);
+      final ledBand = await invite(admin2, f.orgId, band: f.id);
+      final otherBand = await invite(admin2, f.orgId, band: otherId);
+      final firstAdmins = await invite(f.admin, f.orgId);
+
+      final m = await orgMembership(f, admin2);
+      (await f.admin.patch('org_memberships', m['id'] as String, {
+        'role': 'member',
+      })).expectStatus(200);
+      await expectRevoked(orgLink);
+      await expectRevoked(otherBand);
+      await expectValid(ledBand);
+      await expectValid(firstAdmins);
+    });
+
+    test('an organization admin who leaves loses all their invitations; used '
+        'personal invitations stay used', () async {
+      final f = await BandFixture.create(pb);
+      final admin2 = await pb.signUp('Second admin');
+      await BandFixture.addOrgMember(pb, f.orgId, admin2, role: 'admin');
+      await BandFixture.addMember(pb, f.id, admin2, role: 'admin');
+      final orgLink = await invite(admin2, f.orgId);
+      final bandLink = await invite(admin2, f.orgId, band: f.id);
+      final contact = await admin2.post('contacts', {
+        'id': uuid(),
+        'organization': f.orgId,
+        'first_name': 'Guest',
+        'email': 'guest-${DateTime.now().microsecondsSinceEpoch}@setding.test',
+      });
+      contact.expectStatus(200);
+      final personal = await invite(
+        admin2,
+        f.orgId,
+        contact: contact.json['id'] as String,
+      );
+      final guest = await pb.signUp('Guest');
+      (await redeem(guest, personal['token'] as String)).expectStatus(200);
+
+      final m = await orgMembership(f, admin2);
+      (await admin2.patch('org_memberships', m['id'] as String, {
+        'deleted': true,
+      })).expectStatus(200);
+      await expectRevoked(orgLink);
+      await expectRevoked(bandLink);
+      final used = await pb.superuser.view('invites', personal['id'] as String);
+      expect(used.json['revoked'], isFalse);
+      expect(used.json['used_by'], guest.id);
+    });
+  });
+
   group('web', () {
     test('the landing page links into the app', () async {
       final f = await BandFixture.create(pb);

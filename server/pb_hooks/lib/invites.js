@@ -218,6 +218,39 @@ function create(e) {
   });
 }
 
+/// Whether a band or organization membership stops being an active admin
+/// in this update.
+function lostAdmin(membership) {
+  const before = membership.original();
+  return before.getString("role") === "admin" && !before.getBool("deleted") &&
+    (membership.getString("role") !== "admin" || membership.getBool("deleted"));
+}
+
+/// Revokes the open invitations [userId] created and may no longer create
+/// (issue #1193): after losing the lead of [bandId], those for that band
+/// unless they are still an admin of its organization; after losing the
+/// admin role of [orgId], those of the organization except band invitations
+/// of bands they still lead. Used founder and personal invitations stay.
+function revokeLostRights(app, userId, scope) {
+  let filter;
+  let params;
+  if (scope.band) {
+    const band = app.findRecordById("bands", scope.band);
+    if (isOrgAdmin(app, userId, band.getString("organization"))) return;
+    filter = "created_by = {:user} && band = {:band} && revoked = false && used_by = ''";
+    params = { user: userId, band: scope.band };
+  } else {
+    filter = "created_by = {:user} && organization = {:org} && revoked = false && used_by = ''";
+    params = { user: userId, org: scope.organization };
+  }
+  for (const invite of app.findRecordsByFilter("invites", filter, "", 0, 0, params)) {
+    const bandId = invite.getString("band");
+    if (!scope.band && bandId && isBandLeader(app, userId, bandId)) continue;
+    invite.set("revoked", true);
+    app.save(invite);
+  }
+}
+
 /// Shows an active link again to the people who may list it (organization
 /// admins, band leaders for their band): its URL and expiry. 404 for links
 /// they cannot see, 410 for inactive ones, 409 when the token is not stored.
@@ -559,6 +592,8 @@ module.exports = {
   findByToken,
   status,
   isFounder,
+  lostAdmin,
+  revokeLostRights,
   create,
   createFounder,
   link,

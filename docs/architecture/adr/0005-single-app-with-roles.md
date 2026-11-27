@@ -54,6 +54,10 @@ New members join a band via an **invitation link**:
 - A link can be used **several times**, is valid for **7 days** and can be **revoked**
   by any admin at any time. Admins see the valid links with the band they lead into
   and who joined via which link; revoked and expired links are not listed.
+  The server revokes the open links of a person who loses the right to create
+  them: a band leader's links for the band when they lose the lead (unless
+  they are an admin of its organization), an organization admin's links when
+  they lose the admin role or leave (except links of bands they still lead).
 - A link always grants the **member** role. Admin rights are assigned afterwards by an
   existing admin.
 - Opening the link:
@@ -125,6 +129,7 @@ Alternatives for invitations:
 - 2026-11-23: Linux part of the open point "protocol handler for `setding://`" resolved (#1015): the desktop entry `app.setding.desktop` (template in the bundle, written by the AppImage's *Add to application menu* and by `install-desktop-entry.sh`) declares `MimeType=x-scheme-handler/setding;` and passes the link (`%u`), and both register it with `xdg-mime default`. The Linux app is **single-instance** (`app_links` Linux setup): a second start or a link opened while setDING runs brings its window to the front and hands the link to it. Isolated instances with their own data directory (`SETDING_DATA_DIR`: `make dev`, `make start`, `make e2e`) stay independent. Older AppImage entries are updated at start, older script entries by `--if-missing`.
 - 2026-11-26: **Scanning the QR code in the app** (#1103, owner request): on Android and iOS the join screen offers *Scan QR code* next to pasting the link; the scanned text is checked like a pasted link, so other codes give "not a valid invitation link". Scanner library **`flutter_zxing`** (MIT, zxing-cpp Apache-2.0, on the device through the `camera` plugin), owner decision: fully open source, no Google ML Kit or Play services (rejected: `mobile_scanner`, which needs ML Kit on Android). The scanner shows the app's own texts (`ScannerTexts`, all six languages, no "ß"), reads QR codes only and can also read a code from a chosen photo. Web and desktop keep pasting. Android: the camera is an optional feature (`android.hardware.camera.any`, `required=false`) so tablets without one still install the app, and the camera plugin's microphone and storage permissions are removed; iOS declares `NSCameraUsageDescription` and `NSPhotoLibraryUsageDescription`. Needed while verified deep links are inactive: the system camera opens the landing page, not the app.
 - 2026-11-27: **Windows protocol handler** for `setding://` (#1115): the installer registers the scheme per user and a link reaches the running app; until then invitations on Windows worked only by pasting the link or the QR code. Links to sets and songs use it too (ADR-0065).
+- 2026-11-27: Links are revoked when their creator loses the right to invite (issue #1193): a band leader demoted or removed from the band loses their open links for that band unless they are an admin of its organization; an organization admin demoted or leaving loses their open links in the organization except those of bands they still lead. Used founder and personal links stay used. Enforced in `pb_hooks/memberships.pb.js` and `org_memberships.pb.js`.
 
 
 ## Open points
