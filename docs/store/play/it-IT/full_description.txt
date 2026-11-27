@@ -1,0 +1,42 @@
+Chi guida la band prepara il set una volta sola, e ogni membro lo ha sul tablet, sul telefono o sul computer – le canzoni giuste, nell'ordine giusto, nella tonalità giusta. Su ogni palco, anche senza Wi-Fi.
+
+FATTO PER IL PALCO
+• Modalità live a schermo intero; lo schermo resta acceso per tutto il concerto
+• Gira pagina con un tocco, uno scorrimento o un pedale Bluetooth
+• La tua tastiera passa al suono giusto per ogni canzone via MIDI
+• Funziona completamente offline
+
+SET CONDIVISI DA TUTTA LA BAND
+• Trascina le canzoni in un set, aggiungi pause e note
+• Imposta la tonalità e la struttura di ogni canzone
+• Ogni membro riceve il set automaticamente sul suo dispositivo
+• setDING mostra cosa manca ancora per un concerto senza rete
+• Scegli chi suona un set, sostituti di altre band compresi
+
+ANCHE PER I BATTERISTI
+Tempo, metro e struttura della canzone al posto degli accordi, un conteggio iniziale e un click preciso negli in-ear.
+
+OGNI MUSICISTA A MODO SUO
+• Trasponi con un tocco, imposta il capotasto, cambia la dimensione del testo
+• Notazione B o H, numeri Nashville e numeri romani
+• Indicazioni solo per il tuo strumento o la tua voce
+• Note a mano libera direttamente sullo spartito
+Niente di tutto questo cambia la canzone per il resto della band.
+
+LE TUE CANZONI, IL TUO FORMATO
+• Canzoni nel formato aperto ChordPro
+• Importale una alla volta o come ZIP, allega spartiti PDF
+• Melodie in ABC o LilyPond, versioni di una canzone in più lingue
+• Editor integrato con anteprima dal vivo
+• Segnala gli errori direttamente sulla canzone, con uno screenshot annotato
+
+PER BAND, SCUOLE E CHIESE
+Più band di un'organizzazione condividono un'unica libreria di canzoni. Invita i membri con un link o un codice QR. I ruoli decidono chi cura le canzoni e chi pianifica i set.
+
+I TUOI DATI RESTANO TUOI
+• Senza account, tutto resta sul tuo dispositivo
+• Niente pubblicità, niente tracciamento, niente analisi
+• Server in Svizzera – oppure gestisci il server tu stesso, con o senza Docker
+• Gratuito e open source con licenza MIT
+
+Guida e altro: https://setding.app/en/

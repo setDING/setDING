@@ -1,0 +1,42 @@
+Quien dirige la banda prepara el set una sola vez, y cada miembro lo tiene en su tableta, su móvil o su ordenador: las canciones correctas, en el orden correcto, en la tonalidad correcta. En cada escenario, incluso sin wifi.
+
+HECHO PARA EL ESCENARIO
+• Modo en vivo a pantalla completa; la pantalla sigue encendida todo el concierto
+• Pasa las páginas con un toque, un deslizamiento o un pedal Bluetooth
+• Tu teclado cambia al sonido correcto de cada canción por MIDI
+• Funciona totalmente sin conexión
+
+SETS QUE COMPARTE TODA LA BANDA
+• Arrastra canciones a un set, añade pausas y notas
+• Define la tonalidad y la estructura de cada canción
+• Cada miembro recibe el set automáticamente en su dispositivo
+• setDING muestra lo que aún falta para un concierto sin red
+• Elige quién toca un set, incluidos sustitutos de otras bandas
+
+TAMBIÉN PARA BATERÍAS
+Tempo, compás y estructura de la canción en lugar de acordes, una cuenta previa y un clic preciso en tus in-ears.
+
+CADA MÚSICO A SU MANERA
+• Transporta con un toque, pon la cejilla, cambia el tamaño de la letra
+• Notación B o H, números Nashville y números romanos
+• Indicaciones solo para tu instrumento o tu voz
+• Notas a mano alzada directamente sobre la partitura
+Nada de esto cambia la canción para el resto de la banda.
+
+TUS CANCIONES, TU FORMATO
+• Canciones en el formato abierto ChordPro
+• Impórtalas de una en una o en un ZIP, adjunta partituras en PDF
+• Melodías en ABC o LilyPond, versiones de una canción en varios idiomas
+• Editor integrado con vista previa en directo
+• Informa de errores directamente en la canción, con una captura de pantalla marcada
+
+PARA BANDAS, ESCUELAS E IGLESIAS
+Varias bandas de una organización comparten una misma biblioteca de canciones. Invita a los miembros con un enlace o un código QR. Los roles deciden quién cuida las canciones y quién planifica los sets.
+
+TUS DATOS SIGUEN SIENDO TUYOS
+• Sin cuenta, todo se queda en tu dispositivo
+• Sin anuncios, sin seguimiento, sin analíticas
+• Servidores en Suiza, o aloja el servidor tú mismo, con o sin Docker
+• Gratis y de código abierto con licencia MIT
+
+Guía y más: https://setding.app/en/

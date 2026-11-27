@@ -1,0 +1,42 @@
+Le ou la responsable du groupe prépare le set une seule fois, et chaque membre l'a sur sa tablette, son téléphone ou son ordinateur – les bonnes chansons, dans le bon ordre, dans la bonne tonalité. Sur chaque scène, même sans Wi-Fi.
+
+FAIT POUR LA SCÈNE
+• Mode live en plein écran ; l'écran reste allumé pendant tout le concert
+• Tourner les pages d'un toucher, d'un glissement ou avec une pédale Bluetooth
+• Ton clavier passe au bon son pour chaque chanson via MIDI
+• Fonctionne entièrement hors ligne
+
+DES SETS PARTAGÉS PAR TOUT LE GROUPE
+• Glisser-déposer les chansons dans un set, ajouter des pauses et des notes
+• Choisir la tonalité et la structure de chaque chanson
+• Chaque membre reçoit le set automatiquement sur son appareil
+• setDING indique ce qui manque encore pour un concert sans réseau
+• Choisir qui joue un set, remplaçants d'autres groupes compris
+
+AUSSI POUR LES BATTEURS
+Tempo, mesure et structure de la chanson au lieu des accords, un décompte et un click précis dans tes in-ears.
+
+CHAQUE MUSICIEN À SA FAÇON
+• Transposer d'un toucher, régler le capodastre, changer la taille du texte
+• Notation B ou H, nombres Nashville et chiffres romains
+• Repères rien que pour ton instrument ou ta voix
+• Notes à main levée directement sur la partition
+Rien de tout cela ne change la chanson pour le reste du groupe.
+
+TES CHANSONS, TON FORMAT
+• Chansons au format ouvert ChordPro
+• Les importer une par une ou en ZIP, joindre des partitions PDF
+• Mélodies en ABC ou LilyPond, versions d'une chanson en plusieurs langues
+• Éditeur intégré avec aperçu en direct
+• Signaler une erreur directement sur la chanson, avec une capture d'écran annotée
+
+POUR LES GROUPES, LES ÉCOLES ET LES ÉGLISES
+Plusieurs groupes d'une organisation partagent une même bibliothèque de chansons. Invite les membres avec un lien ou un code QR. Les rôles définissent qui s'occupe des chansons et qui planifie les sets.
+
+TES DONNÉES RESTENT À TOI
+• Sans compte, tout reste sur ton appareil
+• Pas de publicité, pas de suivi, pas d'analyse
+• Serveurs en Suisse – ou héberge le serveur toi-même, avec ou sans Docker
+• Gratuit et open source sous licence MIT
+
+Guide et plus : https://setding.app/en/
