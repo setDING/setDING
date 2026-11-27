@@ -30,8 +30,8 @@ exist yet, and CI is manual-only during early development.
   from the **committed** state (`git archive HEAD`); uncommitted changes only cause a
   warning.
 - The build runs `flutter build linux --release` inside a **Debian container**
-  (`tool/release/linux.Dockerfile`, based on the Flutter image `tool/ci/Dockerfile`, plus CMake, Ninja, GTK 3 and
-  libsecret). Debian's glibc targets the x86-64 baseline and is older than rolling
+  (`tool/release/linux.Dockerfile`, based on the Flutter image `tool/ci/Dockerfile`, plus CMake, Ninja, GTK 3,
+  libsecret and Debian's clang 19 as the compiler). Debian's glibc targets the x86-64 baseline and is older than rolling
   distributions, so the bundle runs on every x86-64 CPU and on current distributions.
 - **ISA check:** `tool/release/check-isa.sh` fails the release if any ELF file in the
   bundle requires an ISA level above x86-64-v2.
@@ -77,3 +77,7 @@ exist yet, and CI is manual-only during early development.
 ## Open points
 
 - Flatpak and signing.
+- 2026-11-27: The release container compiles with Debian bookworm's clang 19 instead
+  of its default clang 14, which cannot build the C++20 of flutter_zxing's native build
+  hook (#1133); glibc and libstdc++ stay bookworm's, so the baseline is unchanged.
+  `make release-gate` builds the Linux release (`make sbom`).
