@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 with the setDING-specific bump rules of
 [ADR-0028](docs/architecture/adr/0028-versioning-scheme.md).
 
+## [0.23.1] - 2026-11-27
+
+The release build of 0.23.0 failed, so 0.23.0 was never published: **this is the first release with the changes listed under [0.23.0](https://github.com/setDING/setDING/blob/main/CHANGELOG.md#0230---2026-11-27)** (people without an account in the lineup, share links for sets and songs, QR code scan to join, and more).
+
+### Changed
+
+- Updated libraries ([#1136](https://github.com/setDING/setDING/pull/1136))
+
+### Fixed
+
+- The Linux release builds again with the QR code scanner's native code; nothing changes for Linux users ([#1134](https://github.com/setDING/setDING/pull/1134))
+
 ## [0.23.0] - 2026-11-27
 
 ### Added
@@ -498,6 +510,7 @@ with the setDING-specific bump rules of
 
 - First release, built on GitHub Actions for Linux, Android and Windows ([#138](https://github.com/setDING/setDING/pull/138))
 
+[0.23.1]: https://github.com/setDING/setDING/compare/v0.22.1...v0.23.1
 [0.23.0]: https://github.com/setDING/setDING/compare/v0.22.1...v0.23.0
 [0.22.1]: https://github.com/setDING/setDING/compare/v0.22.0...v0.22.1
 [0.22.0]: https://github.com/setDING/setDING/compare/v0.21.0...v0.22.0
