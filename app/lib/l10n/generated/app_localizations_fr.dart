@@ -832,6 +832,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'En petit sous les paroles, pour un retour de scène.';
 
   @override
+  String get settingsProjectionTurnsSlides =>
+      'Tourner les pages fait défiler les diapositives';
+
+  @override
+  String get settingsProjectionTurnsSlidesHint =>
+      'Pendant la projection, avancer (pédalier, clavier, toucher) passe d’abord à la diapositive suivante du morceau, et seulement après la dernière au morceau suivant. De même pour reculer.';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Page $page/$count';
   }

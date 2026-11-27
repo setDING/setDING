@@ -222,6 +222,14 @@ Forces:
   fit a row of segments). The projected page is shot by
   `tool/projection-screenshots.sh` (headless Chromium), as it is not part of the
   app's screenshot tests.
+- 2026-11-27: Owner feedback (#1181): with a two-key page turner, a song on one
+  page never showed its other slides. A device setting *Turning pages moves the
+  slides* (off by default) makes forward and back in live mode (page turner,
+  keyboard, tap zones, swipe) move the slides of the song first and only then
+  the page or song; turning back into a song starts at its last slide. Live
+  mode then follows the projection: a multi-page song shows the page of the
+  slide's section, and that page change does not pull the slide back. This
+  changes §6 only while the setting is on.
 
 ## Open points
 

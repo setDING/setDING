@@ -831,6 +831,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'En pequeño bajo la letra, para un monitor de escenario.';
 
   @override
+  String get settingsProjectionTurnsSlides =>
+      'Pasar página avanza las diapositivas';
+
+  @override
+  String get settingsProjectionTurnsSlidesHint =>
+      'Mientras se proyecta, avanzar (pasapáginas, teclado, toque) pasa primero a la siguiente diapositiva de la canción y solo después de la última a la siguiente canción. Igual hacia atrás.';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Página $page/$count';
   }

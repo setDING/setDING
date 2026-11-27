@@ -827,6 +827,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Small below the lyrics, for a stage monitor.';
 
   @override
+  String get settingsProjectionTurnsSlides => 'Turning pages moves the slides';
+
+  @override
+  String get settingsProjectionTurnsSlidesHint =>
+      'While projecting, forward (page turner, keyboard, tap) first goes to the next slide of the song and only after the last one to the next song. Back likewise.';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Page $page/$count';
   }

@@ -238,6 +238,84 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('turning pages moves the slides first, with the setting '
+      '(#1181)', (tester) async {
+    await start(
+      tester,
+      prefs: {'projectionTurnsSlides': true},
+      sources: [
+        '{title: One}\n{copyright: 2026 One}\n{start_of_verse}\nVerse one\n'
+            '{end_of_verse}\n{start_of_chorus}\nChorus one\n{end_of_chorus}',
+        '{title: Two}\n{copyright: 2026 Two}\nSong two',
+      ],
+    );
+    await startProjection(tester);
+    await closeSheet(tester);
+    expect(lines(), ['Verse one']);
+
+    // Forward: the chorus of the same song, then the next song.
+    await tapAt(tester, 0.9);
+    expect(lines(), ['Chorus one']);
+    expect(find.text('One'), findsWidgets);
+    expect(find.byKey(const Key('projection-follow')), findsNothing);
+    await tapAt(tester, 0.9);
+    expect(lines(), ['Song two']);
+    expect(find.text('Two'), findsWidgets);
+
+    // Back: into the first song at its last slide, then its first one.
+    await tapAt(tester, 0.1);
+    expect(lines(), ['Chorus one']);
+    await tapAt(tester, 0.1);
+    expect(lines(), ['Verse one']);
+    await app.dispose(tester);
+  });
+
+  testWidgets('without the setting a turn goes to the next song', (
+    tester,
+  ) async {
+    await start(
+      tester,
+      sources: [
+        '{title: One}\n{start_of_verse}\nVerse one\n{end_of_verse}\n'
+            '{start_of_chorus}\nChorus one\n{end_of_chorus}',
+        '{title: Two}\nSong two',
+      ],
+    );
+    await startProjection(tester);
+    await closeSheet(tester);
+    await tapAt(tester, 0.9);
+    expect(lines(), ['Song two']);
+    await app.dispose(tester);
+  });
+
+  testWidgets('a multi-page song shows the page of the turned slide', (
+    tester,
+  ) async {
+    await start(
+      tester,
+      prefs: {'projectionTurnsSlides': true},
+      sources: [versesSong(14)],
+    );
+    await startProjection(tester);
+    await closeSheet(tester);
+    final page = find.textContaining(RegExp(r'^Page \d+/\d+$'));
+    final count = int.parse((tester.widget<Text>(page).data!).split('/').last);
+    expect(count, greaterThan(1), reason: 'the song has several pages');
+    // One slide per verse: 13 turns to the last verse, on the last page.
+    for (var i = 0; i < 13; i++) {
+      await tapAt(tester, 0.9);
+    }
+    expect((lines()! as List).first, 'Verse 14 line 1 la la la');
+    expect(find.text('Page $count/$count'), findsOneWidget);
+    // Back to the first verse: the first page again.
+    for (var i = 0; i < 13; i++) {
+      await tapAt(tester, 0.1);
+    }
+    expect((lines()! as List).first, 'Verse 1 line 1 la la la');
+    expect(find.text('Page 1/$count'), findsOneWidget);
+    await app.dispose(tester);
+  });
+
   testWidgets('no projection where the platform cannot serve it', (
     tester,
   ) async {

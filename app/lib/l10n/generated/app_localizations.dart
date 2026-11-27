@@ -1516,6 +1516,18 @@ abstract class AppLocalizations {
   /// **'Klein unter dem Text, für einen Bühnenmonitor.'**
   String get settingsProjectionPreviewHint;
 
+  /// No description provided for @settingsProjectionTurnsSlides.
+  ///
+  /// In de, this message translates to:
+  /// **'Blättern schaltet die Folien'**
+  String get settingsProjectionTurnsSlides;
+
+  /// No description provided for @settingsProjectionTurnsSlidesHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Während projiziert wird, geht Vorwärts (Pageturner, Tastatur, Tippen) zuerst zur nächsten Folie des Songs und erst nach der letzten zum nächsten Song. Zurück ebenso.'**
+  String get settingsProjectionTurnsSlidesHint;
+
   /// No description provided for @liveSongPage.
   ///
   /// In de, this message translates to:

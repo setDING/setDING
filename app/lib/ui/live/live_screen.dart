@@ -632,7 +632,26 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   double get _step =>
       ref.read(settingsProvider).pageTurn == PageTurnMode.half ? 0.5 : 0.85;
 
+  /// With *Turning pages moves the slides* (#1181), a turn while projecting
+  /// moves the projected slide first; true when it did. Live mode shows the
+  /// page of the slide's section.
+  bool _turnSlide({required bool forward}) {
+    final projection = _projection;
+    if (projection == null ||
+        !ref.read(settingsProvider).projectionTurnsSlides ||
+        !projection.turn(forward: forward)) {
+      return false;
+    }
+    final pages = _songPages[_index];
+    final line = projection.sectionLine;
+    if (pages != null && line != null) {
+      if (pages.pageOf(line) case final page?) pages.show(page);
+    }
+    return true;
+  }
+
   void _next() {
+    if (_turnSlide(forward: true)) return;
     // Small screens show no song (ADR-0026): every turn is a song.
     if (_compact) {
       if (_index < _items.length - 1) _jumpTo(_index + 1);
@@ -673,6 +692,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   }
 
   void _previous() {
+    if (_turnSlide(forward: false)) return;
     if (_compact) {
       if (_index > 0) _jumpTo(_index - 1);
       return;
@@ -1081,10 +1101,20 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                         sc.jumpTo(0);
                                       }
                                     }
+                                    final back = i < _index;
                                     _index = i;
                                     _preparation.focus(i);
-                                    // The projection follows (ADR-0068).
+                                    // The projection follows (ADR-0068);
+                                    // turning back into a song whose slides
+                                    // the turns move ends at its last slide
+                                    // (#1181).
                                     _projectItem(i);
+                                    if (back &&
+                                        ref
+                                            .read(settingsProvider)
+                                            .projectionTurnsSlides) {
+                                      _projection?.toLast();
+                                    }
                                     // Only another set item sends its
                                     // keyboard program, never a page within a
                                     // song or a prepared neighbour (ADR-0039).
@@ -2651,6 +2681,25 @@ class SongPageController extends ChangeNotifier {
         if (!_disposed) notifyListeners();
       });
     }
+  }
+
+  /// The page that shows the section starting at [sourceLine]: the last
+  /// page whose first section starts at or before it; null when the pages
+  /// are unknown.
+  int? pageOf(int sourceLine) {
+    int? found;
+    for (var p = 0; p < _sections.length; p++) {
+      final line = _sections[p];
+      if (line != null && line <= sourceLine) found = p;
+    }
+    return found;
+  }
+
+  /// Shows [page] when the song has it.
+  void show(int page) {
+    if (page == _page || page < 0 || page >= _count) return;
+    _page = page;
+    notifyListeners();
   }
 
   /// Shows the first page.

@@ -220,6 +220,51 @@ Chorus line
     expect(host.last.containsKey('second'), isFalse);
   });
 
+  test('page turns move the slides without making the song manual (#1181)', () {
+    projection.show(item(song));
+    expect(projection.turn(forward: false), isFalse, reason: 'first slide');
+    expect(projection.turn(forward: true), isTrue);
+    expect(projection.slide, 1);
+    expect(projection.manual, isFalse);
+    expect(projection.sectionLine, lineOf(song, 'Chorus line'));
+    // Live mode shows the slide's page; that does not pull the slide back.
+    projection.followSection(lineOf(song, 'First verse'));
+    expect(projection.slide, 1);
+    expect(projection.turn(forward: true), isTrue);
+    expect(projection.turn(forward: true), isTrue);
+    expect(projection.turn(forward: true), isFalse, reason: 'last slide');
+    expect(projection.slide, 3);
+    expect(projection.turn(forward: false), isTrue);
+    expect(projection.slide, 2);
+
+    // Blank or stopped: turns go on to live mode.
+    projection.toggleBlank();
+    expect(projection.turn(forward: true), isFalse);
+    projection.toggleBlank();
+
+    // Back into a song: its last slide; a new song follows live mode again.
+    projection.show(item(song));
+    projection.toLast();
+    expect(projection.slide, 3);
+    projection.show(item(song));
+    projection.followSection(lineOf(song, 'Second verse'));
+    expect(projection.slide, 2);
+  });
+
+  test('the page of a section', () {
+    final pages = SongPageController();
+    addTearDown(pages.dispose);
+    pages.attach(3, sections: [3, 12, 20]);
+    expect(pages.pageOf(2), isNull);
+    expect(pages.pageOf(3), 0);
+    expect(pages.pageOf(15), 1);
+    expect(pages.pageOf(30), 2);
+    pages.show(2);
+    expect(pages.page, 2);
+    pages.show(7);
+    expect(pages.page, 2);
+  });
+
   test('the song page reports the first section of the shown page', () {
     final pages = SongPageController();
     addTearDown(pages.dispose);

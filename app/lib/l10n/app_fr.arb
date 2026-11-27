@@ -235,6 +235,8 @@
   "settingsProjectionMarkersHint": "Affiche le texte d’un marqueur (p. ex. Prière) au lieu d’une diapositive noire.",
   "settingsProjectionPreview": "Afficher la diapositive suivante",
   "settingsProjectionPreviewHint": "En petit sous les paroles, pour un retour de scène.",
+  "settingsProjectionTurnsSlides": "Tourner les pages fait défiler les diapositives",
+  "settingsProjectionTurnsSlidesHint": "Pendant la projection, avancer (pédalier, clavier, toucher) passe d’abord à la diapositive suivante du morceau, et seulement après la dernière au morceau suivant. De même pour reculer.",
   "liveSongPage": "Page {page}/{count}",
   "livePosition": "{current} / {total}",
   "settingsSectionGeneral": "Général",

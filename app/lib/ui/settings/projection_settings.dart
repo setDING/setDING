@@ -96,6 +96,14 @@ class ProjectionSettings extends ConsumerWidget {
               update((s) => s.copyWith(projectionSecondLanguage: v)),
         ),
         SettingsSwitch(
+          tileKey: const Key('settings-projection-turns-slides'),
+          icon: Icons.swipe_right_alt,
+          title: l10n.settingsProjectionTurnsSlides,
+          hint: l10n.settingsProjectionTurnsSlidesHint,
+          value: s.projectionTurnsSlides,
+          onChanged: (v) => update((s) => s.copyWith(projectionTurnsSlides: v)),
+        ),
+        SettingsSwitch(
           tileKey: const Key('settings-projection-markers'),
           icon: Icons.label_outline,
           title: l10n.settingsProjectionMarkers,
