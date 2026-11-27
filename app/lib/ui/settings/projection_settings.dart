@@ -4,8 +4,10 @@ import 'package:material_ui/material_ui.dart';
 import '../../data/outbox.dart' show songLanguages;
 import '../../l10n/generated/app_localizations.dart';
 import '../../projection/projection_state.dart';
+import '../../projection/projection_token_store.dart';
 import '../../settings/settings.dart';
 import '../songs/song_language.dart';
+import '../widgets/dialogs.dart';
 import 'settings_layout.dart';
 
 /// The settings of the lyrics projection (ADR-0068 §11): device settings
@@ -119,6 +121,17 @@ class ProjectionSettings extends ConsumerWidget {
           hint: l10n.settingsProjectionPreviewHint,
           value: s.projectionPreview,
           onChanged: (v) => update((s) => s.copyWith(projectionPreview: v)),
+        ),
+        // The address of this device and how to renew it (#1183).
+        ListTile(
+          key: const Key('settings-projection-renew'),
+          leading: const Icon(Icons.autorenew),
+          title: Text(l10n.settingsProjectionAddress),
+          subtitle: Text(l10n.settingsProjectionAddressHint),
+          onTap: () {
+            ref.read(projectionTokenProvider).renew();
+            showMessage(context, l10n.projectionRenewed);
+          },
         ),
       ],
     );

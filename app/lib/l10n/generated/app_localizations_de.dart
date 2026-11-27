@@ -840,6 +840,20 @@ class AppLocalizationsDe extends AppLocalizations {
       'Während projiziert wird, geht Vorwärts (Pageturner, Tastatur, Tippen) zuerst zur nächsten Folie des Songs und erst nach der letzten zum nächsten Song. Zurück ebenso.';
 
   @override
+  String get projectionRenew => 'Neue Adresse';
+
+  @override
+  String get projectionRenewed =>
+      'Neue Adresse erstellt. Die alte funktioniert nicht mehr.';
+
+  @override
+  String get settingsProjectionAddress => 'Neue Projektionsadresse';
+
+  @override
+  String get settingsProjectionAddressHint =>
+      'Die Adresse bleibt auf diesem Gerät gleich, damit Beamer und OBS sie behalten. Eine neue Adresse sperrt alte Links.';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Seite $page/$count';
   }

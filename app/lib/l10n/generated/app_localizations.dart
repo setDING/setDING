@@ -1528,6 +1528,30 @@ abstract class AppLocalizations {
   /// **'Während projiziert wird, geht Vorwärts (Pageturner, Tastatur, Tippen) zuerst zur nächsten Folie des Songs und erst nach der letzten zum nächsten Song. Zurück ebenso.'**
   String get settingsProjectionTurnsSlidesHint;
 
+  /// No description provided for @projectionRenew.
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Adresse'**
+  String get projectionRenew;
+
+  /// No description provided for @projectionRenewed.
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Adresse erstellt. Die alte funktioniert nicht mehr.'**
+  String get projectionRenewed;
+
+  /// No description provided for @settingsProjectionAddress.
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Projektionsadresse'**
+  String get settingsProjectionAddress;
+
+  /// No description provided for @settingsProjectionAddressHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Adresse bleibt auf diesem Gerät gleich, damit Beamer und OBS sie behalten. Eine neue Adresse sperrt alte Links.'**
+  String get settingsProjectionAddressHint;
+
   /// No description provided for @liveSongPage.
   ///
   /// In de, this message translates to:

@@ -14,8 +14,8 @@ import 'projection_state.dart';
 abstract interface class ProjectionHost {
   bool get running;
 
-  /// Starts serving [page]; a new token every time.
-  Future<void> start(String page);
+  /// Starts serving [page] with [token] (the device's, #1183).
+  Future<void> start(String page, {required String token});
   Future<void> stop();
   void update(ProjectionState state);
 
@@ -31,10 +31,10 @@ class ServerProjectionHost implements ProjectionHost {
   bool get running => _server?.running ?? false;
 
   @override
-  Future<void> start(String page) async {
+  Future<void> start(String page, {required String token}) async {
     await stop();
     final server = ProjectionServer(page: page);
-    await server.start();
+    await server.start(token: token);
     _server = server;
   }
 
@@ -190,18 +190,32 @@ class ProjectionController extends ChangeNotifier {
     _send();
   }
 
-  /// Starts the server with [page] and shows the current item.
-  Future<void> start(String page) async {
+  String? _page;
+
+  /// Starts the server with [page] and the device's [token] and shows the
+  /// current item.
+  Future<void> start(String page, {required String token}) async {
     if (_starting) return;
     _starting = true;
+    _page = page;
     notifyListeners();
     try {
-      await _host.start(page);
+      await _host.start(page, token: token);
       _send();
     } finally {
       _starting = false;
       notifyListeners();
     }
+  }
+
+  /// Serves under a new [token] (#1183): a running projection restarts,
+  /// so links with the old token stop working at once.
+  Future<void> renew(String token) async {
+    final page = _page;
+    if (!_host.running || page == null) return;
+    await _host.stop();
+    await _host.start(page, token: token);
+    _send();
   }
 
   Future<void> stop() async {

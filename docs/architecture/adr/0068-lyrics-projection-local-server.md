@@ -49,10 +49,12 @@ Forces:
    default port (with a fallback to a free port) and only accepts connections from
    private address ranges (RFC 1918, link-local, IPv6 ULA) and loopback.
 
-2. **Access by token.** Each start creates a random token (128 bits); every request
-   without it gets 404. The app shows the URL (`http://<device IP>:<port>/p/<token>`)
-   as text and as a QR code (`qr_flutter`), with every local IP address when the
-   device has several. A new start creates a new token, so an old link stops
+2. **Access by token.** A random token (128 bits) per device, stored locally and
+   never synced, reused at every start (changed by #1183, see the decision log);
+   every request without it gets 404. The app shows the URL
+   (`http://<device IP>:<port>/p/<token>`) as text and as a QR code (`qr_flutter`),
+   with every local IP address when the device has several. *New address* (in the
+   sheet and the projection settings) makes a new token, so an old link stops
    working. There is no sign-in and no account: whoever has the link sees the
    projection, the same as everyone in the room sees the screen.
 
@@ -230,6 +232,13 @@ Forces:
   mode then follows the projection: a multi-page song shows the page of the
   slide's section, and that page change does not pull the slide back. This
   changes §6 only while the setting is on.
+- 2026-11-27: Owner feedback (#1183): a new address at every start meant setting
+  up the projector browser and the OBS source again each time. The token is now
+  kept **per device** (`projectionToken` in the local preferences, never synced)
+  and reused; the port stays 8231 unless it is taken. *New address* in the sheet
+  (a running projection restarts with it) and in the projection settings renews
+  it, and old links get 404. Trade-off: a link someone once had keeps working on
+  the local network until renewed, which the owner accepted.
 
 ## Open points
 

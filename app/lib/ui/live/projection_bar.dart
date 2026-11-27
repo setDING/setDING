@@ -104,25 +104,58 @@ class ProjectionBar extends StatelessWidget {
 
 /// The links of the projection with a QR code, and *Stop projection*
 /// (ADR-0068 §2). A bottom sheet, as everything in live mode.
+///
+/// The address stays the same on this device (#1183); [onRenew] makes a
+/// new one, and the sheet shows it.
 Future<void> showProjectionSheet(
   BuildContext context,
-  ProjectionController controller,
-) async {
+  ProjectionController controller, {
+  required Future<void> Function() onRenew,
+}) async {
   final urls = await controller.urls();
   if (!context.mounted) return;
   await showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
-    builder: (context) => _ProjectionSheet(controller: controller, urls: urls),
+    builder: (context) =>
+        _ProjectionSheet(controller: controller, urls: urls, onRenew: onRenew),
   );
 }
 
-class _ProjectionSheet extends StatelessWidget {
-  const _ProjectionSheet({required this.controller, required this.urls});
+class _ProjectionSheet extends StatefulWidget {
+  const _ProjectionSheet({
+    required this.controller,
+    required this.urls,
+    required this.onRenew,
+  });
 
   final ProjectionController controller;
   final List<Uri> urls;
+  final Future<void> Function() onRenew;
+
+  @override
+  State<_ProjectionSheet> createState() => _ProjectionSheetState();
+}
+
+class _ProjectionSheetState extends State<_ProjectionSheet> {
+  late List<Uri> urls = widget.urls;
+  var _renewing = false;
+
+  ProjectionController get controller => widget.controller;
+
+  Future<void> _renew() async {
+    final l10n = AppLocalizations.of(context);
+    setState(() => _renewing = true);
+    await widget.onRenew();
+    final fresh = await controller.urls();
+    if (!mounted) return;
+    setState(() {
+      urls = fresh;
+      _renewing = false;
+    });
+    showMessage(context, l10n.projectionRenewed);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -185,17 +218,28 @@ class _ProjectionSheet extends StatelessWidget {
               ],
             ],
             const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.centerRight,
-              child: OutlinedButton.icon(
-                key: const Key('projection-stop'),
-                icon: const Icon(Icons.cancel_presentation),
-                label: Text(l10n.projectionStop),
-                onPressed: () {
-                  controller.stop();
-                  Navigator.pop(context);
-                },
-              ),
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                // A new address: the old link stops working (#1183).
+                TextButton.icon(
+                  key: const Key('projection-renew'),
+                  icon: const Icon(Icons.autorenew),
+                  label: Text(l10n.projectionRenew),
+                  onPressed: _renewing ? null : _renew,
+                ),
+                OutlinedButton.icon(
+                  key: const Key('projection-stop'),
+                  icon: const Icon(Icons.cancel_presentation),
+                  label: Text(l10n.projectionStop),
+                  onPressed: () {
+                    controller.stop();
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
             ),
           ],
         ),
