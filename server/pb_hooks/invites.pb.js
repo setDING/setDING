@@ -30,3 +30,13 @@ routerAdd("GET", "/.well-known/assetlinks.json", (e) =>
   require(`${__hooks}/lib/invites.js`).assetLinks(e));
 routerAdd("GET", "/.well-known/apple-app-site-association", (e) =>
   require(`${__hooks}/lib/invites.js`).appleAppSiteAssociation(e));
+
+// Keeps invitation tokens out of the request log (issue #1200). PocketBase's
+// activity logger has priority -1040 and reads the URL after the request;
+// -1035 runs inside it but before the panic recovery (-1030), the rate limit
+// (-1000) and the other middlewares, so refused requests are redacted too.
+routerUse(new Middleware(
+  (e) => require(`${__hooks}/lib/invites.js`).redactTokenLog(e),
+  -1035,
+  "setdingRedactInviteTokens",
+));

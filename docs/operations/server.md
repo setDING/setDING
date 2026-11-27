@@ -165,6 +165,9 @@ working. **The server does not start without it** (ADR-0063): `pocketbase serve`
 stops with `missing environment variable(s) SETDING_INVITE_KEY`; console commands
 such as `founder-invite` still work. A host that takes over existing data gets the
 key of the old host (see [Moving production](#moving-production-1055)).
+The AES key is derived from it with HMAC-SHA256 (issue #1200); links stored with
+the earlier derivation are still shown and re-encrypted then, so the secret itself
+never has to change for this.
 
 ## 6. Web client (owner, once)
 
@@ -352,6 +355,11 @@ the tunnel creates its own CNAME records.
   The request logs (Settings → Logs, with IP addresses) are set the same way:
   `SETDING_LOG_DAYS` (default 7, `0` keeps none). The privacy policy on the
   website names this value; change both together.
+  Invitation tokens are never in them: the server writes `/invite/REDACTED` and
+  `/api/setding/invites/REDACTED` instead of the token (also in the Referer,
+  issue #1200). Logs written by a proxy in front of PocketBase (Caddy, nginx,
+  Cloudflare) are not covered: keep their access logs off for `/invite/*` and
+  `/api/setding/invites/*`, or do not log paths there.
 
   The trusted proxy header (Settings → Trusted proxy), which the per-IP rate
   limits depend on, comes from `SETDING_TRUSTED_PROXY_HEADER`: `CF-Connecting-IP`
