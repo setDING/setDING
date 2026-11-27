@@ -419,6 +419,8 @@
   "settingsProjectionMarkersHint": "Zeigt den Text eines Markers (z.B. Gebet) statt einer schwarzen Folie.",
   "settingsProjectionPreview": "Nächste Folie zeigen",
   "settingsProjectionPreviewHint": "Klein unter dem Text, für einen Bühnenmonitor.",
+  "settingsProjectionTurnsSlides": "Blättern schaltet die Folien",
+  "settingsProjectionTurnsSlidesHint": "Während projiziert wird, geht Vorwärts (Pageturner, Tastatur, Tippen) zuerst zur nächsten Folie des Songs und erst nach der letzten zum nächsten Song. Zurück ebenso.",
   "@projectionNoCopyright": {
     "description": "Hint in live mode: the song has no {copyright} directive. The braces are quoted so they are shown literally."
   },

@@ -258,6 +258,8 @@
   "settingsProjectionMarkersHint": "Shows the text of a marker (e.g. Prayer) instead of a black slide.",
   "settingsProjectionPreview": "Show the next slide",
   "settingsProjectionPreviewHint": "Small below the lyrics, for a stage monitor.",
+  "settingsProjectionTurnsSlides": "Turning pages moves the slides",
+  "settingsProjectionTurnsSlidesHint": "While projecting, forward (page turner, keyboard, tap) first goes to the next slide of the song and only after the last one to the next song. Back likewise.",
   "liveSongPage": "Page {page}/{count}",
   "livePosition": "{current} / {total}",
   "settingsSectionGeneral": "General",

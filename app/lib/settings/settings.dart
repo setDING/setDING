@@ -176,6 +176,7 @@ class AppSettings {
     this.projectionMarkersAsText = false,
     this.projectionSecondLanguage = '',
     this.projectionPreview = false,
+    this.projectionTurnsSlides = false,
   });
 
   final LanguageMode language;
@@ -358,6 +359,10 @@ class AppSettings {
   /// The next slide below the current one, for a confidence monitor.
   final bool projectionPreview;
 
+  /// Turning forward or back in live mode moves the projected slides
+  /// first, then the page or the song (#1181).
+  final bool projectionTurnsSlides;
+
   /// The live mode's program picker sends each choice to the keyboard at
   /// once, to hear it before saving (#607); off by default.
   final bool midiPreview;
@@ -515,6 +520,7 @@ class AppSettings {
     bool? projectionMarkersAsText,
     String? projectionSecondLanguage,
     bool? projectionPreview,
+    bool? projectionTurnsSlides,
   }) => AppSettings(
     language: language ?? this.language,
     notation: notation ?? this.notation,
@@ -579,6 +585,7 @@ class AppSettings {
     projectionSecondLanguage:
         projectionSecondLanguage ?? this.projectionSecondLanguage,
     projectionPreview: projectionPreview ?? this.projectionPreview,
+    projectionTurnsSlides: projectionTurnsSlides ?? this.projectionTurnsSlides,
   );
 
   /// Which settings follow the person (synced with the account) and which
@@ -663,6 +670,7 @@ class AppSettings {
     'projectionMarkersAsText': SettingSyncScope.device,
     'projectionSecondLanguage': SettingSyncScope.device,
     'projectionPreview': SettingSyncScope.device,
+    'projectionTurnsSlides': SettingSyncScope.device,
   };
 
   /// The keys of [scope].
@@ -734,6 +742,7 @@ class AppSettings {
     'projectionMarkersAsText': projectionMarkersAsText,
     'projectionSecondLanguage': projectionSecondLanguage,
     'projectionPreview': projectionPreview,
+    'projectionTurnsSlides': projectionTurnsSlides,
   };
 
   /// Settings from JSON values; a missing key, a value of the wrong type or
@@ -896,6 +905,10 @@ class AppSettings {
         d.projectionSecondLanguage,
       ),
       projectionPreview: flag('projectionPreview', d.projectionPreview),
+      projectionTurnsSlides: flag(
+        'projectionTurnsSlides',
+        d.projectionTurnsSlides,
+      ),
       midiTakeOver: flag('midiTakeOver', d.midiTakeOver),
       songDisplay: switch (json['songDisplay']) {
         final String v => SongDisplay.fromJsonString(v),

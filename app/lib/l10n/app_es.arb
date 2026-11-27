@@ -235,6 +235,8 @@
   "settingsProjectionMarkersHint": "Muestra el texto de un marcador (p. ej. Oración) en lugar de una diapositiva negra.",
   "settingsProjectionPreview": "Mostrar la diapositiva siguiente",
   "settingsProjectionPreviewHint": "En pequeño bajo la letra, para un monitor de escenario.",
+  "settingsProjectionTurnsSlides": "Pasar página avanza las diapositivas",
+  "settingsProjectionTurnsSlidesHint": "Mientras se proyecta, avanzar (pasapáginas, teclado, toque) pasa primero a la siguiente diapositiva de la canción y solo después de la última a la siguiente canción. Igual hacia atrás.",
   "liveSongPage": "Página {page}/{count}",
   "livePosition": "{current} / {total}",
   "settingsSectionGeneral": "General",

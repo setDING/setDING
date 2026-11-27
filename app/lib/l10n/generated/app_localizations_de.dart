@@ -833,6 +833,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Klein unter dem Text, für einen Bühnenmonitor.';
 
   @override
+  String get settingsProjectionTurnsSlides => 'Blättern schaltet die Folien';
+
+  @override
+  String get settingsProjectionTurnsSlidesHint =>
+      'Während projiziert wird, geht Vorwärts (Pageturner, Tastatur, Tippen) zuerst zur nächsten Folie des Songs und erst nach der letzten zum nächsten Song. Zurück ebenso.';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Seite $page/$count';
   }

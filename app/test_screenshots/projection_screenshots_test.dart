@@ -107,6 +107,16 @@ void main() {
         () => Scrollable.ensureVisible(tester.element(section)),
       );
       await shot(tester, '${lang}_63d_settings_projection');
+      // Turning pages moves the slides (#1181), switched on.
+      final turns = find.byKey(const Key('settings-projection-turns-slides'));
+      await tester.scrollUntilVisible(turns, 200);
+      await tester.pumpAndSettle();
+      await tester.tap(turns);
+      await tester.pumpAndSettle();
+      await tester.runAsync(
+        () => Scrollable.ensureVisible(tester.element(turns), alignment: 0.5),
+      );
+      await shot(tester, '${lang}_63e_settings_projection_turns');
       await app.dispose(tester);
     });
   }

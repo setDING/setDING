@@ -142,6 +142,7 @@ map=(
   projection_sheet 63b_projection_sheet
   projection_bar 63c_projection_bar
   settings_projection 63d_settings_projection
+  settings_projection_turns 63e_settings_projection_turns
   chord_grid 57_chord_grid
   set_share_link 61_set_share_link
   link_not_available 61b_link_not_available

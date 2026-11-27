@@ -147,6 +147,10 @@ class ProjectionController extends ChangeNotifier {
   int _slide = 0;
   bool _blank = false;
   bool _manual = false;
+
+  /// Page turns move the slides of this song (#1181): live mode follows
+  /// the projection, not the other way round, until the next item.
+  bool _turned = false;
   bool _starting = false;
   int? _followedLine;
 
@@ -214,6 +218,7 @@ class ProjectionController extends ChangeNotifier {
     _item = item;
     _slide = 0;
     _manual = false;
+    _turned = false;
     _followedLine = null;
     _build();
     _send();
@@ -246,7 +251,7 @@ class ProjectionController extends ChangeNotifier {
   /// slide first.
   void followSection(int? sourceLine) {
     _followedLine = sourceLine;
-    if (_manual || sourceLine == null || _slides.isEmpty) return;
+    if (_manual || _turned || sourceLine == null || _slides.isEmpty) return;
     final target = _slideOf(sourceLine);
     if (target == null || target == _slide) return;
     _slide = target;
@@ -264,6 +269,34 @@ class ProjectionController extends ChangeNotifier {
     }
     return null;
   }
+
+  /// A page turn of live mode while turning moves the slides (#1181):
+  /// moves to the next ([forward]) or previous slide of the song and
+  /// returns true, or returns false at its end (the turn goes on to the
+  /// page or song). Unlike [next] it does not make the song manual; live
+  /// mode follows the slide instead ([sectionLine]).
+  bool turn({required bool forward}) {
+    if (!running || _blank || _slides.isEmpty) return false;
+    if (forward ? !canNext : !canPrevious) return false;
+    _slide += forward ? 1 : -1;
+    _turned = true;
+    _send();
+    return true;
+  }
+
+  /// Shows the last slide of the song, after turning back into it
+  /// (#1181).
+  void toLast() {
+    if (_slides.isEmpty || _slide == _slides.length - 1) return;
+    _slide = _slides.length - 1;
+    _turned = true;
+    _send();
+  }
+
+  /// The source line of the section of the shown slide, for live mode to
+  /// show its page; null without slides.
+  int? get sectionLine =>
+      _slides.isEmpty ? null : sourceLineOf(_slides[_slide].source.section);
 
   void next() {
     if (!canNext) return;
@@ -283,6 +316,7 @@ class ProjectionController extends ChangeNotifier {
   void follow() {
     if (!_manual) return;
     _manual = false;
+    _turned = false;
     final line = _followedLine;
     if (line != null) {
       final target = _slideOf(line);
