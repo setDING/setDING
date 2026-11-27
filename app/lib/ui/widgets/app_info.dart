@@ -22,7 +22,7 @@ final recentNotesProvider = Provider<VersionNotes?>((ref) {
 
 /// The hint about a newer release (ADR-0036), with the installed version;
 /// installs it where the app updates itself (ADR-0035), otherwise opens
-/// the release page. Empty without a newer release. Under *Storage & info*
+/// the release page, or Google Play for Play installs (ADR-0067). Empty without a newer release. Under *Storage & info*
 /// and in the footer of the overview (ADR-0045).
 class UpdateAvailableTile extends ConsumerWidget {
   const UpdateAvailableTile({
@@ -40,13 +40,15 @@ class UpdateAvailableTile extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final current = ref.watch(clientVersionProvider);
     final installable = ref.watch(installableUpdateProvider);
+    final googlePlay = ref.watch(installedFromGooglePlayProvider);
     return ListTile(
       leading: const Icon(Icons.system_update),
       title: Text(l10n.updateAvailableTitle(update)),
       subtitle: Text(
         [
           if (current != null) l10n.updateAvailableInstalled(current),
-          if (installable == null) l10n.updateRequiredHowTo,
+          if (installable == null)
+            googlePlay ? l10n.updateHowToGooglePlay : l10n.updateRequiredHowTo,
         ].join(' '),
       ),
       trailing: installable != null
@@ -57,7 +59,7 @@ class UpdateAvailableTile extends ConsumerWidget {
             )
           : const Icon(Icons.open_in_new),
       onTap: () => launchUrl(
-        releasePageUrl(update),
+        updatePageUrl(update, googlePlay: googlePlay),
         mode: LaunchMode.externalApplication,
       ),
     );

@@ -551,6 +551,8 @@
   "updateRequiredBody": "Le serveur n'accepte plus cette version, rien n'est donc synchronisé. Tes modifications restent sur cet appareil et sont envoyées après la mise à jour.",
   "updateRequiredVersions": "Installée : {current}, requise : {minimum} ou plus récente.",
   "updateRequiredHowTo": "Sur Android, mets-la à jour dans Obtainium ; sinon télécharge la nouvelle version depuis les releases setDING sur GitHub.",
+  "updateHowToGooglePlay": "Mets-la à jour dans Google Play.",
+  "updateOpenGooglePlay": "Ouvrir dans Google Play",
   "updateRequiredReload": "Recharger",
   "updateRequiredCopyLink": "Copier le lien de téléchargement",
   "updateRequiredCopied": "Lien copié.",

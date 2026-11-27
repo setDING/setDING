@@ -1939,6 +1939,12 @@ class AppLocalizationsFr extends AppLocalizations {
       'Sur Android, mets-la à jour dans Obtainium ; sinon télécharge la nouvelle version depuis les releases setDING sur GitHub.';
 
   @override
+  String get updateHowToGooglePlay => 'Mets-la à jour dans Google Play.';
+
+  @override
+  String get updateOpenGooglePlay => 'Ouvrir dans Google Play';
+
+  @override
   String get updateRequiredReload => 'Recharger';
 
   @override

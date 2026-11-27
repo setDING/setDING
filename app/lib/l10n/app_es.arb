@@ -551,6 +551,8 @@
   "updateRequiredBody": "El servidor ya no acepta esta versión, así que no se sincroniza nada. Tus cambios se quedan en este dispositivo y se envían tras la actualización.",
   "updateRequiredVersions": "Instalada: {current}, necesaria: {minimum} o posterior.",
   "updateRequiredHowTo": "En Android, actualízala en Obtainium; si no, descarga la nueva versión de las releases de setDING en GitHub.",
+  "updateHowToGooglePlay": "Actualízala en Google Play.",
+  "updateOpenGooglePlay": "Abrir en Google Play",
   "updateRequiredReload": "Recargar",
   "updateRequiredCopyLink": "Copiar enlace de descarga",
   "updateRequiredCopied": "Enlace copiado.",

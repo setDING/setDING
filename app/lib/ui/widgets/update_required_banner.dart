@@ -1,13 +1,15 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/generated/app_localizations.dart';
 import '../../platform/reload.dart';
 import '../../sync/auth_providers.dart';
 import '../../sync/sync_backend.dart';
 import '../../sync/sync_controller.dart';
-import '../../sync/update_check.dart' show releasesUrl;
+import '../../sync/update_check.dart'
+    show googlePlayUrl, installedFromGooglePlayProvider, releasesUrl;
 import '../../update/update_providers.dart';
 import 'app_update.dart';
 import 'dialogs.dart';
@@ -40,6 +42,8 @@ class UpdateRequiredBanner extends ConsumerWidget {
     final current = ref.watch(clientVersionProvider);
     // The Windows app installs a newer release itself (ADR-0035).
     final update = ref.watch(installableUpdateProvider);
+    // Play installs update in Google Play (ADR-0067).
+    final googlePlay = ref.watch(installedFromGooglePlayProvider);
 
     return Material(
       key: const Key('update-required-banner'),
@@ -72,7 +76,9 @@ class UpdateRequiredBanner extends ConsumerWidget {
                           if (min != null && current != null)
                             l10n.updateRequiredVersions(current, min),
                           if (!canReload && update == null)
-                            l10n.updateRequiredHowTo,
+                            googlePlay
+                                ? l10n.updateHowToGooglePlay
+                                : l10n.updateRequiredHowTo,
                         ].join(' '),
                         style: TextStyle(color: scheme.onErrorContainer),
                       ),
@@ -94,6 +100,15 @@ class UpdateRequiredBanner extends ConsumerWidget {
                       key: const Key('update-reload'),
                       onPressed: reloadApp,
                       child: Text(l10n.updateRequiredReload),
+                    )
+                  : googlePlay
+                  ? TextButton(
+                      key: const Key('update-google-play'),
+                      onPressed: () => launchUrl(
+                        googlePlayUrl,
+                        mode: LaunchMode.externalApplication,
+                      ),
+                      child: Text(l10n.updateOpenGooglePlay),
                     )
                   : TextButton(
                       key: const Key('update-copy-link'),

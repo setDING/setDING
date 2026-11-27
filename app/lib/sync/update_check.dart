@@ -16,6 +16,21 @@ const releasesUrl = 'https://github.com/setDING/setDING/releases';
 Uri releasePageUrl(String version) =>
     Uri.parse('$releasesUrl/tag/v${version.replaceFirst(RegExp('^v'), '')}');
 
+/// The store listing of the app on Google Play (ADR-0067); opens the Play
+/// Store app on Android.
+final googlePlayUrl = Uri.parse(
+  'https://play.google.com/store/apps/details?id=app.setding',
+);
+
+/// Whether Google Play installed this app (ADR-0067): its updates come from
+/// there, not from Obtainium or the GitHub release. Overridden in main().
+final installedFromGooglePlayProvider = Provider<bool>((ref) => false);
+
+/// Where to get [version]: the Google Play listing for Play installs,
+/// otherwise its GitHub release page.
+Uri updatePageUrl(String version, {required bool googlePlay}) =>
+    googlePlay ? googlePlayUrl : releasePageUrl(version);
+
 /// Whether this build looks for new releases (ADR-0036): installed release
 /// builds only, not the web client (the server always serves the current
 /// build), debug builds or the Android beta build. Overridden in main().

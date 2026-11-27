@@ -133,6 +133,6 @@ Forces:
 
 - Personal or organization developer account (closed-test requirement).
 - Implementation: workflow, upload key and releases guide #1139 (done), update-check
-  hint for Play installs #1140, website installation page #1141, Play Console
+  hint for Play installs #1140 (done), website installation page #1141, Play Console
   setup by the owner #1142.
 - iOS (App Store) stays open (ADR-0021).

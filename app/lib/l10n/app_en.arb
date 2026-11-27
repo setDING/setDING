@@ -709,6 +709,8 @@
     }
   },
   "updateRequiredHowTo": "On Android, update it in Obtainium; otherwise download the new version from the setDING releases on GitHub.",
+  "updateHowToGooglePlay": "Update it in Google Play.",
+  "updateOpenGooglePlay": "Open in Google Play",
   "updateRequiredReload": "Reload",
   "updateRequiredCopyLink": "Copy download link",
   "updateRequiredCopied": "Link copied.",

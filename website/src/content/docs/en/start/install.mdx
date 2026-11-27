@@ -7,6 +7,7 @@ sidebar:
 
 import { Image } from 'astro:assets';
 import menuEntry from '../../../../../../docs/screenshots/settings_app_menu_entry.png';
+import updatePlay from '../../../../../../docs/screenshots/settings_update_google_play.png';
 
 All versions are in the
 [releases on GitHub](https://github.com/setDING/setDING/releases/latest).
@@ -76,6 +77,12 @@ setDING checks once a day whether a newer version is available. A dot then
 appears on **Settings**, and **Settings → Storage & info** shows the new version
 with a link to its download page (with **Install** on Windows if you installed
 setDING with the setup, and for the Linux AppImage). The hint never appears in live mode.
+
+If you installed setDING from Google Play, you update it there: the hint says so,
+and its link opens setDING in Google Play. Google Play sometimes offers a new
+version a little later than the releases on GitHub.
+
+<Image src={updatePlay} alt="Settings, Storage & info: under Help & info the hint setDING 0.24.0 is available, Installed: 0.23.1. Update it in Google Play." />
 
 After an update, setDING briefly shows **New in setDING …** once; **Show**
 lists what is new in this version; older versions are on the [news](/en/news/) page. You can read it again any
