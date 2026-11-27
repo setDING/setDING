@@ -111,6 +111,21 @@ void main() {
       expect(await status('/p/${server.token}'), HttpStatus.ok);
     });
 
+    test('serves under a given token; only that one (#1183)', () async {
+      await server.stop();
+      final token = 'K' * 22;
+      await server.start(port: 0, token: token);
+      expect(server.token, token);
+      expect(await status('/p/$token'), HttpStatus.ok);
+      await server.stop();
+      await server.start(port: 0, token: 'B' * 22);
+      expect(await status('/p/$token'), HttpStatus.notFound);
+      await server.stop();
+      await server.start(port: 0, token: 'not a token');
+      expect(server.token, isNot('not a token'));
+      expect(server.token, hasLength(22));
+    });
+
     test('takes another port when the default one is in use', () async {
       final taken = await ServerSocket.bind(InternetAddress.anyIPv6, 0);
       addTearDown(taken.close);

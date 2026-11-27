@@ -14,7 +14,8 @@ class _Host implements ProjectionHost {
   bool running = false;
 
   @override
-  Future<void> start(String page) async => running = true;
+  Future<void> start(String page, {required String token}) async =>
+      running = true;
 
   @override
   Future<void> stop() async => running = false;

@@ -13,12 +13,16 @@ class FakeProjectionHost implements ProjectionHost {
   String? page;
   var starts = 0;
 
+  /// The token of every start, in order.
+  final tokens = <String>[];
+
   @override
   bool running = false;
 
   @override
-  Future<void> start(String page) async {
+  Future<void> start(String page, {required String token}) async {
     this.page = page;
+    tokens.add(token);
     starts++;
     running = true;
   }
@@ -44,7 +48,7 @@ void main() {
   setUp(() async {
     host = FakeProjectionHost();
     projection = ProjectionController(host);
-    await projection.start('<html>');
+    await projection.start('<html>', token: 'a' * 22);
   });
 
   /// The source line of the section of [song] whose first line is [text].
@@ -263,6 +267,18 @@ Chorus line
     expect(pages.page, 2);
     pages.show(7);
     expect(pages.page, 2);
+  });
+
+  test('a new address restarts a running projection with it (#1183)', () async {
+    projection.show(item(song));
+    projection.next();
+    await projection.renew('b' * 22);
+    expect(host.tokens, ['a' * 22, 'b' * 22]);
+    expect(host.page, '<html>');
+    expect(host.last['lines'], ['Chorus line'], reason: 'the same slide');
+    await projection.stop();
+    await projection.renew('c' * 22);
+    expect(host.tokens, hasLength(2), reason: 'not running: no restart');
   });
 
   test('the song page reports the first section of the shown page', () {

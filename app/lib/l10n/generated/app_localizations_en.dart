@@ -834,6 +834,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'While projecting, forward (page turner, keyboard, tap) first goes to the next slide of the song and only after the last one to the next song. Back likewise.';
 
   @override
+  String get projectionRenew => 'New address';
+
+  @override
+  String get projectionRenewed =>
+      'New address created. The old one no longer works.';
+
+  @override
+  String get settingsProjectionAddress => 'New projection address';
+
+  @override
+  String get settingsProjectionAddressHint =>
+      'The address stays the same on this device, so projector and OBS keep it. A new address locks out old links.';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Page $page/$count';
   }

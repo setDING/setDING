@@ -16,6 +16,7 @@ import '../../data/annotation.dart' show LayoutFingerprint, textHash;
 import '../../platform/stage_wake_lock.dart';
 import '../../projection/projection_controller.dart';
 import '../../projection/projection_page.dart';
+import '../../projection/projection_token_store.dart';
 import '../../sync/sync_controller.dart';
 import '../../data/attachment_lookup.dart';
 import '../../data/attachment_storage.dart';
@@ -484,14 +485,27 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
           lang: lang,
           fullScreen: l10n.projectionFullScreen,
         ),
+        // The same address at every start (#1183).
+        token: ref.read(projectionTokenProvider).token,
       );
     } catch (_) {
       showMessageOn(messenger, l10n.projectionStartFailed);
       return;
     }
     _projectItem(_index);
-    if (context.mounted) await showProjectionSheet(context, projection);
+    if (context.mounted) {
+      await showProjectionSheet(
+        context,
+        projection,
+        onRenew: () => _renewProjection(projection),
+      );
+    }
   }
+
+  /// A new address for this device (#1183); the running projection moves
+  /// to it.
+  Future<void> _renewProjection(ProjectionController projection) =>
+      projection.renew(ref.read(projectionTokenProvider).renew());
 
   void _onProjection() {
     if (mounted) setState(() {});
@@ -1229,8 +1243,11 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                               child: Center(
                                 child: ProjectionBar(
                                   controller: projection,
-                                  onShowLinks: () =>
-                                      showProjectionSheet(context, projection),
+                                  onShowLinks: () => showProjectionSheet(
+                                    context,
+                                    projection,
+                                    onRenew: () => _renewProjection(projection),
+                                  ),
                                 ),
                               ),
                             ),
@@ -1311,7 +1328,11 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                   ? null
                                   : switch (_projection) {
                                       final p? when p.running =>
-                                        () => showProjectionSheet(context, p),
+                                        () => showProjectionSheet(
+                                          context,
+                                          p,
+                                          onRenew: () => _renewProjection(p),
+                                        ),
                                       _ => () => _startProjection(context),
                                     },
                               projecting: _projection?.running ?? false,

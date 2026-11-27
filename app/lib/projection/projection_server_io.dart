@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 import 'projection_state.dart';
+import 'projection_token.dart';
 
 /// The local web server of the lyrics projection (ADR-0068 §1–4).
 ///
@@ -46,7 +46,7 @@ class ProjectionServer {
   /// The port it listens on; null while stopped.
   int? get port => _server?.port;
 
-  /// The token of this start; a new start makes a new one (ADR-0068 §2).
+  /// The token of this start: the one passed to [start], or a new one.
   String? get token => _token;
 
   /// The number of connected streams.
@@ -56,11 +56,12 @@ class ProjectionServer {
   ProjectionState get state => _state;
 
   /// Starts listening on all interfaces at [port], or at a free port when
-  /// it is taken. Does nothing when already running.
-  Future<void> start({int port = defaultPort}) async {
+  /// it is taken, with [token] (the device's, #1183) or a new one. Does
+  /// nothing when already running.
+  Future<void> start({int port = defaultPort, String? token}) async {
     if (_server != null) return;
     final server = await _bind(port);
-    _token = newToken();
+    _token = isProjectionToken(token) ? token : newProjectionToken();
     _server = server;
     server.listen(_handle, onError: (_) {});
     _heartbeat = Timer.periodic(heartbeat, (_) => _sendAll(': ping\n\n'));
@@ -218,13 +219,6 @@ class ProjectionServer {
     }
     return diff == 0;
   }
-}
-
-/// A random 128-bit token, URL-safe base64 without padding (22 characters).
-String newToken() {
-  final random = Random.secure();
-  final bytes = [for (var i = 0; i < 16; i++) random.nextInt(256)];
-  return base64Url.encode(bytes).replaceAll('=', '');
 }
 
 /// Whether [address] is loopback or in a private range (ADR-0068 §1):

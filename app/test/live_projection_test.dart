@@ -316,6 +316,29 @@ void main() {
     await app.dispose(tester);
   });
 
+  testWidgets('the same address at every start; a new one on demand '
+      '(#1183)', (tester) async {
+    await start(tester, sources: ['{title: One}\nLa']);
+    await startProjection(tester);
+    await tester.tap(find.byKey(const Key('projection-stop')));
+    await tester.pumpAndSettle();
+    // The controls are still open: start again.
+    await tester.tap(find.byKey(const Key('live-project')));
+    await tester.pumpAndSettle();
+    expect(host.tokens, hasLength(2));
+    expect(host.tokens.last, host.tokens.first);
+
+    await tester.tap(find.byKey(const Key('projection-renew')));
+    await tester.pumpAndSettle();
+    expect(host.tokens, hasLength(3), reason: 'restarted with a new token');
+    expect(host.tokens.last, isNot(host.tokens.first));
+    expect(
+      find.text('New address created. The old one no longer works.'),
+      findsOneWidget,
+    );
+    await app.dispose(tester);
+  });
+
   testWidgets('no projection where the platform cannot serve it', (
     tester,
   ) async {

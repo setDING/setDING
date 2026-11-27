@@ -839,6 +839,20 @@ class AppLocalizationsPt extends AppLocalizations {
       'Durante a projeção, avançar (pedal, teclado, toque) passa primeiro para o diapositivo seguinte da música e só depois do último para a música seguinte. O mesmo para trás.';
 
   @override
+  String get projectionRenew => 'Novo endereço';
+
+  @override
+  String get projectionRenewed =>
+      'Novo endereço criado. O antigo já não funciona.';
+
+  @override
+  String get settingsProjectionAddress => 'Novo endereço de projeção';
+
+  @override
+  String get settingsProjectionAddressHint =>
+      'O endereço mantém-se neste dispositivo, para que o projetor e o OBS o guardem. Um novo endereço bloqueia as ligações antigas.';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Página $page/$count';
   }

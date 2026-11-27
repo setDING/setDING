@@ -22,7 +22,7 @@ class ProjectionServer {
   int get clients => 0;
   ProjectionState get state => const ProjectionState.blank();
 
-  Future<void> start({int port = defaultPort}) =>
+  Future<void> start({int port = defaultPort, String? token}) =>
       Future.error(UnsupportedError('No lyrics projection on the web'));
 
   Future<void> stop() async {}
