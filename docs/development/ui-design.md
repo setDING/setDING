@@ -239,3 +239,17 @@ the others are checked in review.
 - [ ] A screenshot on the website page (AGENTS.md, "User documentation and screenshots").
 - [ ] A list of songs uses the parts of `ui/songs/song_list.dart`, and a change to
       the song list also reaches the song picker of a set (section 3).
+- [ ] Reads and writes data through `app/lib/data/`, never with database
+      queries of its own (section 12).
+
+## 12. Data access
+
+- Screens, dialogs and their providers read and write the local database only
+  through the repositories, services and functions in `app/lib/data/`
+  (ADR-0001, issue #1204). A file in `app/lib/ui/` never calls `db.select`,
+  `db.selectOnly`, `db.update`, `db.into`, `db.delete`, `db.custom…` or
+  `db.transaction` (nor `batch`): a query that a screen needs becomes a method
+  of the repository it belongs to, where its tests reach it.
+- Passing the database on to a function of `app/lib/data/` (e.g.
+  `watchAnySet(ref.watch(databaseProvider), id)`) is fine.
+  `ui_rules_test.dart` fails on a query in `app/lib/ui/`.

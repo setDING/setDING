@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../data/database.dart';
+import '../data/set_repository.dart' show watchAnySet;
+import '../data/song_repository.dart' show watchAnySong;
 import '../l10n/generated/app_localizations.dart';
 import '../providers.dart';
 import '../sync/auth_providers.dart';
@@ -14,19 +16,13 @@ import 'widgets/logo.dart' show SplashScreen;
 /// A set on this device by its id, deleted ones too.
 final _linkedSetProvider = StreamProvider.autoDispose
     .family<SetlistEntry?, String>((ref, id) {
-      final db = ref.watch(databaseProvider);
-      return (db.select(
-        db.setlists,
-      )..where((s) => s.id.equals(id))).watchSingleOrNull();
+      return watchAnySet(ref.watch(databaseProvider), id);
     });
 
 /// A song on this device by its id, deleted ones too.
 final _linkedSongProvider = StreamProvider.autoDispose
     .family<SongEntry?, String>((ref, id) {
-      final db = ref.watch(databaseProvider);
-      return (db.select(
-        db.songs,
-      )..where((s) => s.id.equals(id))).watchSingleOrNull();
+      return watchAnySong(ref.watch(databaseProvider), id);
     });
 
 /// A set or a song opened by its path, e.g. from a link (ADR-0065 §3):

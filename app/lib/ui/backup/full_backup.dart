@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:drift/drift.dart' show Variable;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,7 +9,6 @@ import '../../data/auto_backup.dart';
 import '../../data/backup.dart';
 import '../../data/band_view.dart';
 import '../../data/database.dart';
-import '../../data/demo_song.dart';
 import '../../data/import_export.dart' show ImportFile;
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers.dart';
@@ -62,26 +60,9 @@ final backupReminderProvider = FutureProvider.autoDispose<int?>((ref) async {
   }
   final prefs = ref.watch(sharedPreferencesProvider);
   final last = DateTime.tryParse(prefs.getString(lastBackupKey) ?? '');
-  final db = ref.watch(databaseProvider);
-  final since = Variable<DateTime>(last ?? DateTime(1970));
-  final row = await db
-      .customSelect(
-        'SELECT MIN(t) AS oldest FROM ('
-        'SELECT updated_at AS t FROM songs WHERE library_id = ? AND '
-        'deleted = 0 AND updated_at > ? AND chordpro_source <> ? '
-        'UNION ALL SELECT updated_at AS t FROM setlists WHERE band_id = ? '
-        'AND deleted = 0 AND updated_at > ?)',
-        variables: [
-          Variable.withString(localBandId),
-          since,
-          Variable.withString(demoSongSource),
-          Variable.withString(localBandId),
-          since,
-        ],
-        readsFrom: {db.songs, db.setlists},
-      )
-      .getSingle();
-  final oldest = row.readNullable<DateTime>('oldest');
+  final oldest = await ref
+      .watch(backupServiceProvider)
+      .oldestLocalChange(since: last);
   if (oldest == null) return null;
   final age = DateTime.now().difference(last ?? oldest);
   return age > backupReminderAfter ? age.inDays : null;

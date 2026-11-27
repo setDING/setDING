@@ -38,6 +38,23 @@ bool plannedFor(
 /// band.
 typedef SubstituteGig = ({SetlistEntry set, String bandId, String bandName});
 
+/// The set [id] on this device, in any band and deleted ones too: a link
+/// opens it whichever band it is in (ADR-0065 §3).
+Stream<SetlistEntry?> watchAnySet(AppDatabase db, String id) =>
+    (db.select(db.setlists)..where((s) => s.id.equals(id))).watchSingleOrNull();
+
+/// How many sets of [bandId] are not in the trash.
+Future<int> countBandSets(AppDatabase db, String bandId) {
+  final count = db.setlists.id.count();
+  return (db.selectOnly(db.setlists)
+        ..addColumns([count])
+        ..where(
+          db.setlists.bandId.equals(bandId) & db.setlists.deleted.equals(false),
+        ))
+      .map((r) => r.read(count) ?? 0)
+      .getSingle();
+}
+
 /// The sets with a gig date from [today] on in the bands the user sees only
 /// as a substitute (ADR-0061), next gig first: on this device these are
 /// exactly the sets whose lineup has the user.
