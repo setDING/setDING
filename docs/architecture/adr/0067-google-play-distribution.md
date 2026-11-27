@@ -1,6 +1,6 @@
 # ADR-0067: Google Play next to Obtainium for Android
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-27
 
 ## Context
@@ -110,6 +110,7 @@ Forces:
 - 2026-11-27: Proposed (#1137) after the owner created the Google Play developer
   account. Owner decisions: Play in addition to Obtainium; Play App Signing with the
   existing release key; CI uploads the AAB to the internal track, promotion by hand.
+- 2026-11-27: Accepted by the owner. Package name in the Play Console: `app.setding`.
 
 ## Open points
 
