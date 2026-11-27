@@ -105,14 +105,14 @@ compose() {
 count=0
 # Google Play: phone 1080×1920 (9:16) and tablet 2560×1600 (16:10), the
 # tablet images used for 7" and 10" tablets.
-compose phone store/play/{locale}/images/phoneScreenshots/{n}.png 1080 1920 820 24 68 470 84
-compose tablet store/play/{locale}/images/tenInchScreenshots/{n}.png 2560 1600 1900 40 90 460 120
+compose phone "store/play/{locale}/images/phoneScreenshots/{n}.png" 1080 1920 820 24 68 470 84
+compose tablet "store/play/{locale}/images/tenInchScreenshots/{n}.png" 2560 1600 1900 40 90 460 120
 # App Store: iPhone 6.9" 1320×2868, iPad 13" 2752×2064 (landscape) and
 # Mac 2880×1800.
-compose iphone store/app-store/{locale}/images/iphone/{n}.png 1320 2868 1000 30 90 600 100
-compose ipad store/app-store/{locale}/images/ipad/{n}.png 2752 2064 2040 44 100 540 130
-compose mac store/app-store/{locale}/images/mac/{n}.png 2880 1800 2000 44 60 560 120
+compose iphone "store/app-store/{locale}/images/iphone/{n}.png" 1320 2868 1000 30 90 600 100
+compose ipad "store/app-store/{locale}/images/ipad/{n}.png" 2752 2064 2040 44 100 540 130
+compose mac "store/app-store/{locale}/images/mac/{n}.png" 2880 1800 2000 44 60 560 120
 # The website's landing page: the tablet screens without the headline, in the
 # cards of "Why setDING?" (website/src/content/docs/index.mdx).
-compose tablet screenshots/why_{n}{de}.png 1120 700 900 20 44 70 0
+compose tablet "screenshots/why_{n}{de}.png" 1120 700 900 20 44 70 0
 echo "Composed $count store and website screenshots in docs/store and docs/screenshots"
