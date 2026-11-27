@@ -55,4 +55,17 @@ void main() {
       ),
     );
   });
+
+  test('the web client has no inline scripts (#1196)', () {
+    // The server's Content-Security-Policy (server/pb_hooks/lib/web.js)
+    // allows only script files; an inline script would not run.
+    final html = File('web/index.html').readAsStringSync();
+    final scripts = RegExp(r'<script\b[^>]*>').allMatches(html).toList();
+    expect(scripts, isNotEmpty);
+    for (final tag in scripts) {
+      expect(tag[0], contains('src='), reason: tag[0]);
+    }
+    expect(html, isNot(contains(RegExp(r'\son[a-z]+='))));
+    expect(html, contains('<script src="splash.js"></script>'));
+  });
 }

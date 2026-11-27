@@ -58,14 +58,9 @@
     <img class="wordmark light" src="splash/wordmark.svg" alt="">
     <img class="wordmark dark" src="splash/wordmark-dark.svg" alt="">
   </div>
-  <script>
-    // Flutter dispatches this event once it has drawn its first frame
-    // (the in-app splash, which looks the same).
-    window.addEventListener('flutter-first-frame', function () {
-      var splash = document.getElementById('splash');
-      if (splash) splash.remove();
-    }, { once: true });
-  </script>
+  <!-- No inline scripts: the server's Content-Security-Policy allows only
+       script files (#1196). -->
+  <script src="splash.js"></script>
   <!-- Audio engine of the click (flutter_soloud, ADR-0026): picks the
        AudioWorklet build when the page is cross-origin isolated, else the
        single-threaded one. -->

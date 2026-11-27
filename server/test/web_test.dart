@@ -49,6 +49,69 @@ void main() {
     expect(r.raw.headers['cache-control'], 'no-cache');
   }
 
+  // #1196: security headers of the web client.
+  void expectSecure(Response r) {
+    final csp = r.raw.headers['content-security-policy'];
+    expect(csp, isNotNull);
+    final directives = {
+      for (final d in csp!.split(';').map((d) => d.trim().split(' ')))
+        d.first: d.skip(1).toList(),
+    };
+    expect(directives['frame-ancestors'], ["'none'"]);
+    expect(directives['object-src'], ["'none'"]);
+    // Scripts only from this server; WebAssembly (CanvasKit, sqlite3, …)
+    // may be compiled, but no eval and no inline scripts.
+    expect(directives['script-src'], ["'self'", "'wasm-unsafe-eval'"]);
+    // The API and its realtime SSE are on the same origin (ADR-0018).
+    expect(directives['connect-src'], contains("'self'"));
+    expect(directives['worker-src'], containsAll(["'self'", 'blob:']));
+    expect(r.raw.headers['x-content-type-options'], 'nosniff');
+    // Invitation tokens are in URL paths.
+    expect(r.raw.headers['referrer-policy'], 'no-referrer');
+  }
+
+  void expectNoSecurityHeaders(Response r) {
+    expect(r.raw.headers['content-security-policy'], isNull);
+    expect(r.raw.headers['referrer-policy'], isNull);
+    expect(r.raw.headers['cross-origin-embedder-policy'], isNull);
+    expect(r.raw.headers['cache-control'], isNot('no-cache'));
+  }
+
+  test('serves the web build with security headers (#1196)', () async {
+    for (final path in ['/', '/main.dart.js', '/sets/abc']) {
+      final r = await pb.guest.send('GET', path, headers: {'host': 'web.test'});
+      r.expectStatus(200);
+      expectSecure(r);
+    }
+    // The API is unchanged.
+    expectNoSecurityHeaders(await pb.guest.send('GET', '/api/health'));
+    expectNoSecurityHeaders(await pb.guest.send('GET', '/api/setding/config'));
+  });
+
+  test('the landing page has a strict policy (#1196)', () async {
+    final f = await BandFixture.create(pb);
+    final t = await token(f);
+    for (final path in ['/invite/$t', '/invite/not-a-token']) {
+      final r = await pb.guest.send('GET', path);
+      r.expectStatus(200);
+      final csp = r.raw.headers['content-security-policy']!;
+      expect(csp, contains("default-src 'none'"), reason: path);
+      expect(csp, contains("frame-ancestors 'none'"), reason: path);
+      expect(csp, isNot(contains('script-src')), reason: path);
+      expect(r.raw.headers['x-content-type-options'], 'nosniff');
+      expect(r.raw.headers['referrer-policy'], 'no-referrer');
+    }
+    // On the web hostname the link opens the web client with its policy.
+    final web = await pb.guest.send(
+      'GET',
+      '/invite/$t',
+      headers: {'host': 'web.test'},
+    );
+    web.expectStatus(200);
+    expect(web.raw.body, contains(marker));
+    expectSecure(web);
+  });
+
   test('serves the web build with cross-origin isolation', () async {
     final page = await pb.guest.send('GET', '/');
     page.expectStatus(200);
