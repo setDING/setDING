@@ -7,6 +7,15 @@
 // features of their own, with their rules decided then.
 const LOCK = " && @request.body.deleted:changed = false";
 
+/// [rule] with the first [from] replaced by [to]; throws if [rule] does not
+/// contain [from], so a migration never silently leaves a rule unchanged
+/// (issue #1201).
+function replaceInRule(rule, from, to) {
+  const i = rule === null ? -1 : rule.indexOf(from);
+  if (i < 0) throw new Error(`Rule does not contain: ${from}`);
+  return rule.slice(0, i) + to + rule.slice(i + from.length);
+}
+
 migrate(
   (app) => {
     for (const name of ["bands", "organizations"]) {
@@ -18,7 +27,7 @@ migrate(
   (app) => {
     for (const name of ["bands", "organizations"]) {
       const collection = app.findCollectionByNameOrId(name);
-      collection.updateRule = collection.updateRule.replace(LOCK, "");
+      collection.updateRule = replaceInRule(collection.updateRule, LOCK, "");
       app.save(collection);
     }
   },

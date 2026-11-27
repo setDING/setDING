@@ -16,6 +16,15 @@
 // `lineup` (people with an account), checked by pb_hooks/lib/lineup.js.
 //
 // invites.contact: a personal invitation for a contact, used once.
+/// [rule] with the first [from] replaced by [to]; throws if [rule] does not
+/// contain [from], so a migration never silently leaves a rule unchanged
+/// (issue #1201).
+function replaceInRule(rule, from, to) {
+  const i = rule === null ? -1 : rule.indexOf(from);
+  if (i < 0) throw new Error(`Rule does not contain: ${from}`);
+  return rule.slice(0, i) + to + rule.slice(i + from.length);
+}
+
 migrate(
   (app) => {
     const users = app.findCollectionByNameOrId("users");
@@ -114,7 +123,7 @@ migrate(
   (app) => {
     const invites = app.findCollectionByNameOrId("invites");
     invites.fields.removeByName("contact");
-    invites.updateRule = invites.updateRule.replace(" && @request.body.contact:isset = false", "");
+    invites.updateRule = replaceInRule(invites.updateRule, " && @request.body.contact:isset = false", "");
     app.save(invites);
     const setlists = app.findCollectionByNameOrId("setlists");
     setlists.fields.removeByName("lineup_contacts");

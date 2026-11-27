@@ -25,6 +25,27 @@ nobody may be able to do through the API what the app does not let them do.
 - **Client and server change together.** A change to a client permission check
   changes the server rules, their tests and ADR-0023's matrix in the same PR.
 
+## Golden file of the API rules (mandatory)
+
+[`test/golden/rules.txt`](test/golden/rules.txt) holds the effective API rules
+(list, view, create, update, delete; auth and manage for auth collections) and
+the fields of every non-system collection after all migrations, one rule per
+entry, wrapped before every `&&` and `||` (issue #1201).
+`test/rules_golden_test.dart` compares a fresh test server against it, so every
+rule change shows up as a readable diff in its PR.
+
+- A PR that changes a rule or field runs `make rules-golden` and commits the
+  updated file; review the diff as the actual change of the rules. After a
+  rebase onto a `main` with other rule changes, run it again.
+- Never edit the file by hand, and never update it to make the test pass
+  without understanding the diff.
+- In a migration, edit an existing rule only with `replaceInRule(rule, from,
+  to)` (defined in each migration that needs it), which throws if `from` is
+  not in the rule, in the up and the down migration; a plain
+  `String.replace` silently does nothing when the text is missing. The same
+  test downgrades through every migration that edits a rule and checks that
+  the down migrations restore the older rules.
+
 ## Background
 
 - Data model, migrations and hooks: ADR-0015; tested against a real PocketBase in

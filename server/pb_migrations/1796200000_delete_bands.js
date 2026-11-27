@@ -25,12 +25,21 @@ const BAND_UPDATE =
 
 const LIVE_BAND = " && band.deleted = false";
 
+/// [rule] with the first [from] replaced by [to]; throws if [rule] does not
+/// contain [from], so a migration never silently leaves a rule unchanged
+/// (issue #1201).
+function replaceInRule(rule, from, to) {
+  const i = rule === null ? -1 : rule.indexOf(from);
+  if (i < 0) throw new Error(`Rule does not contain: ${from}`);
+  return rule.slice(0, i) + to + rule.slice(i + from.length);
+}
+
 migrate(
   (app) => {
     const bands = app.findCollectionByNameOrId("bands");
     bands.fields.add(new DateField({ name: "deleted_at" }));
     bands.fields.add(new BoolField({ name: "purged" }));
-    bands.updateRule = bands.updateRule.replace(LOCK, BAND_UPDATE);
+    bands.updateRule = replaceInRule(bands.updateRule, LOCK, BAND_UPDATE);
     bands.deleteRule =
       `@request.auth.collectionName = "users" && deleted = false && ${ORG_ADMIN}`;
     app.save(bands);
@@ -46,14 +55,14 @@ migrate(
     const bands = app.findCollectionByNameOrId("bands");
     bands.fields.removeByName("deleted_at");
     bands.fields.removeByName("purged");
-    bands.updateRule = bands.updateRule.replace(BAND_UPDATE, LOCK);
+    bands.updateRule = replaceInRule(bands.updateRule, BAND_UPDATE, LOCK);
     bands.deleteRule = null;
     app.save(bands);
 
     for (const name of ["setlists", "arrangements", "memberships"]) {
       const collection = app.findCollectionByNameOrId(name);
-      collection.createRule = collection.createRule.replace(LIVE_BAND, "");
-      collection.updateRule = collection.updateRule.replace(LIVE_BAND, "");
+      collection.createRule = replaceInRule(collection.createRule, LIVE_BAND, "");
+      collection.updateRule = replaceInRule(collection.updateRule, LIVE_BAND, "");
       app.save(collection);
     }
   },

@@ -118,7 +118,7 @@ BACKEND_REGISTRATION ?= open
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := SETDING_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build web web-serve site site-dev deps upgrade upgrade-guard apk android-install android-keystore android-upload-keystore release release-linux release-check sbom changelog reset data-dir backend check check-full release-gate test codegen l10n coverage android-test web-test e2e perf screenshots branding examples doctor clean ci-image \
+.PHONY: help setup dev start build web web-serve site site-dev deps upgrade upgrade-guard apk android-install android-keystore android-upload-keystore release release-linux release-check sbom changelog reset data-dir backend check check-full release-gate rules-golden test codegen l10n coverage android-test web-test e2e perf screenshots branding examples doctor clean ci-image \
 	server-target server-bundle server-image server-install server-release server-site server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
 
 help: ## Show this help
@@ -249,6 +249,9 @@ release-gate: ## Before a release: every check, the Linux release build with its
 	BROWSER=firefox $(ROOT)/tool/web-test.sh
 	$(ROOT)/tool/e2e-test.sh
 	$(ROOT)/tool/android-test.sh
+
+rules-golden: ## Rewrite server/test/golden/rules.txt, the effective API rules and fields of the server (review the diff; server/AGENTS.md)
+	cd $(ROOT)/server && SETDING_UPDATE_GOLDEN=1 $(DART) test test/rules_golden_test.dart
 
 test: ## Run all tests
 	cd $(PACKAGE) && $(DART) test
