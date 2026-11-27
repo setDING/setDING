@@ -2,8 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/trash.dart';
+import '../../data/trash_providers.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../sets/sets_screen.dart' show formatGigDate;
 import '../theme.dart';
 import '../widgets/app_shortcuts.dart';

@@ -6,8 +6,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../data/backup_providers.dart';
+import '../data/band_providers.dart';
+import '../data/song_providers.dart';
 import '../l10n/generated/app_localizations.dart';
-import '../providers.dart';
+import '../platform/web_client.dart';
 import '../settings/settings.dart';
 import '../projection/projection_controller.dart'
     show projectionSupportedProvider;

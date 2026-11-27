@@ -2,10 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../data/band_providers.dart';
 import '../../data/band_view.dart';
 import '../../data/play_history.dart';
+import '../../data/play_history_providers.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../bands/bands_screen.dart' show runBandAction;
 import '../widgets/dialogs.dart';
 import '../widgets/section_header.dart';

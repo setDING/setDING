@@ -2,11 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../data/band_providers.dart';
 import '../../data/change_log.dart';
 import '../../data/database.dart';
 import '../../data/person_name.dart';
+import '../../data/storage_providers.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../../settings/settings.dart'
     show nameFormatProvider, sharedPreferencesProvider;
 import '../sets/sets_screen.dart' show openSet;

@@ -3,8 +3,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../data/database.dart';
 import '../../data/lineup.dart';
+import '../../data/set_providers.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import 'lineup_dialog.dart';
 
 /// The names of a lineup in one line, substitutes (ADR-0061) and people

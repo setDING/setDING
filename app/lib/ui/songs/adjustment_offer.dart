@@ -2,9 +2,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
+import '../../data/song_providers.dart';
 import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../../settings/settings.dart' show sharedPreferencesProvider;
 import '../widgets/dialogs.dart';
 import 'language_versions.dart';

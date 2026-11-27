@@ -6,8 +6,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../data/database.dart';
 import '../../data/lineup.dart';
+import '../../data/set_providers.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../../sync/auth_providers.dart';
 import '../../sync/sync_backend.dart';
 import '../widgets/dialogs.dart';

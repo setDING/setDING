@@ -2,10 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../data/band_providers.dart';
 import '../data/band_view.dart' show BandView;
 import '../data/database.dart' show SongEntry;
 import '../data/person_name.dart';
-import '../providers.dart';
+import '../data/song_providers.dart';
 import 'account/sign_in_screen.dart';
 import 'bands/band_screen.dart';
 import 'bands/bands_screen.dart';

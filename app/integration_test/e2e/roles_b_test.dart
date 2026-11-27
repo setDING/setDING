@@ -10,7 +10,9 @@
 // band, the band disappears from his device with a notice.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:setding/providers.dart';
+import 'package:setding/data/band_providers.dart';
+import 'package:setding/data/set_providers.dart';
+import 'package:setding/data/song_providers.dart';
 import 'package:setding/sync/sync_controller.dart';
 
 import '../support.dart';

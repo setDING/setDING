@@ -4,8 +4,8 @@ import 'package:chordpro/chordpro.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/song_providers.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../render/song_header.dart';
 import '../render/song_view.dart';

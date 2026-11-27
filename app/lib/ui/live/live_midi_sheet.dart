@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../data/song_providers.dart';
 import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../midi/midi_connection.dart';
 import '../../midi/midi_message.dart';
 import '../../midi/midi_output.dart';
 import '../../midi/midi_profile.dart';
-import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../songs/midi_program_field.dart';
 import '../widgets/dialogs.dart';

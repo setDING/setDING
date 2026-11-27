@@ -4,11 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../data/song_providers.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../midi/midi_connection.dart';
 import '../../midi/midi_message.dart';
 import '../../midi/midi_profile.dart';
-import '../../providers.dart';
 import '../widgets/dialogs.dart';
 
 /// [patch] as the musician reads it, e.g. "Program K:33" or "Song 2, part 3".

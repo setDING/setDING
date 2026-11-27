@@ -6,9 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../data/backup.dart';
+import '../../data/backup_providers.dart';
+import '../../data/band_providers.dart';
 import '../../data/band_view.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
+import '../../platform/web_client.dart';
 import '../../settings/settings.dart' show sharedPreferencesProvider;
 import '../../sync/sync_controller.dart';
 import '../widgets/dialogs.dart';

@@ -2,11 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../data/band_providers.dart';
 import '../data/database.dart';
 import '../data/set_repository.dart' show watchAnySet;
 import '../data/song_repository.dart' show watchAnySong;
+import '../data/storage_providers.dart';
 import '../l10n/generated/app_localizations.dart';
-import '../providers.dart';
 import '../sync/auth_providers.dart';
 import '../sync/sync_controller.dart';
 import 'routes.dart';

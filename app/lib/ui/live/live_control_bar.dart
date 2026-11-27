@@ -6,11 +6,12 @@ import 'package:chordpro/chordpro.dart' as cp show Key;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/annotation_providers.dart';
 import '../../data/database.dart';
+import '../../data/song_providers.dart';
 import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../midi/midi_connection.dart';
-import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../songs/song_attention.dart' show songReportedIcon;
 import '../render/render_cache.dart';

@@ -26,7 +26,7 @@ import 'package:setding/data/attachment_storage.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
-import 'package:setding/providers.dart';
+import 'package:setding/data/storage_providers.dart';
 import 'package:setding/settings/settings.dart';
 import 'package:setding/sync/auth_providers.dart';
 import 'package:setding/ui/home_screen.dart';

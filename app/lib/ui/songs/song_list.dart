@@ -10,13 +10,15 @@ import 'package:chordpro/chordpro.dart' as cp;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/backup_providers.dart';
+import '../../data/band_providers.dart';
 import '../../data/database.dart';
 import '../../data/play_history.dart' show staleBefore;
 import '../../data/song_repository.dart';
 import '../../data/set_repository.dart';
+import '../../data/song_providers.dart';
 import '../../data/text.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../render/song_header.dart';
 import '../sets/sets_screen.dart' show formatGigDate;

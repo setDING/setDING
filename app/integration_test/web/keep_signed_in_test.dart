@@ -11,7 +11,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:setding/providers.dart';
+import 'package:setding/data/storage_providers.dart';
 import 'package:setding/ui/home_screen.dart';
 
 import '../support.dart';

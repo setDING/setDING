@@ -1,10 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/band_providers.dart';
 import '../../data/band_view.dart';
+import '../../data/song_providers.dart';
 import '../../data/trash.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../../sync/sync_backend.dart';
 import '../../sync/sync_controller.dart';
 import '../account/sign_in_screen.dart' show backendErrorText;

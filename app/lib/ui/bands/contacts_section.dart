@@ -5,12 +5,12 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../data/band_providers.dart';
 import '../../data/band_view.dart';
 import '../../data/contact_repository.dart';
 import '../../data/database.dart';
 import '../../data/person_name.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../../settings/settings.dart' show nameFormatProvider;
 import '../../sync/auth_providers.dart';
 import '../../sync/sync_backend.dart';

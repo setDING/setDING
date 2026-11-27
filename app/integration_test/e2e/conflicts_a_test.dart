@@ -10,8 +10,9 @@
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:setding/data/set_providers.dart';
+import 'package:setding/data/song_providers.dart';
 import 'package:setding/main.dart' as app;
-import 'package:setding/providers.dart';
 import 'package:setding/ui/home_screen.dart';
 
 import '../support.dart';

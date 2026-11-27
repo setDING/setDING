@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/data/outbox.dart';
-import 'package:setding/providers.dart';
+import 'package:setding/data/storage_providers.dart';
 import 'package:setding/settings/settings.dart';
 import 'package:setding/sync/auth_providers.dart';
 import 'package:setding/sync/band_service.dart';

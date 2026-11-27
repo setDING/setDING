@@ -5,10 +5,14 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../data/arrangement_providers.dart';
+import '../../data/band_providers.dart';
 import '../../data/database.dart';
+import '../../data/play_history_providers.dart';
+import '../../data/set_providers.dart';
+import '../../data/song_providers.dart';
 import '../../data/song_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../../providers.dart';
 import '../../settings/settings.dart';
 import '../account/sync_refresh.dart';
 import '../backup/backup_actions.dart';

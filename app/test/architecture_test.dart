@@ -9,7 +9,6 @@ void main() {
     final files = [
       for (final dir in ['lib/data', 'lib/sync', 'lib/settings'])
         ...Directory(dir).listSync(recursive: true).whereType<File>(),
-      File('lib/providers.dart'),
     ].where((f) => f.path.endsWith('.dart'));
     final offending = [
       for (final f in files)
