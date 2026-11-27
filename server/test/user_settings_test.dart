@@ -1,7 +1,6 @@
 import 'package:test/test.dart';
 
 import 'support/fixtures.dart';
-
 import 'package:setding_server/pocketbase_harness.dart';
 
 /// Personal settings per user, synced with the account (ADR-0027).

@@ -132,8 +132,9 @@ void main() {
 
   test('wait answers once the step is signalled, 408 before', () async {
     expect(
-      (await http.get(at('/__e2e/wait/ready').replace(query: 'timeout=0.1')))
-          .statusCode,
+      (await http.get(
+        at('/__e2e/wait/ready').replace(query: 'timeout=0.1'),
+      )).statusCode,
       408,
     );
     final waiting = http.get(

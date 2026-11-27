@@ -22,7 +22,8 @@ void main() {
   late User member;
   late User librarian; // librarian, in no band
   late User outsider; // signed in, in no organization of `f`
-  late User substitute; // in the organization and the lineup of `setId`, in no band (ADR-0061)
+  late User
+  substitute; // in the organization and the lineup of `setId`, in no band (ADR-0061)
   late Map<String, dynamic> song; // created by the organization admin
   late Map<String, dynamic> leaderSong;
   late String secondBand; // another band of `f`, without the leader

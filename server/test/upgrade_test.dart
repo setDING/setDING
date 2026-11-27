@@ -119,9 +119,9 @@ void main() {
 
       final previous = await unpack(previousBundle);
       final current = await unpack(next.archive);
-      final previousVersion = File('$previous/VERSION')
-          .readAsStringSync()
-          .trim();
+      final previousVersion = File(
+        '$previous/VERSION',
+      ).readAsStringSync().trim();
       expect(previousVersion, isNot(next.version));
 
       // The example unit's command, with /opt/setding/current a link to the

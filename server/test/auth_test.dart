@@ -9,9 +9,13 @@ void main() {
   setUpAll(() async => pb = await PocketBase.start());
   tearDownAll(() => pb.stop());
 
-  Map<String, dynamic> claims(String token) => jsonDecode(
-    utf8.decode(base64Url.decode(base64Url.normalize(token.split('.')[1]))),
-  ) as Map<String, dynamic>;
+  Map<String, dynamic> claims(String token) =>
+      jsonDecode(
+            utf8.decode(
+              base64Url.decode(base64Url.normalize(token.split('.')[1])),
+            ),
+          )
+          as Map<String, dynamic>;
 
   test('user tokens are valid for 30 days', () async {
     final user = await pb.signUp();

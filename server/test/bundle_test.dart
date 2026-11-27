@@ -83,10 +83,9 @@ void main() {
     }
     expect(
       Directory('$bundle/pb_migrations').listSync().length,
-      Directory('$_root/server/pb_migrations')
-          .listSync()
-          .where((e) => e.path.endsWith('.js'))
-          .length,
+      Directory(
+        '$_root/server/pb_migrations',
+      ).listSync().where((e) => e.path.endsWith('.js')).length,
     );
     expect(
       File('$bundle/pb_public/index.html').readAsStringSync(),

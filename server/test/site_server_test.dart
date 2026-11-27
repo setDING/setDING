@@ -37,8 +37,9 @@ void main() {
     File('${site.path}/index.html').writeAsStringSync('<h1>setDING</h1>');
     File('${site.path}/404.html').writeAsStringSync('<h1>Not found</h1>');
     Directory('${site.path}/_astro').createSync();
-    File('${site.path}/_astro/app.abc123.js')
-        .writeAsStringSync('console.log("${'x' * 2000}");');
+    File(
+      '${site.path}/_astro/app.abc123.js',
+    ).writeAsStringSync('console.log("${'x' * 2000}");');
 
     port = await _freePort();
     final original = File('$_root/tool/site/Caddyfile').readAsStringSync();

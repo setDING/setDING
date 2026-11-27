@@ -65,9 +65,9 @@ void main() {
     expect(listing.stdout, contains('storage/'));
     // No half-written archive is left behind.
     expect(
-      Directory('${pb.dataDir}/backups')
-          .listSync()
-          .where((e) => e.path.endsWith('.part')),
+      Directory(
+        '${pb.dataDir}/backups',
+      ).listSync().where((e) => e.path.endsWith('.part')),
       isEmpty,
     );
 
@@ -144,10 +144,9 @@ void main() {
 
     final run = await _backup(pbData.path);
     expect(run.exitCode, 0, reason: '${run.stdout}${run.stderr}');
-    final names = Directory('${pbData.path}/backups')
-        .listSync()
-        .map((e) => e.uri.pathSegments.last)
-        .toList();
+    final names = Directory(
+      '${pbData.path}/backups',
+    ).listSync().map((e) => e.uri.pathSegments.last).toList();
     expect(names, hasLength(1));
     expect(names.single, matches(RegExp(r'^manual-\d{8}-\d{6}\.zip$')));
   });

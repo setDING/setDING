@@ -230,8 +230,9 @@ void main() {
 
       final t2 = await token(f);
       final id2 =
-          (await f.admin.list('invites'))
-                  .firstWhere((i) => i['revoked'] == false)['id']
+          (await f.admin.list(
+                'invites',
+              )).firstWhere((i) => i['revoked'] == false)['id']
               as String;
       (await pb.superuser.patch('invites', id2, {
         'expires': '2020-01-01 00:00:00.000Z',
