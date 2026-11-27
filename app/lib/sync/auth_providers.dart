@@ -2,14 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/account_cleanup.dart';
 import '../data/song_repository.dart' show adoptLocalOverlays;
-import '../providers.dart'
-    show
-        attachmentStorageProvider,
-        bandServiceProvider,
-        databaseProvider,
-        selectedBandIdProvider,
-        selectedLibraryIdProvider,
-        webClientProvider;
+import '../data/band_providers.dart'
+    show bandServiceProvider, selectedBandIdProvider, selectedLibraryIdProvider;
+import '../data/storage_providers.dart'
+    show attachmentStorageProvider, databaseProvider;
+import '../platform/web_client.dart' show webClientProvider;
 import '../settings/settings.dart';
 import 'pocketbase_backend.dart';
 import 'session_store.dart';
