@@ -12,7 +12,7 @@ import '../../settings/settings.dart';
 import '../render/render_cache.dart';
 import '../render/song_header.dart' show StageChip;
 import '../render/song_style.dart' show StageColors;
-import 'live_screen.dart' show LiveItem;
+import 'live_item.dart';
 
 /// The beat of live mode (ADR-0026): which item's beat runs, the tempo on
 /// stage (only until live mode is left) and the start and stop rules.
