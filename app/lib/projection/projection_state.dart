@@ -21,14 +21,19 @@ class ProjectionState {
     this.next,
     this.nextSecond,
     this.marker,
+    this.style = const ProjectionStyle(),
   });
 
   /// The black screen: before live mode shows a song, while *Blank* is on,
   /// and for a set marker shown as a blank slide.
-  const ProjectionState.blank() : this(blank: true);
+  const ProjectionState.blank({ProjectionStyle style = const ProjectionStyle()})
+    : this(blank: true, style: style);
 
   /// A set marker shown with its text (ADR-0068 §7).
-  const ProjectionState.marker(String text) : this(marker: text);
+  const ProjectionState.marker(
+    String text, {
+    ProjectionStyle style = const ProjectionStyle(),
+  }) : this(marker: text, style: style);
 
   /// A slide of a song (ADR-0068 §5, §8, §9), with [next] as the preview.
   factory ProjectionState.slide(
@@ -36,7 +41,9 @@ class ProjectionState {
     String? title,
     String? copyright,
     LyricSlide? next,
+    ProjectionStyle style = const ProjectionStyle(),
   }) => ProjectionState(
+    style: style,
     title: title,
     copyright: copyright,
     label: slide.source.label,
@@ -70,6 +77,9 @@ class ProjectionState {
   /// The text of a set marker shown as a text slide.
   final String? marker;
 
+  /// How the page shows it (projection settings, ADR-0068 §11).
+  final ProjectionStyle style;
+
   /// The JSON sent to the page. `v` is the format version, raised when the
   /// page must change with it.
   Map<String, Object?> toJson() => {
@@ -83,5 +93,34 @@ class ProjectionState {
     if (next != null) 'next': next,
     if (nextSecond != null) 'nextSecond': nextSecond,
     if (marker != null) 'marker': marker,
+    'style': style.toJson(),
+  };
+}
+
+/// Colours of the projected page; the lower third is always white on its
+/// dark band.
+enum ProjectionTheme { dark, light }
+
+enum ProjectionFont { sans, serif }
+
+enum ProjectionAlign { center, left }
+
+/// The look of the projected page, from the projection settings
+/// (ADR-0068 §11). The page has no settings of its own.
+class ProjectionStyle {
+  const ProjectionStyle({
+    this.theme = ProjectionTheme.dark,
+    this.font = ProjectionFont.sans,
+    this.align = ProjectionAlign.center,
+  });
+
+  final ProjectionTheme theme;
+  final ProjectionFont font;
+  final ProjectionAlign align;
+
+  Map<String, Object?> toJson() => {
+    'theme': theme.name,
+    'font': font.name,
+    'align': align.name,
   };
 }

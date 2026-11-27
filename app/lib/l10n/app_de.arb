@@ -376,6 +376,10 @@
   "liveEnd": "Ende des Sets",
   "liveSetOverview": "Set-Übersicht",
   "liveExit": "Live-Modus beenden",
+  "projectionFullScreen": "Vollbild",
+  "@projectionFullScreen": {
+    "description": "Button on the projected lyrics page (in the browser) that switches to full screen."
+  },
   "liveSongPage": "Seite {page}/{count}",
   "@liveSongPage": {
     "placeholders": {

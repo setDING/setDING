@@ -703,6 +703,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get liveExit => 'Quitter le mode live';
 
   @override
+  String get projectionFullScreen => 'Plein écran';
+
+  @override
   String liveSongPage(int page, int count) {
     return 'Page $page/$count';
   }

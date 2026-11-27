@@ -195,6 +195,7 @@
   "liveEnd": "Fin del set",
   "liveSetOverview": "Resumen del set",
   "liveExit": "Salir del modo en vivo",
+  "projectionFullScreen": "Pantalla completa",
   "liveSongPage": "Página {page}/{count}",
   "livePosition": "{current} / {total}",
   "settingsSectionGeneral": "General",

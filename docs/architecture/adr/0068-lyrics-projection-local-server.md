@@ -183,6 +183,16 @@ Forces:
   at most 32 streams (503 beyond), `Cache-Control: no-store`, `nosniff`, a
   Content Security Policy without external sources. The page asset follows in
   #1168.
+- 2026-11-27: Projected page (#1168): one self-contained asset
+  `app/assets/projection/index.html` for both layouts (the path decides), texts
+  filled in from the app's language (`projectionPage`, ARB `projectionFullScreen`).
+  The font is the largest that fits, at most an eighth of the screen height;
+  whole lyric lines are kept unless that makes the font smaller than 60 % of
+  the wrapped size. The look (dark/light, sans/serif, centred/left) comes with
+  the state (`style`); the copyright is shown as written in `{copyright}`; a
+  red dot shows a lost connection while the last slide stays. The browser's
+  Screen Wake Lock needs HTTPS and is not available over the local `http://`
+  link, so the projector computer must not go to sleep by itself.
 
 ## Open points
 

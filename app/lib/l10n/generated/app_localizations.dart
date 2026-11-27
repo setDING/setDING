@@ -1276,6 +1276,12 @@ abstract class AppLocalizations {
   /// **'Live-Modus beenden'**
   String get liveExit;
 
+  /// Button on the projected lyrics page (in the browser) that switches to full screen.
+  ///
+  /// In de, this message translates to:
+  /// **'Vollbild'**
+  String get projectionFullScreen;
+
   /// No description provided for @liveSongPage.
   ///
   /// In de, this message translates to:

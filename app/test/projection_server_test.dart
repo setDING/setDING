@@ -218,6 +218,7 @@ void main() {
         'label': 'Verse 1',
         'lines': ['Amazing grace', 'how sweet the sound'],
         'next': ['Chorus'],
+        'style': {'theme': 'dark', 'font': 'sans', 'align': 'center'},
       });
       server.update(const ProjectionState.marker('Prayer'));
       expect(await events.nextState(), containsPair('marker', 'Prayer'));
