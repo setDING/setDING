@@ -32,6 +32,7 @@ Constraints:
    lives under `/en/` with the same page paths. Starlight brings navigation, a
    language switcher, offline full-text search (Pagefind) and light/dark themes.
    `starlight-links-validator` (MIT) fails the build on broken internal links.
+   `starlight-image-zoom` (MIT) opens every image large on click or tap.
    Logo and screenshots are taken from `app/branding/` and `docs/screenshots/`, not
    copied.
 3. **Test gate:** `make check` builds the website (`tool/build-site.sh`), so pages
@@ -116,6 +117,11 @@ Constraints:
   Starlight `Footer` override); the public privacy policy URL the app stores need.
   The request log retention it names is set by the server (`SETDING_LOG_DAYS`,
   ADR-0063).
+- 2026-11-27: Zoomable images (#1157): the Starlight plugin
+  `starlight-image-zoom` (MIT) opens every image of the site large on click or
+  tap, with its alt text as caption, so the screenshots in cards and on the
+  docs pages can be read. Its button label is English on every page (the
+  plugin has no translation for it).
 
 ## Open points
 

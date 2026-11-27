@@ -19,7 +19,12 @@ hero:
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { Image } from 'astro:assets';
 import live from '../../../../docs/screenshots/live_de.png';
-import lineup from '../../../../docs/screenshots/set_lineup_de.png';
+import lineupDialog from '../../../../docs/screenshots/lineup_dialog_de.png';
+import lineupNotify from '../../../../docs/screenshots/lineup_notify_de.png';
+import sequence from '../../../../docs/screenshots/sequence_de.png';
+import songsPlayed from '../../../../docs/screenshots/songs_played_de.png';
+import songReport from '../../../../docs/screenshots/song_report_sheet_de.png';
+import songsReview from '../../../../docs/screenshots/songs_review_de.png';
 import why1 from '../../../../docs/screenshots/why_1_de.png';
 import why2 from '../../../../docs/screenshots/why_2_de.png';
 import why3 from '../../../../docs/screenshots/why_3_de.png';
@@ -90,23 +95,45 @@ Viele Akkord-Apps sind ein persönliches Liederbuch, das man mit anderen teilt.
 setDING denkt an die ganze Band: an alle, die proben, auftreten, einspringen und
 die Songs pflegen.
 
-- **Besetzung pro Set** – wer diesen Auftritt spielt, mit Aushilfen aus anderen
-  Bands der Organisation, und eine Nachricht an alle Eingeplanten.
-- **Das Arrangement der Band** – Tonart, Ablauf und Tempo pro Band, ohne den Song
-  für die anderen Bands zu ändern.
-- **Zuletzt gespielt** – Tonart, Tempo und Ablauf jedes Gigs
-  bleiben festgehalten, dazu das Repertoire: meistgespielt, länger nicht
-  gespielt, nie gespielt.
-- **Fehler melden** – alle in der Organisation melden einen falschen Akkord direkt
-  am Song; wer die Bibliothek pflegt, sieht und erledigt die Meldungen.
-- **Songs prüfen** – importierte Songs bleiben markiert, bis jemand sie geprüft und
-  freigegeben hat.
+<CardGrid>
+  <Card title="Besetzung pro Set" icon="puzzle">
+    <div class="screens">
+      <Image src={lineupDialog} alt="Der Dialog Besetzung mit Anna, Beat und Carla als Aushilfe" />
+      <Image src={lineupNotify} alt="Die Nachricht an alle Eingeplanten mit Datum, Ort und Besetzung" />
+    </div>
 
-<Image src={lineup} alt="Ein Set mit der Zeile Besetzung: Anna, Beat, Carla (Aushilfe)" />
+    Wer diesen Auftritt spielt, auch mit Aushilfen aus anderen Bands der
+    Organisation – und eine Nachricht an alle Eingeplanten.
+    [Besetzung und Aushilfen](/sets/lineup/)
+  </Card>
+  <Card title="Das Arrangement der Band" icon="random">
+    <div class="screens">
+      <Image src={sequence} alt="Der Songablauf eines Songs für dieses Set: Strophe, Refrain, Bridge" />
+    </div>
 
-Mehr dazu: [Besetzung und Aushilfen](/sets/lineup/),
-[Tonart und Ablauf](/sets/key-and-sequence/) und
-[Songs prüfen und Fehler melden](/songs/review/).
+    Tonart, Ablauf und Tempo pro Band, ohne den Song für die anderen Bands zu
+    ändern. [Tonart und Ablauf](/sets/key-and-sequence/)
+  </Card>
+  <Card title="Zuletzt gespielt" icon="clock">
+    <div class="screens">
+      <Image src={songsPlayed} alt="Die Song-Liste mit dem Filter Gespielt: nie gespielt, länger nicht gespielt" />
+    </div>
+
+    Tonart, Tempo und Ablauf jedes Gigs bleiben festgehalten, dazu das
+    Repertoire: meistgespielt, länger nicht gespielt, nie gespielt.
+    [Wie habt ihr den Song zuletzt gespielt?](/sets/key-and-sequence/#wie-habt-ihr-den-song-zuletzt-gespielt)
+  </Card>
+  <Card title="Fehler melden, Songs prüfen" icon="comment-alt">
+    <div class="screens">
+      <Image src={songReport} alt="Fehler melden an einem Song: Art des Fehlers und ein Kommentar" />
+      <Image src={songsReview} alt="Die Song-Liste mit den Filtern Zu prüfen und Gemeldet" />
+    </div>
+
+    Alle melden einen falschen Akkord direkt am Song, wer die Bibliothek pflegt,
+    erledigt die Meldungen. Importierte Songs bleiben markiert, bis jemand sie
+    freigibt. [Songs prüfen und Fehler melden](/songs/review/)
+  </Card>
+</CardGrid>
 
 ## Loslegen
 

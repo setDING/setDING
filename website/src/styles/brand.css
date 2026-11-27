@@ -9,3 +9,34 @@
   --sl-color-accent: #1a2f8f;
   --sl-color-accent-high: #12205f;
 }
+
+/* Screenshots in a card (landing page, #1157): on the brand gradient in a
+   device frame like the store images; a second one overlaps the first,
+   offset to the bottom right. */
+.screens {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background: linear-gradient(160deg, #3d7bff, #1a2f8f);
+}
+.screens img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  border: 5px solid #121417;
+  border-radius: 10px;
+  box-shadow: 0 6px 14px rgb(10 20 64 / 0.45);
+}
+.screens > * {
+  grid-row: 1;
+  grid-column: 1 / -1;
+}
+.screens > :nth-child(1):not(:last-child) {
+  grid-column: 1 / 10;
+}
+.screens > :nth-child(2) {
+  grid-column: 4 / -1;
+  margin-top: 28%;
+}
