@@ -14,8 +14,8 @@ as it does the following.
 
 - **HTTPS** with a valid certificate. The apps only connect encrypted.
 - **Pass on the users' IP address** (`X-Forwarded-For` or `X-Real-IP`) and enter
-  this header as trusted in PocketBase
-  ([Set up](/en/self-hosting/operation/#settings-in-pocketbase)). Otherwise the
+  this header in `SETDING_TRUSTED_PROXY_HEADER`
+  ([More settings](/en/self-hosting/operation/#more-settings)). Otherwise the
   server sees every request coming from the proxy, and its protective limits slow
   down all users together instead of single ones.
 - **Allow large uploads**: at least **25 MB** per request, because PDFs and their
@@ -45,7 +45,8 @@ setding.example.org {
 }
 ```
 
-In PocketBase you then enter the header `X-Forwarded-For` as trusted.
+It goes with `SETDING_TRUSTED_PROXY_HEADER=X-Forwarded-For`, as in the examples
+for [Docker](/en/self-hosting/docker/) and [without Docker](/en/self-hosting/native/).
 
 If setDING runs in Docker and Caddy on the same machine, it stays at
 `127.0.0.1:8090`. If Caddy itself runs in a container of the same Compose project,

@@ -125,7 +125,9 @@ tunnel.
 3. **Settings → Application:** set the application URL to `https://api.setding.app`.
    Invitation links are built from it, never from the request's `Host` header;
    without it they point to `http://127.0.0.1:8090` and cannot be used by others.
-4. **Settings → Trusted proxy:** header `CF-Connecting-IP`.
+4. **Settings → Trusted proxy** needs nothing by hand: `install.sh` writes
+   `SETDING_TRUSTED_PROXY_HEADER=CF-Connecting-IP` into `/etc/setding/setding.env`
+   when the line is missing, and the server applies it at every start (#1195).
 5. **Settings → Mail settings (SMTP):** needed for password reset emails from the
    app (ADR-0016) and for email verification (section 7). Until it is configured,
    reset requests are accepted but no email is sent.
@@ -257,8 +259,9 @@ server only once the GitHub Release is published
 
 **Rate limits** (Settings → Rate limits) are enabled by a migration: sign-up 5 per
 minute, sign-in 20 per minute and invitation routes 30 per minute per IP address.
-They rely on the trusted proxy header (section 4, `CF-Connecting-IP`); without it,
-all requests seem to come from the tunnel and share one limit.
+They rely on the trusted proxy header (`SETDING_TRUSTED_PROXY_HEADER`, see
+Backups below); without it, all requests seem to come from the tunnel and share one
+limit, and the server warns at every start (`journalctl -u setding`, admin UI logs).
 PocketBase's default rules stay active as well, e.g. `*:create` 20 requests per
 5 s and `/api/` 300 per 10 s. The app waits and retries when it hits them (up to
 about half a minute per request), so a large import syncs more slowly but completes.
@@ -345,6 +348,12 @@ the tunnel creates its own CNAME records.
   The request logs (Settings → Logs, with IP addresses) are set the same way:
   `SETDING_LOG_DAYS` (default 7, `0` keeps none). The privacy policy on the
   website names this value; change both together.
+
+  The trusted proxy header (Settings → Trusted proxy), which the per-IP rate
+  limits depend on, comes from `SETDING_TRUSTED_PROXY_HEADER`: `CF-Connecting-IP`
+  behind the tunnel (written by `install.sh`), a comma-separated list for other
+  proxies, `none` for a server reached directly. Without the variable the admin
+  UI's value stays, and the server warns at every start while it is empty.
 
   They are ZIP files of `pb_data` (database and files, without the backups
   themselves) in `/var/lib/setding/pb_data/backups/`. An invalid value stops the

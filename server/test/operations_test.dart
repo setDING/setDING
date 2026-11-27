@@ -140,6 +140,132 @@ void main() {
     });
   });
 
+  // Behind a proxy or tunnel every request comes from the proxy; without a
+  // trusted header all clients share one rate-limit bucket (#1195).
+  group('trusted proxy header', () {
+    Future<List<String>> headers(PocketBase pb) async {
+      final r = await pb.superuser.send('GET', '/api/settings');
+      r.expectStatus(200);
+      final proxy = r.json['trustedProxy'] as Map<String, dynamic>;
+      return [for (final h in proxy['headers'] as List? ?? []) h as String];
+    }
+
+    /// The log entries whose message contains [text], polled because
+    /// PocketBase writes its logs in batches.
+    Future<List<dynamic>> logsWith(
+      PocketBase pb,
+      String text, {
+      Duration wait = const Duration(seconds: 15),
+    }) async {
+      final deadline = DateTime.now().add(wait);
+      while (true) {
+        final r = await pb.superuser.send(
+          'GET',
+          '/api/logs?perPage=50&filter=${Uri.encodeQueryComponent("message~'$text'")}',
+        );
+        r.expectStatus(200);
+        final items = r.json['items'] as List;
+        if (items.isNotEmpty || DateTime.now().isAfter(deadline)) return items;
+        await Future<void>.delayed(const Duration(milliseconds: 250));
+      }
+    }
+
+    test('follows SETDING_TRUSTED_PROXY_HEADER, also over changes in the '
+        'admin UI', () async {
+      var pb = await PocketBase.start(
+        environment: {'SETDING_TRUSTED_PROXY_HEADER': 'CF-Connecting-IP'},
+      );
+      addTearDown(() => pb.stop());
+      expect(await headers(pb), ['CF-Connecting-IP']);
+
+      (await pb.superuser.send(
+        'PATCH',
+        '/api/settings',
+        body: {
+          'trustedProxy': {
+            'headers': ['X-Real-IP'],
+          },
+        },
+      )).expectStatus(200);
+      pb = await pb.restart();
+      expect(await headers(pb), ['CF-Connecting-IP']);
+    });
+
+    test('takes a list of headers, and "none" trusts no header', () async {
+      var pb = await PocketBase.start(
+        environment: {
+          'SETDING_TRUSTED_PROXY_HEADER': ' X-Forwarded-For , X-Real-IP ',
+        },
+      );
+      addTearDown(() => pb.stop());
+      expect(await headers(pb), ['X-Forwarded-For', 'X-Real-IP']);
+      pb = await pb.restart(
+        environment: {'SETDING_TRUSTED_PROXY_HEADER': 'none'},
+      );
+      expect(await headers(pb), isEmpty);
+      expect(
+        await logsWith(
+          pb,
+          'No trusted proxy header',
+          wait: const Duration(seconds: 5),
+        ),
+        isEmpty,
+      );
+    });
+
+    test('without the variable, the admin UI setting stays and an empty one '
+        'is reported at the start', () async {
+      var pb = await PocketBase.start();
+      addTearDown(() => pb.stop());
+      expect(await headers(pb), isEmpty);
+      final warnings = await logsWith(pb, 'No trusted proxy header');
+      expect(warnings, isNotEmpty);
+      expect(
+        (warnings.first as Map)['message'],
+        contains('SETDING_TRUSTED_PROXY_HEADER'),
+      );
+
+      (await pb.superuser.send(
+        'PATCH',
+        '/api/settings',
+        body: {
+          'trustedProxy': {
+            'headers': ['X-Real-IP'],
+          },
+        },
+      )).expectStatus(200);
+      pb = await pb.restart();
+      expect(await headers(pb), ['X-Real-IP']);
+    });
+
+    test('gives every client its own rate limit behind the proxy', () async {
+      final pb = await PocketBase.start(
+        rateLimits: true,
+        environment: {'SETDING_TRUSTED_PROXY_HEADER': 'CF-Connecting-IP'},
+      );
+      addTearDown(pb.stop);
+      Future<int> signIn(String ip) async => (await pb.guest.send(
+        'POST',
+        '/api/collections/users/auth-with-password',
+        body: {'identity': 'nobody@setding.test', 'password': 'wrong-password'},
+        headers: {'CF-Connecting-IP': ip},
+      )).status;
+
+      // *:auth allows 20 sign-ins per minute and IP address.
+      for (var i = 0; i < 20; i++) {
+        expect(await signIn('203.0.113.1'), 400);
+      }
+      expect(await signIn('203.0.113.1'), 429);
+      expect(await signIn('203.0.113.2'), 400);
+    });
+
+    test('an invalid value stops the start with a message', () async {
+      await _expectRefused({
+        'SETDING_TRUSTED_PROXY_HEADER': 'CF Connecting IP',
+      }, 'SETDING_TRUSTED_PROXY_HEADER must name HTTP headers');
+    });
+  });
+
   group('automatic backups', () {
     test('are on by default: daily at 03:00, 14 kept', () async {
       final pb = await PocketBase.start();

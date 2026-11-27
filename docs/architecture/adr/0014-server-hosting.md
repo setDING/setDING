@@ -32,7 +32,8 @@ server details (OS, Docker, domain/HTTPS) and the backup concept. They are now k
      the apps, which cannot complete an Access login.
    - Bot protection/challenges are disabled for this hostname, so they do not block
      API calls.
-   - PocketBase trusts the `CF-Connecting-IP` header to see client IPs.
+   - PocketBase trusts the `CF-Connecting-IP` header to see client IPs
+     (`SETDING_TRUSTED_PROXY_HEADER`, written by `install.sh`; #1195).
 3. **Provisioning as code:** the idempotent script [`tool/server/install.sh`](../../../tool/server/install.sh)
    installs and updates the server: pinned PocketBase version (`PB_VERSION` in the
    `Makefile`, checksum verified), hooks and migrations from `server/`, systemd units,
@@ -86,6 +87,8 @@ server details (OS, Docker, domain/HTTPS) and the backup concept. They are now k
 - 2026-11-24: **ADR-0063** (accepted, #1048) changes runtime, provisioning and backups: production on a rented VPS and this LXC as staging, both running the published server bundle natively with systemd; `make server-release` installs the published bundle; `install.sh` becomes internal operations tooling; backups through PocketBase's own backup function in a hook cron job; the website deployed independently of the backend. The sections above describe the current installation until #1055 moves it.
 
 - 2026-11-26: Operations tooling for ADR-0063 §7 (#1055): `tool/server/install.sh` installs a **server bundle** (`/opt/setding/current`, `/var/lib/setding/pb_data`, `/etc/setding/setding.env`, the systemd unit of the self-hosting docs, `/usr/local/bin/setding` and `setding-backup-now`), with cloudflared, unattended updates, SSH hardening and a backup before every version change; `pocketbase.service` and the `setding-backup` timer are gone, the built-in backups replace them. `make server-release` installs the bundle published with the release (checked against `SHA256SUMS`); `make server-install` builds one from the working tree for the test server. The targets use `SERVER_PROD`, `SERVER_STAGING` and `SERVER_SITE` (`TARGET=prod|staging`; `server-install` on production only with `FORCE=1`) and run as root or with `sudo -n`. Production moves to an Infomaniak VPS Lite (Debian 13, amd64, own Cloudflare Tunnel, also serving the website), the LXC becomes the test server under `setding.dev` (owner, 2026-11-26); this resolves the open point of a staging server.
+- 2026-11-27: The trusted proxy header is no longer a manual step in the admin UI (#1195): `install.sh` adds `SETDING_TRUSTED_PROXY_HEADER=CF-Connecting-IP` to `setding.env` when it is missing, and the server applies it at every start (ADR-0063).
+
 ## Open points
 
 - Monitoring/alerting (e.g. an uptime check on `/api/health`).

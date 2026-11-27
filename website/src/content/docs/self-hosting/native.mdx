@@ -49,6 +49,9 @@ setDING als systemd-Dienst ein, wie hier beschrieben. Die Befehle laufen als `ro
    # Required: encrypts stored invitation links.
    SETDING_INVITE_KEY=$(openssl rand -base64 32)
    SETDING_REGISTRATION=invite_only
+   # Header your reverse proxy passes the client IP in (CF-Connecting-IP
+   # with Cloudflare); "none" without a proxy.
+   SETDING_TRUSTED_PROXY_HEADER=X-Forwarded-For
    SETDING_BACKUP_CRON="0 3 * * *"
    SETDING_BACKUP_KEEP=14
    EOF

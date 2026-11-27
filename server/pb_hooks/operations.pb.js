@@ -1,8 +1,8 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-// Configuration check, automatic backups and the health check for running
-// the server without an installer (ADR-0063); the logic is in
-// lib/operations.js.
+// Configuration check, automatic backups, log retention, the trusted proxy
+// header and the health check for running the server without an installer
+// (ADR-0063); the logic is in lib/operations.js.
 
 // Only `serve` needs the configuration; console commands (superuser upsert,
 // founder-invite, healthcheck) keep working without it.
@@ -13,6 +13,7 @@ onBootstrap((e) => {
   if (ops.serving()) {
     ops.applyBackupSettings(e.app);
     ops.applyLogSettings(e.app);
+    ops.applyTrustedProxySettings(e.app);
   }
 });
 
