@@ -6574,4 +6574,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get linkSignInMessage => 'Inicia sesión para verlo.';
+
+  @override
+  String get linkShare => 'Compartir enlace';
+
+  @override
+  String get linkCopied => 'Enlace copiado';
 }

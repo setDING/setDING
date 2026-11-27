@@ -30,6 +30,10 @@ void main() {
       expect(r.json['serverVersion'], isNull);
       expect(r.json.containsKey('latestClientVersion'), isTrue);
       expect(r.json['latestClientVersion'], isNull);
+      // Without a web client, links to sets and songs use the server's URL
+      // (ADR-0065).
+      expect(r.json['linkBase'], startsWith('http'));
+      expect(r.json['linkBase'], isNot(endsWith('/')));
     });
   });
 

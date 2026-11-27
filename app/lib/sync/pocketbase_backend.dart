@@ -192,6 +192,7 @@ class PocketBaseBackend implements SyncBackend {
       emailVerification: data['emailVerification'] == 'required',
       minClientVersion: data['minClientVersion'] as String?,
       latestClientVersion: data['latestClientVersion'] as String?,
+      linkBase: data['linkBase'] as String?,
     );
   }
 

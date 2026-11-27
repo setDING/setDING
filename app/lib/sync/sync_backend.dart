@@ -826,6 +826,7 @@ class ServerConfig {
     this.emailVerification = false,
     this.minClientVersion,
     this.latestClientVersion,
+    this.linkBase,
   });
 
   /// Assumed when the server cannot be asked (offline, older server): not
@@ -845,6 +846,11 @@ class ServerConfig {
   /// The newest app release (ADR-0036); null if the server does not say
   /// (older server, deployed from a working tree, or not reachable).
   final String? latestClientVersion;
+
+  /// The base of links to sets and songs (ADR-0065): the web client's URL,
+  /// else the server's; null if the server does not say (older server, or
+  /// not reachable).
+  final String? linkBase;
 
   bool get inviteOnly => registration == RegistrationMode.inviteOnly;
 

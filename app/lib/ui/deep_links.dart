@@ -11,9 +11,10 @@ import '../util/log.dart';
 
 const _log = Log('links');
 
-/// Links that open the app (ADR-0005): App Links / Universal Links
-/// (`https://api.setding.app/invite/<token>`) and `setding://invite/<token>`,
-/// including the link that started the app. Overridden in tests.
+/// Links that open the app (ADR-0005, ADR-0065): App Links / Universal
+/// Links (`https://app.setding.app/sets/<id>`, `…/invite/<token>`) and
+/// `setding://` links, including the link that started the app. Overridden
+/// in tests.
 final incomingLinksProvider = Provider<Stream<Uri>>((ref) {
   try {
     return AppLinks().uriLinkStream;
@@ -23,7 +24,39 @@ final incomingLinksProvider = Provider<Stream<Uri>>((ref) {
   }
 });
 
-/// Opens the join screen for invitation links, through the router.
+/// The screen a link opens, or null for a link the app does not know
+/// (ADR-0065): invitations (`/invite/<token>`, ADR-0005) and sets and songs
+/// (`/sets/<id>`, `/songs/<id>`), as App Links / Universal Links on any host
+/// (the platform only hands over the app's own) or as `setding://` links
+/// (`setding://sets/<id>`), which desktops open.
+String? appLocationOf(Uri uri) {
+  final List<String> segments;
+  if (uri.scheme == 'setding') {
+    segments = [uri.host, ...uri.pathSegments];
+  } else if (uri.scheme == 'https' || uri.scheme == 'http') {
+    segments = uri.pathSegments;
+  } else {
+    return null;
+  }
+  final parts = segments.where((s) => s.isNotEmpty).toList();
+  if (parts.length != 2) return null;
+  final id = parts[1];
+  return switch (parts[0]) {
+    'invite' => switch (inviteTokenFrom('invite/$id')) {
+      final token? => AppPaths.invite(token),
+      null => null,
+    },
+    'sets' when _recordId.hasMatch(id) => AppPaths.set(id),
+    // `/songs/new` is the editor of a new song, not a song.
+    'songs' when _recordId.hasMatch(id) && id != 'new' => AppPaths.song(id),
+    _ => null,
+  };
+}
+
+/// The id of a set or song in a link: no path, query or other surprises.
+final _recordId = RegExp(r'^[A-Za-z0-9-]{1,64}$');
+
+/// Opens the screen of a link through the router ([appLocationOf]).
 class DeepLinkListener extends ConsumerStatefulWidget {
   const DeepLinkListener({super.key, required this.child});
 
@@ -48,12 +81,10 @@ class _DeepLinkListenerState extends ConsumerState<DeepLinkListener> {
   }
 
   void _open(Uri uri) {
-    final token = inviteTokenFrom(uri.toString());
-    if (token == null) return;
-    if (!mounted) return;
+    final location = appLocationOf(uri);
+    if (location == null || !mounted) return;
     // On the web the router already opened the link of the page (ADR-0065).
     final router = GoRouter.of(context);
-    final location = AppPaths.invite(token);
     if (router.state.uri.path == location) return;
     router.push(location);
   }

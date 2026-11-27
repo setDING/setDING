@@ -6559,4 +6559,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get linkSignInMessage => 'Inicia sessão para o veres.';
+
+  @override
+  String get linkShare => 'Partilhar link';
+
+  @override
+  String get linkCopied => 'Link copiado';
 }

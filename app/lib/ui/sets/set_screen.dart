@@ -40,6 +40,7 @@ import 'sets_screen.dart';
 import 'song_picker.dart';
 import '../widgets/menu_action.dart';
 import '../routes.dart';
+import '../share_link.dart';
 
 /// A set with its ordered items.
 class SetScreen extends ConsumerStatefulWidget {
@@ -244,6 +245,12 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                     ),
                     'export' => _export(set),
                     'copyToBand' => copySetToBand(context, ref, set.id),
+                    'shareLink' => shareRecordLink(
+                      context,
+                      ref,
+                      path: AppPaths.set(set.id),
+                      title: set.name,
+                    ),
                     'delete' => _delete(set),
                     _ => null,
                   },
@@ -283,6 +290,15 @@ class _SetScreenState extends ConsumerState<SetScreen> {
                       icon: Icons.copy_all_outlined,
                       label: l10n.copyToBand,
                     ),
+                    // A link for the band's chat (ADR-0065); not for the
+                    // local band, which nobody else can open.
+                    if (!ref.read(currentBandProvider).isLocal)
+                      MenuAction(
+                        key: const Key('set-share-link'),
+                        value: 'shareLink',
+                        icon: Icons.share_outlined,
+                        label: l10n.linkShare,
+                      ),
                     if (canEdit) ...[
                       const PopupMenuDivider(),
                       MenuAction(

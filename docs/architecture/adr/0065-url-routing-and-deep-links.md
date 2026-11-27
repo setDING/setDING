@@ -209,12 +209,37 @@ title.
   record, *it was deleted, or you have no access to it*), with *Sign in*
   when signed out; never with the title. A record that arrives later opens
   by itself.
+- 2026-11-27: Share links and incoming links implemented (#1115):
+  - *Share link* in the menu of the set and the song screen (not for the
+    local band or library): the system's share sheet on Android and iOS; on
+    desktops and the web the link is copied (*Link copied*), since sharing a
+    text does not reach a chat there. Its base is `linkBase` of
+    `/api/setding/config` (the web client's URL when it is installed, else
+    the server's), the page's origin on the web, and the server's URL while
+    the server cannot be asked.
+  - `DeepLinkListener` hands `/invite/…`, `/sets/<id>` and `/songs/<id>` of
+    https links and `setding://invite|sets|songs/…` to the router
+    (`appLocationOf`); anything else is ignored.
+  - Android: an App Links filter on `app.setding.app` for `/sets/`,
+    `/songs/` and `/invite/` (the invitation filter on `api.setding.app`
+    stays) and `setding://sets|songs`. `assetlinks.json` is served on every
+    hostname of the server already.
+  - iOS: `apple-app-site-association` lists `/sets/*` and `/songs/*`; the
+    app's Associated Domains wait for the Team ID (open point).
+  - Windows (owner decision: built in, not tested on Windows): the installer
+    registers `setding://` for the user, and a second start with a link
+    hands it to the running app (`SendAppLinkToInstance` of `app_links`).
+    This also gives invitation links on Windows what ADR-0005 planned.
+  - The Android integration test of App Links moves to its own issue (#1122,
+    owner decision): `make android-test` has no way yet to fire a link.
 
 ## Open points
 
 - On the web, the browser's back button while a dialog is open closes the
   dialog together with the screen below it (dialogs add no history entry).
 - iOS Universal Links need the Apple Developer Team ID (open since ADR-0005).
+- Android integration test: an App Link opens its set (#1122).
+- Windows `setding://` links: tested on Windows.
 - Should the song list's search and filters be part of the URL
   (`/songs?q=…`)?
 - Links to a song *in* a set (`/sets/<id>/songs/<n>`) with the set's

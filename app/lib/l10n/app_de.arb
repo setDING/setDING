@@ -4091,6 +4091,8 @@
   "linkNotAvailableMessage": "Es ist noch nicht auf dieses Gerät synchronisiert, oder du hast keinen Zugriff darauf.",
   "linkNoAccessMessage": "Nicht verfügbar: Es wurde gelöscht, oder du hast keinen Zugriff darauf.",
   "linkSignInMessage": "Melde dich an, um es zu sehen.",
+  "linkShare": "Link teilen",
+  "linkCopied": "Link kopiert",
   "@lineupMessageIntro": {
     "placeholders": {
       "set": {

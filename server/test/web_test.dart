@@ -111,4 +111,11 @@ void main() {
       expectIsolated(r);
     }
   });
+
+  // ADR-0065: links to sets and songs open the web client in a browser.
+  test('links to sets and songs use the web client\'s URL', () async {
+    final r = await pb.guest.send('GET', '/api/setding/config');
+    r.expectStatus(200);
+    expect(r.json['linkBase'], 'https://web.test');
+  });
 }

@@ -544,7 +544,13 @@ function appleAppSiteAssociation(e) {
   const team = ($os.getenv("SETDING_APPLE_TEAM_ID") || "").trim();
   if (!team) throw new NotFoundError();
   return e.json(200, {
-    applinks: { details: [{ appIDs: [team + "." + PACKAGE], components: [{ "/": "/invite/*" }] }] },
+    applinks: {
+      details: [{
+        appIDs: [team + "." + PACKAGE],
+        // Invitations (ADR-0005) and links to sets and songs (ADR-0065).
+        components: [{ "/": "/invite/*" }, { "/": "/sets/*" }, { "/": "/songs/*" }],
+      }],
+    },
   });
 }
 

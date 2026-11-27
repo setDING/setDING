@@ -9983,6 +9983,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Melde dich an, um es zu sehen.'**
   String get linkSignInMessage;
+
+  /// No description provided for @linkShare.
+  ///
+  /// In de, this message translates to:
+  /// **'Link teilen'**
+  String get linkShare;
+
+  /// No description provided for @linkCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Link kopiert'**
+  String get linkCopied;
 }
 
 class _AppLocalizationsDelegate

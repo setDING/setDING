@@ -6579,4 +6579,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get linkSignInMessage => 'Connecte-toi pour le voir.';
+
+  @override
+  String get linkShare => 'Partager le lien';
+
+  @override
+  String get linkCopied => 'Lien copié';
 }

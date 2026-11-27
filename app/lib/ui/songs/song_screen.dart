@@ -55,6 +55,7 @@ import 'song_language.dart';
 import 'song_links_panel.dart';
 import '../widgets/menu_action.dart';
 import '../routes.dart';
+import '../share_link.dart';
 
 /// Shows a song. The band arrangement, the personal adjustments, the
 /// sources and the attachments open in side panels from the app bar, so the
@@ -551,6 +552,12 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                       captureKey: _view,
                     ),
                     'language' => _chooseLanguage(song),
+                    'shareLink' => shareRecordLink(
+                      context,
+                      ref,
+                      path: AppPaths.song(song.id),
+                      title: song.title,
+                    ),
                     'linkVersion' => linkLanguageVersion(context, ref, song),
                     'unlinkVersion' => unlinkLanguageVersion(
                       context,
@@ -570,6 +577,15 @@ class _SongScreenState extends ConsumerState<SongScreen> {
                         value: 'title',
                         icon: Icons.title,
                         label: l10n.editTitle,
+                      ),
+                    // A link for the band's chat (ADR-0065); not for the
+                    // local library, which nobody else can open.
+                    if (song.libraryId != localBandId)
+                      MenuAction(
+                        key: const Key('song-share-link'),
+                        value: 'shareLink',
+                        icon: Icons.share_outlined,
+                        label: l10n.linkShare,
                       ),
                     // Everyone may report a mistake (ADR-0060).
                     MenuAction(

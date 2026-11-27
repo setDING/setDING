@@ -475,6 +475,9 @@ void main() {
       apple.expectStatus(200);
       expect(apple.raw.body, contains('TEAM123.app.setding'));
       expect(apple.raw.body, contains('/invite/*'));
+      // Links to sets and songs (ADR-0065).
+      expect(apple.raw.body, contains('/sets/*'));
+      expect(apple.raw.body, contains('/songs/*'));
     });
   });
 }

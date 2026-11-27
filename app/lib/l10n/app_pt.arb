@@ -1643,5 +1643,7 @@
   "linkNotAvailableTitle": "Não disponível neste dispositivo",
   "linkNotAvailableMessage": "Ainda não está sincronizado neste dispositivo, ou não tens acesso.",
   "linkNoAccessMessage": "Não disponível: foi eliminado, ou não tens acesso.",
-  "linkSignInMessage": "Inicia sessão para o veres."
+  "linkSignInMessage": "Inicia sessão para o veres.",
+  "linkShare": "Partilhar link",
+  "linkCopied": "Link copiado"
 }

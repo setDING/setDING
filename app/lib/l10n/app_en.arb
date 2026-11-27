@@ -3469,5 +3469,7 @@
   "linkNotAvailableTitle": "Not available on this device",
   "linkNotAvailableMessage": "It is not synced to this device yet, or you have no access to it.",
   "linkNoAccessMessage": "Not available: it was deleted, or you have no access to it.",
-  "linkSignInMessage": "Sign in to see it."
+  "linkSignInMessage": "Sign in to see it.",
+  "linkShare": "Share link",
+  "linkCopied": "Link copied"
 }
