@@ -1,6 +1,6 @@
 # ADR-0069: Pre-releases through Obtainium and the staging server
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-27
 
 ## Context
@@ -75,6 +75,7 @@ differences:
 - 2026-11-27: Proposed (#1178). Owner decisions: pre-release apps default to the
   staging server; the pre-release server is deployed to staging manually with
   `make server-release`, not from CI.
+- 2026-11-27: Accepted by the owner.
 
 ## Open points
 
