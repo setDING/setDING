@@ -296,6 +296,15 @@ web client excepted).
   (default 7, `0` keeps none) at every start, the environment winning over the admin
   UI; invalid values stop the start. The privacy policy on the website names the
   default (tested in `server/test/operations_test.dart`).
+- 2026-11-27: Trusted proxy header (#1195): the server sets PocketBase's trusted
+  proxy headers (Settings → Trusted proxy) from `SETDING_TRUSTED_PROXY_HEADER` (a
+  header or a comma-separated list, `none` for direct exposure) at every start, the
+  environment winning over the admin UI; an invalid value stops the start. Without
+  the variable the admin UI's value stays and the server warns at every start while
+  no header is trusted, since all clients behind a proxy would share one rate-limit
+  bucket. The self-hosting examples set `X-Forwarded-For`; `install.sh` sets
+  `CF-Connecting-IP` on the owner's hosts.
+
 ## Open points
 
 - Signing the image and the bundles themselves (e.g. cosign); their SBOMs exist (#1062).

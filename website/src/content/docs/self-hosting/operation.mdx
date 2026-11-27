@@ -28,10 +28,7 @@ In der Verwaltung unter **Settings**:
 1. **Application → Application URL:** die Adresse deines Servers, zum Beispiel
    `https://setding.example.org`. Daraus entstehen die Einladungslinks; ohne sie
    zeigen sie auf `http://127.0.0.1:8090` und funktionieren für niemanden.
-2. **Trusted proxy:** den Header, mit dem dein
-   [Reverse-Proxy](/self-hosting/reverse-proxy/) die IP-Adresse weitergibt, meist
-   `X-Forwarded-For` (bei Cloudflare `CF-Connecting-IP`).
-3. **Mail settings (SMTP):** damit setDING Mails zum Zurücksetzen von Passwörtern
+2. **Mail settings (SMTP):** damit setDING Mails zum Zurücksetzen von Passwörtern
    verschicken kann. Ohne SMTP geht alles andere, nur diese Mails nicht.
 
 ## Weitere Einstellungen
@@ -47,12 +44,13 @@ den Server neu.
 | `SETDING_EMAIL_VERIFICATION` | `off` (Standard) oder `required`: neue Konten bestätigen ihre Mail-Adresse. Braucht SMTP. |
 | `SETDING_BACKUP_CRON` | Zeitplan der automatischen Backups im Cron-Format, Standard `0 3 * * *` (täglich um 3 Uhr); `off` schaltet sie aus. |
 | `SETDING_BACKUP_KEEP` | Wie viele automatische Backups bleiben, Standard `14`. |
+| `SETDING_TRUSTED_PROXY_HEADER` | Der Header, mit dem dein [Reverse-Proxy](/self-hosting/reverse-proxy/) die IP-Adresse der Nutzer weitergibt, meist `X-Forwarded-For` (bei Cloudflare `CF-Connecting-IP`); mehrere durch Kommas getrennt. `none`, wenn der Server ohne Proxy erreichbar ist. Ohne die Variable behält der Server, was in der Verwaltung unter **Settings → Trusted proxy** steht, und warnt bei jedem Start im Log, solange dort nichts eingetragen ist. |
 | `SETDING_LOG_DAYS` | Wie viele Tage PocketBase die Protokolle der Anfragen (mit IP-Adressen) aufbewahrt, Standard `7`; `0` speichert keine. |
 | `SETDING_WEB_URL` | Adresse der Web-App, falls sie eine eigene hat. Dann bietet die Einladungsseite **Im Browser öffnen** an. |
 | `TZ` | Zeitzone für Zeitpläne und Logs, zum Beispiel `Europe/Zurich`. |
 
-Die Einstellungen für Backups gelten bei jedem Start und überschreiben, was in der
-Verwaltung steht.
+Die Einstellungen für Backups, Protokolle und den Trusted Proxy gelten bei jedem
+Start und überschreiben, was in der Verwaltung steht.
 
 ## Erste Organisation
 

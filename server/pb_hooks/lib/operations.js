@@ -116,6 +116,54 @@ function applyLogSettings(app) {
   app.logger().info("Request logs", "days", days);
 }
 
+/// The request headers PocketBase takes the client's IP address from, from
+/// SETDING_TRUSTED_PROXY_HEADER (#1195): a header name or a comma-separated
+/// list (e.g. "CF-Connecting-IP", "X-Forwarded-For"); "none" for a server
+/// that is reached directly, without a proxy (no header trusted). `null`
+/// when the variable is empty: the admin UI's setting stays as it is.
+function trustedProxyHeaders() {
+  const raw = ($os.getenv("SETDING_TRUSTED_PROXY_HEADER") || "").trim();
+  if (raw === "") return null;
+  if (raw.toLowerCase() === "none") return [];
+  const headers = raw.split(",").map((h) => h.trim()).filter((h) => h !== "");
+  for (const h of headers) {
+    // RFC 9110 field-name token characters.
+    if (!/^[A-Za-z0-9!#$%&'*+.^_`|~-]+$/.test(h)) {
+      throw new Error(
+        `SETDING_TRUSTED_PROXY_HEADER must name HTTP headers (e.g. CF-Connecting-IP) or be "none", not "${raw}".`,
+      );
+    }
+  }
+  return headers;
+}
+
+/// Applies the trusted proxy header to PocketBase (Settings → Trusted proxy),
+/// which the per-IP rate limits depend on behind a reverse proxy or tunnel.
+/// The environment wins over changes in the admin UI. Without the variable,
+/// the admin UI's setting stays, and an empty one is reported at every start:
+/// all clients would then share the proxy's rate-limit bucket.
+function applyTrustedProxySettings(app) {
+  const headers = trustedProxyHeaders();
+  const settings = app.settings();
+  const current = Array.from(settings.trustedProxy.headers || []);
+  if (headers === null) {
+    if (current.length === 0) {
+      const message =
+        "No trusted proxy header is configured: behind a reverse proxy or tunnel " +
+        "every request seems to come from the proxy, and all clients share one " +
+        "rate limit. Set SETDING_TRUSTED_PROXY_HEADER (e.g. CF-Connecting-IP or " +
+        'X-Forwarded-For), or "none" when the server is reached directly.';
+      console.warn(`WARNING: ${message}`);
+      app.logger().warn(message);
+    }
+    return;
+  }
+  if (current.length === headers.length && current.every((h, i) => h === headers[i])) return;
+  settings.trustedProxy.headers = headers;
+  app.save(settings);
+  app.logger().info("Trusted proxy", "headers", headers.length === 0 ? "none" : headers.join(", "));
+}
+
 /// Checks that the server at [url] (default http://127.0.0.1:8090) answers
 /// its health endpoint; throws otherwise, so the command exits with 1.
 function healthcheck(url) {
@@ -139,5 +187,7 @@ module.exports = {
   applyBackupSettings,
   logDays,
   applyLogSettings,
+  trustedProxyHeaders,
+  applyTrustedProxySettings,
   healthcheck,
 };

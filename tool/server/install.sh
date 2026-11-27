@@ -92,6 +92,13 @@ if ! grep -q '^SETDING_INVITE_KEY=.' "$ENV_FILE" 2>/dev/null; then
   echo "SETDING_INVITE_KEY added to $ENV_FILE"
   restart=1
 fi
+if ! grep -q '^SETDING_TRUSTED_PROXY_HEADER=' "$ENV_FILE"; then
+  # The owner's hosts are behind a Cloudflare tunnel: without it, all clients
+  # share one rate-limit bucket (#1195).
+  printf '# Client IP header of the Cloudflare tunnel (per-IP rate limits).\nSETDING_TRUSTED_PROXY_HEADER=CF-Connecting-IP\n' >>"$ENV_FILE"
+  echo "SETDING_TRUSTED_PROXY_HEADER added to $ENV_FILE"
+  restart=1
+fi
 
 # --- Admin commands ------------------------------------------------------------
 install -m 755 "$SETUP/backup-now.sh" /usr/local/bin/setding-backup-now

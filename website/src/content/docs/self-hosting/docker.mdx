@@ -34,6 +34,9 @@ eigener Benutzer ohne Root-Rechte. Deine Daten liegen in einem Volume.
          SETDING_INVITE_KEY: "replace-with-a-long-random-secret"
          # invite_only (default) or open.
          SETDING_REGISTRATION: invite_only
+         # Header your reverse proxy passes the client IP in (CF-Connecting-IP
+         # with Cloudflare); "none" without a proxy.
+         SETDING_TRUSTED_PROXY_HEADER: X-Forwarded-For
          # Automatic backups in the volume: daily at 03:00, 14 kept.
          SETDING_BACKUP_CRON: "0 3 * * *"
          SETDING_BACKUP_KEEP: "14"
@@ -67,6 +70,7 @@ Dasselbe mit `docker run`:
 docker run -d --name setding --restart unless-stopped \
   -p 127.0.0.1:8090:8090 \
   -e SETDING_INVITE_KEY="replace-with-a-long-random-secret" \
+  -e SETDING_TRUSTED_PROXY_HEADER=X-Forwarded-For \
   -e TZ=Europe/Zurich \
   -v setding-data:/setding/pb_data \
   ghcr.io/setding/setding-server:latest

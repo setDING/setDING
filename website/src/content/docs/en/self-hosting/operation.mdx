@@ -28,10 +28,7 @@ In the admin UI under **Settings**:
 1. **Application → Application URL:** your server's address, for example
    `https://setding.example.org`. The invitation links are built from it; without
    it they point to `http://127.0.0.1:8090` and work for nobody.
-2. **Trusted proxy:** the header your [reverse proxy](/en/self-hosting/reverse-proxy/)
-   passes the IP address in, usually `X-Forwarded-For` (`CF-Connecting-IP` with
-   Cloudflare).
-3. **Mail settings (SMTP):** so setDING can send mails to reset passwords. Without
+2. **Mail settings (SMTP):** so setDING can send mails to reset passwords. Without
    SMTP everything else works, only these mails do not.
 
 ## More settings
@@ -46,11 +43,13 @@ Docker, otherwise `/etc/setding/setding.env`). Restart the server after a change
 | `SETDING_EMAIL_VERIFICATION` | `off` (default) or `required`: new accounts confirm their email address. Needs SMTP. |
 | `SETDING_BACKUP_CRON` | Schedule of the automatic backups in cron format, default `0 3 * * *` (daily at 3 am); `off` turns them off. |
 | `SETDING_BACKUP_KEEP` | How many automatic backups are kept, default `14`. |
+| `SETDING_TRUSTED_PROXY_HEADER` | The header your [reverse proxy](/en/self-hosting/reverse-proxy/) passes the users' IP address in, usually `X-Forwarded-For` (`CF-Connecting-IP` with Cloudflare); several separated by commas. `none` if the server is reached without a proxy. Without the variable, the server keeps what the admin UI shows under **Settings → Trusted proxy** and warns in its log at every start while nothing is entered there. |
 | `SETDING_LOG_DAYS` | How many days PocketBase keeps the request logs (with IP addresses), default `7`; `0` keeps none. |
 | `SETDING_WEB_URL` | Address of the web app if it has its own. The invitation page then offers **Open in the browser**. |
 | `TZ` | Time zone for schedules and logs, for example `Europe/Zurich`. |
 
-The backup settings apply at every start and replace what the admin UI shows.
+The settings for backups, logs and the trusted proxy apply at every start and
+replace what the admin UI shows.
 
 ## First organization
 
