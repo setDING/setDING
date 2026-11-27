@@ -31,6 +31,12 @@ listing alternates between the light and the dark theme and splits the first and
 the last screen diagonally into both (`themes` in the script). A changed caption
 needs only `tool/store-screenshots.sh` after a render.
 
+The same script composes the tablet screens a second time without the
+headline, 1120×700, for the cards of "Why setDING?" on the website's landing
+page: `docs/screenshots/why_<n>.png` (English) and `why_<n>_de.png`. Unlike the
+store images these are checked in, so a PR that changes a store screen
+commits them too.
+
 | Store | Device | Size | Folder |
 |---|---|---|---|
 | Google Play | Phone | 1080×1920 (9:16) | `play/<locale>/images/phoneScreenshots/` |

@@ -20,6 +20,14 @@ import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { Image } from 'astro:assets';
 import live from '../../../../docs/screenshots/live_de.png';
 import lineup from '../../../../docs/screenshots/set_lineup_de.png';
+import why1 from '../../../../docs/screenshots/why_1_de.png';
+import why2 from '../../../../docs/screenshots/why_2_de.png';
+import why3 from '../../../../docs/screenshots/why_3_de.png';
+import why4 from '../../../../docs/screenshots/why_4_de.png';
+import why5 from '../../../../docs/screenshots/why_5_de.png';
+import why6 from '../../../../docs/screenshots/why_6_de.png';
+import why7 from '../../../../docs/screenshots/why_7_de.png';
+import why8 from '../../../../docs/screenshots/why_8_de.png';
 
 <Image src={live} alt="Live-Modus: ein Song in drei Spalten mit Akkorden, einer persönlichen Notiz und Griffbildern" />
 
@@ -27,50 +35,56 @@ import lineup from '../../../../docs/screenshots/set_lineup_de.png';
 
 <CardGrid>
   <Card title="Für die Bühne gemacht" icon="rocket">
-    Live-Modus im Vollbild, der Bildschirm bleibt an. Umblättern per Tippen, Wischen
-    oder mit einem Bluetooth-Fusspedal – die Hände bleiben am Instrument. Das
-    Keyboard wechselt per MIDI bei jedem Song zum passenden Sound. Funktioniert
-    komplett offline.
+    <Image src={why1} alt="Live-Modus: ein Song in drei Spalten, halb hell, halb dunkel" />
+
+    Live-Modus im Vollbild, umblättern per Tippen, Wischen oder Fusspedal. Das
+    Keyboard wechselt per MIDI zum passenden Sound. Komplett offline.
   </Card>
   <Card title="Sets für die ganze Band" icon="list-format">
-    Songs per Drag & Drop zum Set zusammenstellen, Pausen und Notizen einfügen,
-    Tonart und Ablauf pro Song festlegen. Alle in der Band bekommen das Set auf ihr Gerät, und
-    setDING zeigt, wenn für den Auftritt ohne Netz noch etwas fehlt.
-  </Card>
-  <Card title="Die Band spielt zusammen" icon="puzzle">
-    Jede Band hat ihr eigenes Arrangement eines Songs, und setDING weiss, wie die
-    Band ihn zuletzt gespielt hat. Wer ein Set spielt, legt die Besetzung fest, auch mit
-    Aushilfen aus anderen Bands. Fällt in der Probe ein Fehler auf, meldest du ihn
-    direkt am Song.
-  </Card>
-  <Card title="Auch für das Schlagzeug" icon="seti:audio">
-    Tempo, Taktart und Songablauf statt Akkorde, Einzählen und ein exakter Klick
-    in den In-Ear – ein Modus nur für Schlagzeug.
-  </Card>
-  <Card title="Du siehst es auf deine Art" icon="setting">
-    Transponieren mit einem Tipp, Kapodaster, Schriftgrösse, B- oder H-Notation oder
-    Nashville-Zahlen und Stufen. Hinweise nur für dein Instrument oder deine Stimme,
-    Freihand-Notizen direkt auf dem Blatt – und nichts davon ändert den Song für den
-    Rest der Band.
+    <Image src={why2} alt="Ein Set mit sechs Songs, einer Pause, Tonart und Ablauf pro Song" />
+
+    Songs per Drag & Drop zum Set zusammenstellen, Tonart und Ablauf pro Song
+    festlegen – und alle in der Band haben es auf ihrem Gerät.
   </Card>
   <Card title="Deine Songs, dein Format" icon="document">
-    Songs sind [ChordPro](https://www.chordpro.org/) – der offene Standard für
-    Akkordblätter. Import einzeln oder als ZIP, PDF-Noten anhängen, Melodien in ABC
-    oder Lilypond, Sprachversionen eines Songs, eingebauter Editor mit
-    Live-Vorschau.
+    <Image src={why3} alt="Der ChordPro-Editor mit Live-Vorschau" />
+
+    Songs sind [ChordPro](https://www.chordpro.org/), der offene Standard für
+    Akkordblätter. Import einzeln oder als ZIP, Editor mit Live-Vorschau.
+  </Card>
+  <Card title="Du siehst es auf deine Art" icon="setting">
+    <Image src={why4} alt="Die Songdarstellung anpassen: Schrift, Abschnitte, Akkorde mit Vorschau" />
+
+    Transponieren, Kapodaster, Schriftgrösse, Nashville-Zahlen, Hinweise für
+    dein Instrument – ohne den Song für den Rest der Band zu ändern.
+  </Card>
+  <Card title="Bereit für den Auftritt" icon="approve-check-circle">
+    <Image src={why5} alt="Die Übersicht mit dem nächsten Set und dem Bühnencheck" />
+
+    Die Übersicht zeigt das nächste Set, und der Bühnencheck meldet, ob für den
+    Auftritt ohne Netz noch etwas fehlt.
   </Card>
   <Card title="Für Bands, Schulen und Kirchen" icon="star">
-    Mehrere Bands einer Organisation teilen eine Song-Bibliothek. Mitglieder per
-    Link oder QR-Code einladen. Rollen legen fest, wer Songs pflegt und Sets plant.
+    <Image src={why6} alt="Die Song-Liste mit Tonart, Tempo und Ablauf jedes Songs" />
+
+    Mehrere Bands einer Organisation teilen eine Song-Bibliothek. Einladen per
+    Link oder QR-Code, Rollen legen fest, wer was darf.
+  </Card>
+  <Card title="Auch für das Schlagzeug" icon="seti:audio">
+    <Image src={why7} alt="Der Schlagzeug-Modus mit Tempo, Taktart und Songablauf" />
+
+    Tempo, Taktart und Songablauf statt Akkorde, Einzählen und ein exakter
+    Klick in den In-Ear.
   </Card>
   <Card title="Deine Daten bleiben deine" icon="approve-check">
-    Betreibe den Server selbst, mit Docker oder ohne, auf einem kleinen VPS, einem
-    NAS oder zu Hause – [so geht's](/self-hosting/overview/). Open Source unter der
-    MIT-Lizenz.
+    <Image src={why8} alt="Die Einstellungen mit der Adresse des eigenen Servers" />
+
+    Betreibe den Server selbst, auf einem VPS, einem NAS oder zu Hause –
+    [so geht's](/self-hosting/overview/). Open Source unter der MIT-Lizenz.
   </Card>
 </CardGrid>
 
-## Gemacht für Bands, nicht für Einzelne
+## Gemacht für Bands, nicht nur für einzelne Musiker
 
 Viele Akkord-Apps sind ein persönliches Liederbuch, das man mit anderen teilt.
 setDING denkt an die ganze Band: an alle, die proben, auftreten, einspringen und
