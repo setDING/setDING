@@ -2116,6 +2116,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'The address must start with http:// or https://.';
 
   @override
+  String get settingsServerHttpTitle => 'Unencrypted connection?';
+
+  @override
+  String settingsServerHttpMessage(String host) {
+    return '$host is not a local server. With http:// your password and your data go over the network unencrypted, and others can read them. Use https:// if the server supports it.';
+  }
+
+  @override
+  String get settingsServerHttpUse => 'Use anyway';
+
+  @override
   String get bandLocal => 'On this device';
 
   @override

@@ -3766,6 +3766,24 @@ abstract class AppLocalizations {
   /// **'Die Adresse muss mit http:// oder https:// beginnen.'**
   String get settingsServerInvalid;
 
+  /// No description provided for @settingsServerHttpTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Unverschlüsselte Verbindung?'**
+  String get settingsServerHttpTitle;
+
+  /// No description provided for @settingsServerHttpMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'{host} ist kein lokaler Server. Mit http:// gehen dein Passwort und deine Daten unverschlüsselt durchs Netz, und andere können sie mitlesen. Verwende https://, wenn der Server es unterstützt.'**
+  String settingsServerHttpMessage(String host);
+
+  /// No description provided for @settingsServerHttpUse.
+  ///
+  /// In de, this message translates to:
+  /// **'Trotzdem verwenden'**
+  String get settingsServerHttpUse;
+
   /// No description provided for @bandLocal.
   ///
   /// In de, this message translates to:

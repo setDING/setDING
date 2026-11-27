@@ -1004,6 +1004,16 @@
   "settingsServer": "Server",
   "settingsServerHint": "Beim Wechsel wirst du abgemeldet.",
   "settingsServerInvalid": "Die Adresse muss mit http:// oder https:// beginnen.",
+  "settingsServerHttpTitle": "Unverschlüsselte Verbindung?",
+  "settingsServerHttpMessage": "{host} ist kein lokaler Server. Mit http:// gehen dein Passwort und deine Daten unverschlüsselt durchs Netz, und andere können sie mitlesen. Verwende https://, wenn der Server es unterstützt.",
+  "@settingsServerHttpMessage": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsServerHttpUse": "Trotzdem verwenden",
   "bandLocal": "Auf diesem Gerät",
   "bandLocalHint": "Nur auf diesem Gerät, wird nicht synchronisiert.",
   "bandSwitch": "Band wechseln",
