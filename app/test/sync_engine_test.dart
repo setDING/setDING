@@ -516,7 +516,8 @@ void main() {
       expect(await sets.watchSets().first, isEmpty);
     });
 
-    test('changes without permission stay local', () async {
+    // Before #1260 the refused set stayed on this device in silence.
+    test('a set without permission is removed and reported (#1260)', () async {
       final setId = await sets.createSet(name: 'Gig');
       // Ann lost her admin roles meanwhile.
       server.members.single.role = BandRole.member;
@@ -530,7 +531,8 @@ void main() {
       expect(report.error, isNull);
       expect(server.sets.containsKey(setId), isFalse);
       expect(await outbox(), isEmpty);
-      expect((await sets.watchSets().first).single.set.id, setId);
+      expect(await sets.watchSets().first, isEmpty);
+      expect(report.undoneChanges.single.id, setId);
     });
   });
 
@@ -894,7 +896,12 @@ void main() {
           expect(server.attachments[a]!.name, 'Score');
           expect((await local(id)).name, 'Score', reason: 'undone at once');
           expect(report.undoneChanges, [
-            (attachmentId: a, name: 'Horns', songTitle: 'Song'),
+            (
+              kind: RefusedRecord.attachment,
+              id: a,
+              name: 'Horns',
+              songTitle: 'Song',
+            ),
           ]);
           expect(report.refusedUploads, isEmpty);
           expect(await outbox(), isEmpty);
@@ -920,7 +927,7 @@ void main() {
         server.attachmentUpdateError = refusal;
 
         final report = await engine.sync();
-        expect(report.undoneChanges.single.attachmentId, a);
+        expect(report.undoneChanges.single.id, a);
         expect(server.attachments[a]!.deleted, isFalse);
         final after = await local(id);
         expect(after.deleted, isFalse);
@@ -937,12 +944,12 @@ void main() {
 
         await trash.restoreAttachments([a]);
         final restore = await engine.sync();
-        expect(restore.undoneChanges.single.attachmentId, a);
+        expect(restore.undoneChanges.single.id, a);
         expect((await local(id)).deleted, isTrue);
 
         await trash.purgeAttachments([a]);
         final purge = await engine.sync();
-        expect(purge.undoneChanges.single.attachmentId, a);
+        expect(purge.undoneChanges.single.id, a);
         expect(server.attachments[a]!.purged, isFalse);
         final after = await local(id);
         expect((after.deleted, after.purged), (true, false));
@@ -961,7 +968,12 @@ void main() {
         final report = await engine.sync();
         expect(report.error, isNull);
         expect(report.undoneChanges, [
-          (attachmentId: a, name: 'Horns', songTitle: 'Song'),
+          (
+            kind: RefusedRecord.attachment,
+            id: a,
+            name: 'Horns',
+            songTitle: 'Song',
+          ),
         ]);
         expect(
           await (db.select(

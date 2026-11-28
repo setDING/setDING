@@ -6811,6 +6811,33 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
+  String songChangeUndone(String song) {
+    return 'Il server non ha accettato la modifica del brano “$song”. È stata annullata su questo dispositivo.';
+  }
+
+  @override
+  String setChangeUndone(String set) {
+    return 'Il server non ha accettato la modifica del set “$set”. È stata annullata su questo dispositivo.';
+  }
+
+  @override
+  String adjustmentChangeUndone(String song) {
+    return 'Il server non ha accettato i tuoi adattamenti personali di “$song”. Sono stati annullati su questo dispositivo.';
+  }
+
+  @override
+  String syncChangesUndone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Il server non ha accettato $count modifiche. Sono state annullate su questo dispositivo.',
+      one: 'Il server non ha accettato 1 modifica. È stata annullata su questo dispositivo.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String attachmentPdfLimit(String limit) {
     return 'PDF o immagine, al massimo $limit';
   }
