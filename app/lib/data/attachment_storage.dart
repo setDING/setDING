@@ -67,22 +67,96 @@ String? attachmentTypeOf(List<int> bytes) {
   return null;
 }
 
-/// Whether [bytes] are an SVG document: text whose first element, after an
-/// optional byte order mark, XML declaration, comments and doctype, is
-/// `<svg`.
+/// How many bytes the server looks at to detect an SVG (#1244).
+const _svgHead = 4096;
+
+/// Whitespace as the server's type detection sees it (no vertical tab, no
+/// non-breaking space).
+const _ws = r'[ \t\n\r\f]';
+
+final _comment = RegExp(r'<!--[\s\S]*?-->');
+final _svgStart = RegExp('<svg$_ws');
+final _svgElement = RegExp('<svg(?:$_ws|/|>)');
+final _attribute = RegExp(
+  '([^\\s=/>]+)$_ws*=$_ws*("[^"]*"|\'[^\']*\'|[^\\s>]+)',
+);
+final _declaration = RegExp('<\\?xml$_ws(?:[^?]|\\?(?!>))*\\?>');
+final _prolog = RegExp(
+  '(?:$_ws+|<!--[\\s\\S]*?-->|<\\?(?:[^?]|\\?(?!>))*\\?>'
+  '|<!DOCTYPE$_ws[^\\[>]*(?:\\[[^\\]]*\\])?$_ws*>)*',
+);
+
+/// Whether [bytes] are an SVG document that the server also detects as one
+/// (#1227): text without control characters whose first element is `<svg`,
+/// within the first [_svgHead] bytes, and either
+///
+/// - after an XML declaration with a `version` (and optional comments,
+///   processing instructions and a doctype, also with an internal subset),
+///   or
+/// - without one, after only whitespace and comments right before it, with
+///   the SVG namespace (`xmlns="http://www.w3.org/2000/svg"`).
+///
+/// The server refuses a byte order mark, upper-case tags, whitespace after a
+/// leading comment and an SVG without namespace or declaration, so the app
+/// refuses them too, instead of a file that never syncs (#1244).
 bool _isSvg(List<int> bytes) {
-  final head = bytes.length > 4096 ? bytes.sublist(0, 4096) : bytes;
-  // Binary content is never an SVG.
-  if (head.contains(0)) return false;
-  var text = String.fromCharCodes(head);
-  if (text.startsWith('\u00EF\u00BB\u00BF')) text = text.substring(3);
-  final prolog = RegExp(
-    r'^\s*(?:<\?xml[^>]*\?>\s*|<!--[\s\S]*?-->\s*|<!DOCTYPE[^>]*>\s*)*',
-    caseSensitive: false,
-  );
-  final rest = text.substring(prolog.firstMatch(text)?.end ?? 0);
-  return RegExp(r'^<svg[\s>/]', caseSensitive: false).hasMatch(rest);
+  final head = bytes.length > _svgHead ? bytes.sublist(0, _svgHead) : bytes;
+  // Binary content is never an SVG; the server allows these controls only.
+  for (final b in head) {
+    if (b < 0x20 && b != 0x09 && b != 0x0A && b != 0x0C && b != 0x0D) {
+      return false;
+    }
+  }
+  final text = String.fromCharCodes(head);
+  var at = RegExp('^$_ws*').firstMatch(text)!.end;
+  final declaration = _declaration.matchAsPrefix(text, at);
+  if (declaration != null) {
+    final attributes = text.substring(at + 5, declaration.end - 2);
+    if (!_attribute
+        .allMatches(attributes)
+        .any((m) => m.group(1) == 'version')) {
+      return false;
+    }
+    at = _prolog.matchAsPrefix(text, declaration.end)!.end;
+    return _svgElement.matchAsPrefix(text, at) != null;
+  }
+  for (Match? m; (m = _comment.matchAsPrefix(text, at)) != null;) {
+    at = m!.end;
+  }
+  if (_svgStart.matchAsPrefix(text, at) == null) return false;
+  final tagEnd = _startTagEnd(text, at + 4);
+  if (tagEnd == null) return false;
+  return _attribute
+      .allMatches(text.substring(at + 4, tagEnd))
+      .any(
+        (m) =>
+            m.group(1) == 'xmlns' &&
+            _unquote(m.group(2)!) == 'http://www.w3.org/2000/svg',
+      );
 }
+
+/// The offset of the `>` that ends the start tag whose attributes begin at
+/// [from] (a `>` inside a quoted value does not count); null if it is not
+/// in [text].
+int? _startTagEnd(String text, int from) {
+  String? quote;
+  for (var i = from; i < text.length; i++) {
+    final c = text[i];
+    if (quote != null) {
+      if (c == quote) quote = null;
+    } else if (c == '"' || c == "'") {
+      quote = c;
+    } else if (c == '>') {
+      return i;
+    }
+  }
+  return null;
+}
+
+String _unquote(String value) =>
+    value.length >= 2 && (value[0] == '"' || value[0] == "'")
+    ? value.substring(1, value.length - 1)
+    : value;
 
 /// Whether the content of [bytes] is the type that the extension of
 /// [fileName] says (`jpeg` and `jpg` are the same).

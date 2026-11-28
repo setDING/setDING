@@ -4263,6 +4263,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backupInvalid => 'This file is not a setDING backup.';
 
   @override
+  String get archiveTooLarge =>
+      'This file contains too many or too large files and is not imported.';
+
+  @override
   String get backupNewer =>
       'This backup was made with a newer version of setDING. Update the app to import it.';
 

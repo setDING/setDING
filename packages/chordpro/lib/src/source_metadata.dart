@@ -77,10 +77,14 @@ int metadataHeaderEnd(String source) {
   final header = RegExp(
     r'^[ \t]*\{(?!start_of|so[a-z]\b|new_song)[^}]*\}[ \t]*$',
   );
-  for (final (start, _, line) in _lines(source)) {
+  var next = 0;
+  for (final (start, end, line) in _lines(source)) {
     if (line.trim().isEmpty || !header.hasMatch(line)) return start;
+    next = end + 1;
   }
-  return source.length;
+  // A first song of only directives ends at its `{new_song}`, not at the
+  // end of the last song (#1244).
+  return next < source.length ? next : source.length;
 }
 
 /// Sets metadata [name] to [value] in [source]: the value of an existing

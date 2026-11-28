@@ -183,6 +183,10 @@ Future<void> openBackup(BuildContext context, Uint8List zip) async {
       );
     }
     return;
+  } on ArchiveTooLargeException {
+    // A ZIP bomb is not unpacked (#1244).
+    if (context.mounted) showMessage(context, l10n.archiveTooLarge);
+    return;
   }
   if (!context.mounted) return;
   if (!backup.isFull) {

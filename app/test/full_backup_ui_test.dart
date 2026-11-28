@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:archive/archive.dart';
+
 import 'package:chordpro/chordpro.dart' show ChordNotation;
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
@@ -141,6 +143,55 @@ void main() {
       tester.element(find.byKey(const Key('backup-full-restore-result'))),
     );
     expect(container.read(settingsProvider).notation, ChordNotation.german);
+    await app.dispose(tester);
+  });
+
+  // #1244: a damaged ZIP threw an archive error that openBackup did not
+  // catch, so nothing was shown; a ZIP bomb was unpacked in full.
+  testWidgets('a damaged backup and a ZIP bomb are refused with a message', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final bomb = (await tester.runAsync(() async {
+      final archive = Archive()
+        ..addFile(ArchiveFile('bomb.cho', 80 << 20, Uint8List(80 << 20)));
+      return Uint8List.fromList(ZipEncoder().encode(archive));
+    }))!;
+    final damaged = Uint8List.fromList('PK\x03\x04 damaged'.codeUnits);
+    Uint8List zip = damaged;
+    await tester.pumpWidget(
+      build(
+        app,
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => openBackup(context, zip),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await waitFor(
+      tester,
+      () =>
+          find.text('This file is not a setDING backup.').evaluate().isNotEmpty,
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 10));
+    zip = bomb;
+    await tester.tap(find.text('open'));
+    await waitFor(
+      tester,
+      () => find
+          .text(
+            'This file contains too many or too large files and is not '
+            'imported.',
+          )
+          .evaluate()
+          .isNotEmpty,
+    );
     await app.dispose(tester);
   });
 

@@ -118,7 +118,7 @@ BACKEND_REGISTRATION ?= open
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := SETDING_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build web web-serve site site-dev deps upgrade upgrade-guard apk android-install android-keystore android-upload-keystore release release-linux release-check sbom changelog reset data-dir backend check check-full release-gate rules-golden test codegen l10n coverage android-test web-test e2e perf screenshots branding examples doctor clean ci-image \
+.PHONY: help setup dev start build web web-serve site site-dev deps upgrade upgrade-guard apk android-install android-keystore android-upload-keystore release release-linux release-check sbom changelog reset data-dir backend check check-full release-gate rules-golden test codegen l10n coverage fuzz android-test web-test e2e perf screenshots branding examples doctor clean ci-image \
 	server-target server-bundle server-image server-install server-release server-site server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
 
 help: ## Show this help
@@ -260,6 +260,12 @@ test: ## Run all tests
 
 coverage: ## Measure the test coverage of the app and the ChordPro package, report only (docs/development/coverage.md)
 	$(ROOT)/tool/coverage/coverage.sh
+
+FUZZ_ITERATIONS ?= 10000
+
+fuzz: ## Run the fuzz tests of the ChordPro parser, the archive import and the attachment type detection longer (FUZZ_ITERATIONS=<n> inputs per test, default 10000; docs/development/fuzz-tests.md)
+	cd $(PACKAGE) && FUZZ_ITERATIONS=$(FUZZ_ITERATIONS) $(DART) test test/fuzz_test.dart
+	cd $(APP) && FUZZ_ITERATIONS=$(FUZZ_ITERATIONS) $(FLUTTER) test test/archive_fuzz_test.dart test/attachment_storage_test.dart
 
 codegen: ## Regenerate the drift database code
 	cd $(APP) && $(DART) run build_runner build

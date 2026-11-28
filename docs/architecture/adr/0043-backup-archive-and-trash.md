@@ -349,8 +349,20 @@ Deleted songs and sets can be **restored for 30 days**.
   on their own as well, to restore or delete permanently (ADR-0070, #1226).
 - 2026-11-28: Archives and backups skip attachments over the maximum size of their
   type (1 MB for a PDF, ADR-0070, #1226); the import summary names them.
+- 2026-11-28: Limits and checks of every archive import (fuzz tests, #1244):
+  an archive with more than 50,000 files, a file over 64 MB, or more than 1 GB
+  (or 64 MB plus 100 times the archive's size) together is refused before
+  anything is decompressed (a ZIP bomb; the backup restore shows a message, a
+  ChordPro ZIP is listed as skipped); a damaged archive, also one with a wrong
+  checksum, is refused instead of read in part; a manifest whose known fields
+  have another type is not a valid archive; an ID from the archive is kept only
+  if it is a record ID (letters, digits, `-`, `_`), because an attachment's file
+  is named after its ID and `../x` was written outside the attachment folder.
+  ZIPs inside a ChordPro ZIP are not unpacked, names with backslashes are cut to
+  their file name.
 
 ## Open points
 
-- Size limit for archives zipped in memory (large PDF libraries, web).
+- Size limit for archives zipped in memory when exporting (large PDF libraries,
+  web); importing has limits since #1244.
 - Exporting songs and sets (ZIP, text, PDF set list) on the web client too.

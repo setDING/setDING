@@ -48,6 +48,36 @@ final _svgWithDeclaration = utf8.encode(
   '<circle cx="5" cy="5" r="4"/></svg>',
 );
 
+/// An SVG with a doctype with an internal subset, as Adobe Illustrator
+/// writes it; the app detects it the same way (#1244).
+final _svgIllustrator = utf8.encode(
+  '<?xml version="1.0" encoding="utf-8"?>\n'
+  '<!-- Generator: Adobe Illustrator -->\n'
+  '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "svg11.dtd" [\n'
+  '\t<!ENTITY ns_svg "http://www.w3.org/2000/svg">\n]>\n'
+  '<svg xmlns="&ns_svg;"/>',
+);
+
+/// SVGs the server refuses, so the app refuses them too
+/// (`attachmentTypeOf`, #1244): a change here changes the app.
+final _refusedSvgs = <String, List<int>>{
+  'bom.svg': [
+    0xEF, 0xBB, 0xBF, //
+    ...utf8.encode('<svg xmlns="http://www.w3.org/2000/svg"/>'),
+  ],
+  'upper.svg': utf8.encode('<SVG xmlns="http://www.w3.org/2000/svg"/>'),
+  'no-namespace.svg': utf8.encode('<svg width="1"/>'),
+  'comment-space.svg': utf8.encode(
+    '<!-- hi -->\n<svg xmlns="http://www.w3.org/2000/svg"/>',
+  ),
+  'doctype.svg': utf8.encode(
+    '<!DOCTYPE svg>\n<svg xmlns="http://www.w3.org/2000/svg"/>',
+  ),
+  'no-version.svg': utf8.encode(
+    '<?xml encoding="utf-8"?>\n<svg xmlns="http://www.w3.org/2000/svg"/>',
+  ),
+};
+
 void main() {
   late PocketBase pb;
 
@@ -87,6 +117,7 @@ void main() {
       'small.webp': (_webp, 'image/webp'),
       'plain.svg': (_svg, 'image/svg+xml'),
       'declared.svg': (_svgWithDeclaration, 'image/svg+xml'),
+      'illustrator.svg': (_svgIllustrator, 'image/svg+xml'),
     };
     for (final MapEntry(key: name, value: (bytes, type)) in images.entries) {
       test('$name is accepted and its size counted', () async {
@@ -139,6 +170,8 @@ void main() {
         'image/svg+xml',
       ),
       'icon.bmp': ([0x42, 0x4D, ...List<int>.filled(60, 0)], 'image/bmp'),
+      for (final MapEntry(key: name, value: bytes) in _refusedSvgs.entries)
+        name: (bytes, 'image/svg+xml'),
     };
     for (final MapEntry(key: name, value: (bytes, type)) in refused.entries) {
       test('$name is refused', () async {

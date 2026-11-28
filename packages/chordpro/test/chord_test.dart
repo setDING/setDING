@@ -49,6 +49,16 @@ void main() {
   });
 
   group('transpose and format', () {
+    // #1244: `C#b5` one semitone down was `Cb5`, which reads as C flat.
+    test('a suffix with a leading accidental is not read as the root', () {
+      final down = Chord.tryParse('C#b5')!.transpose(-1, useFlats: false);
+      expect(down.toString(), 'C(b5)');
+      expect(Chord.tryParse(down.toString())!.root.pitch, 0);
+      expect(Chord.tryParse('C#b5').toString(), 'C#b5');
+      expect(Chord.tryParse('E#b').toString(), 'F(b)');
+      expect(Chord.tryParse('Ebb').toString(), 'Ebb');
+    });
+
     test('transposes up with sharps', () {
       expect(
         Chord.tryParse('C')!.transpose(2).format(ChordNotation.international),

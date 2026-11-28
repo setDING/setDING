@@ -4280,6 +4280,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'Este ficheiro não é uma cópia de segurança do setDING.';
 
   @override
+  String get archiveTooLarge =>
+      'Este ficheiro contém demasiados ficheiros ou ficheiros demasiado grandes e não é importado.';
+
+  @override
   String get backupNewer =>
       'Esta cópia de segurança foi feita com uma versão mais recente do setDING. Atualiza a app para a importar.';
 
