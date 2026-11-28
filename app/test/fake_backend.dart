@@ -1094,6 +1094,10 @@ class FakeSyncBackend implements SyncBackend {
       ..sort((a, b) => a.revision.compareTo(b.revision));
   }
 
+  /// When set, pushes of mistake reports fail with it, e.g. a refusal
+  /// (#1264).
+  BackendException? reportPushError;
+
   @override
   Future<RemoteSongReport> pushSongReport(
     RemoteSongReport report, {
@@ -1105,6 +1109,7 @@ class FakeSyncBackend implements SyncBackend {
   }) async {
     _requireUser();
     pushCount++;
+    if (reportPushError case final e?) throw e;
     reportPushes.add((
       report,
       create,
@@ -1113,7 +1118,8 @@ class FakeSyncBackend implements SyncBackend {
       screenshot != null,
     ));
     if (!songs.containsKey(report.songId)) {
-      throw const BackendException(BackendErrorKind.server);
+      // The relation to the song fails its validation, as on the server.
+      throw const BackendException(BackendErrorKind.server, null, 400);
     }
     final existing = reports[report.id];
     if (create) return putReport(report, screenshot: screenshot);
@@ -1223,6 +1229,10 @@ class FakeSyncBackend implements SyncBackend {
       ..sort((a, b) => a.revision.compareTo(b.revision));
   }
 
+  /// When set, pushes of band arrangements fail with it, e.g. a refusal
+  /// (#1264).
+  BackendException? arrangementPushError;
+
   @override
   Future<RemoteArrangement> pushArrangement(
     RemoteArrangement arrangement, {
@@ -1230,6 +1240,7 @@ class FakeSyncBackend implements SyncBackend {
   }) async {
     _requireUser();
     pushCount++;
+    if (arrangementPushError case final e?) throw e;
     final manager =
         _isOrgAdmin(bands[arrangement.bandId]?.organizationId ?? '') ||
         members.any(
@@ -1269,6 +1280,10 @@ class FakeSyncBackend implements SyncBackend {
     return s != null && s.revision > since ? s : null;
   }
 
+  /// When set, pushes of personal settings fail with it, e.g. a refusal
+  /// (#1264).
+  BackendException? settingsPushError;
+
   @override
   Future<RemoteUserSettings> pushUserSettings(
     RemoteUserSettings settings, {
@@ -1276,6 +1291,7 @@ class FakeSyncBackend implements SyncBackend {
   }) async {
     _requireUser();
     pushCount++;
+    if (settingsPushError case final e?) throw e;
     if (settings.userId != user!.id) {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
@@ -1296,6 +1312,10 @@ class FakeSyncBackend implements SyncBackend {
       ..sort((a, b) => a.revision.compareTo(b.revision));
   }
 
+  /// When set, pushes of freehand annotations fail with it, e.g. a refusal
+  /// (#1264).
+  BackendException? annotationPushError;
+
   @override
   Future<RemoteAnnotations> pushAnnotations(
     RemoteAnnotations a, {
@@ -1303,6 +1323,7 @@ class FakeSyncBackend implements SyncBackend {
   }) async {
     _requireUser();
     pushCount++;
+    if (annotationPushError case final e?) throw e;
     final song = songs[a.songId];
     if (a.userId != user!.id ||
         song == null ||
@@ -1455,6 +1476,9 @@ class FakeSyncBackend implements SyncBackend {
 
   /// Like the server: set editors create and edit, organization admins
   /// delete; a deleted contact is not changed any more.
+  /// When set, pushes of contacts fail with it, e.g. a refusal (#1264).
+  BackendException? contactPushError;
+
   @override
   Future<RemoteContact> pushContact(
     RemoteContact contact, {
@@ -1462,6 +1486,8 @@ class FakeSyncBackend implements SyncBackend {
   }) async {
     _requireUser();
     _check();
+    pushCount++;
+    if (contactPushError case final e?) throw e;
     contactPushes.add((contact, create));
     final existing = contacts[contact.id];
     if (!_editsContacts(contact.organizationId) ||

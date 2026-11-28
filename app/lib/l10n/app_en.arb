@@ -3651,6 +3651,64 @@
       }
     }
   },
+  "reportChangeUndone": "The server did not accept the change to the mistake report on “{song}”. It was undone on this device.",
+  "@reportChangeUndone": {
+    "description": "A change of a mistake report on the server the server refused for good; undone on this device (#1264).",
+    "placeholders": {
+      "song": {
+        "type": "String"
+      }
+    }
+  },
+  "contactChangeUndone": "The server did not accept the change to the person without an account “{name}”. It was undone on this device.",
+  "@contactChangeUndone": {
+    "description": "A change (or creation) of a person without an account (ADR-0064) the server refused for good; undone on this device (#1264).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "arrangementChangeUndone": "The server did not accept the change to the band arrangement of “{song}”. It was undone on this device.",
+  "@arrangementChangeUndone": {
+    "description": "A change of a band arrangement (ADR-0025) the server refused for good; undone on this device (#1264).",
+    "placeholders": {
+      "song": {
+        "type": "String"
+      }
+    }
+  },
+  "reportKeptOnDevice": "The server did not accept your mistake report on “{song}”. It stays on this device only.",
+  "@reportKeptOnDevice": {
+    "description": "A new mistake report the server refused for good; it stays on this device as written (#1264).",
+    "placeholders": {
+      "song": {
+        "type": "String"
+      }
+    }
+  },
+  "annotationsKeptOnDevice": "The server did not accept your annotations on “{song}”. They stay on this device only.",
+  "@annotationsKeptOnDevice": {
+    "description": "Freehand annotations of a song the server refused for good; they stay on this device and are not sent again (#1264).",
+    "placeholders": {
+      "song": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsKeptOnDevice": "The server did not accept your personal settings. They stay on this device only.",
+  "@settingsKeptOnDevice": {
+    "description": "Personal settings the server refused for good; they stay on this device and are not sent again (#1264)."
+  },
+  "syncChangesKeptOnDevice": "{count, plural, =1{The server did not accept 1 change. It stays on this device only.} other{The server did not accept {count} changes. They stay on this device only.}}",
+  "@syncChangesKeptOnDevice": {
+    "description": "Several changes the server refused for good in one sync that stay on this device (new songs, mistake reports, annotations, personal settings) (#1264).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "attachmentPdfLimit": "PDF or image, at most {limit}",
   "@attachmentPdfLimit": {
     "description": "Shown before a file is picked (ADR-0070); limit is e.g. \"1 MB\".",

@@ -10416,6 +10416,48 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Der Server hat 1 neuen Song nicht angenommen. Er wurde in «Auf diesem Gerät» behalten.} other{Der Server hat {count} neue Songs nicht angenommen. Sie wurden in «Auf diesem Gerät» behalten.}}'**
   String songsKeptOnDevice(int count);
 
+  /// A change of a mistake report on the server the server refused for good; undone on this device (#1264).
+  ///
+  /// In de, this message translates to:
+  /// **'Der Server hat die Änderung an der Fehlermeldung zu «{song}» nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.'**
+  String reportChangeUndone(String song);
+
+  /// A change (or creation) of a person without an account (ADR-0064) the server refused for good; undone on this device (#1264).
+  ///
+  /// In de, this message translates to:
+  /// **'Der Server hat die Änderung an der Person ohne Konto «{name}» nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.'**
+  String contactChangeUndone(String name);
+
+  /// A change of a band arrangement (ADR-0025) the server refused for good; undone on this device (#1264).
+  ///
+  /// In de, this message translates to:
+  /// **'Der Server hat die Änderung am Band-Arrangement von «{song}» nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.'**
+  String arrangementChangeUndone(String song);
+
+  /// A new mistake report the server refused for good; it stays on this device as written (#1264).
+  ///
+  /// In de, this message translates to:
+  /// **'Der Server hat deine Fehlermeldung zu «{song}» nicht angenommen. Sie bleibt nur auf diesem Gerät.'**
+  String reportKeptOnDevice(String song);
+
+  /// Freehand annotations of a song the server refused for good; they stay on this device and are not sent again (#1264).
+  ///
+  /// In de, this message translates to:
+  /// **'Der Server hat deine Freihand-Notizen zu «{song}» nicht angenommen. Sie bleiben nur auf diesem Gerät.'**
+  String annotationsKeptOnDevice(String song);
+
+  /// Personal settings the server refused for good; they stay on this device and are not sent again (#1264).
+  ///
+  /// In de, this message translates to:
+  /// **'Der Server hat deine persönlichen Einstellungen nicht angenommen. Sie bleiben nur auf diesem Gerät.'**
+  String get settingsKeptOnDevice;
+
+  /// Several changes the server refused for good in one sync that stay on this device (new songs, mistake reports, annotations, personal settings) (#1264).
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Der Server hat 1 Änderung nicht angenommen. Sie bleibt nur auf diesem Gerät.} other{Der Server hat {count} Änderungen nicht angenommen. Sie bleiben nur auf diesem Gerät.}}'**
+  String syncChangesKeptOnDevice(int count);
+
   /// Shown before a file is picked (ADR-0070); limit is e.g. "1 MB".
   ///
   /// In de, this message translates to:

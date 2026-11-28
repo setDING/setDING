@@ -5,6 +5,7 @@ import '../../data/outbox.dart';
 import '../../settings/user_settings_store.dart';
 import '../../util/log.dart';
 import '../sync_backend.dart';
+import 'refused_changes.dart';
 import 'sync_store.dart';
 
 const _log = Log('sync');
@@ -14,12 +15,21 @@ const _uuid = Uuid();
 /// record per user, last writer wins per key (the server merges the sent
 /// keys into the stored ones).
 class SettingsSync {
-  SettingsSync(this.db, this.backend, this.store, this.settings);
+  SettingsSync(
+    this.db,
+    this.backend,
+    this.store,
+    this.settings, {
+    RefusedChanges? undone,
+  }) : undone = undone ?? RefusedChanges(store);
 
   final AppDatabase db;
   final SyncBackend backend;
   final SyncStore store;
   final UserSettingsStore settings;
+
+  /// Settings the server refused for good (#1264).
+  final RefusedChanges undone;
 
   /// Server record ID of the settings of [userId]: the same on every
   /// device, so two devices never create two records.
@@ -98,8 +108,11 @@ class SettingsSync {
         stored = await send(sent, create);
       } on BackendException catch (e) {
         // Created by another device of the same person (same record ID):
-        // send the changed keys only.
-        if (!create || e.kind != BackendErrorKind.server) rethrow;
+        // send the changed keys only. An error that may go away is sent
+        // again as it is (#1264).
+        if (!create || e.kind != BackendErrorKind.server || !e.refused) {
+          rethrow;
+        }
         sent
           ..clear()
           ..addAll({for (final k in current.dirty) k: current.data[k]});
@@ -120,9 +133,28 @@ class SettingsSync {
       await store.done(entry);
       return PushResult.done;
     } on BackendException catch (e) {
-      if (e.kind == BackendErrorKind.notAllowed) {
-        _log.warning('Settings of $userId not pushed: not allowed');
-        await store.done(entry);
+      if (e.refused) {
+        // No (longer) permission, or a validation error: sending it again
+        // gets the same answer (#1264). The settings are personal: this
+        // device keeps them as they are (ADR-0006), but the refused keys
+        // are not sent again, so that later changes still sync.
+        _log.warning('Settings of $userId refused, kept on this device', e);
+        await settings.update(
+          userId,
+          (s) => s.copyWith(
+            dirty: {
+              for (final k in s.dirty)
+                if (!sent.containsKey(k) || sent[k] != s.data[k]) k,
+            },
+          ),
+          notify: false,
+        );
+        await undone.keepLocal(entry, (
+          kind: RefusedRecord.keptSettings,
+          id: userId,
+          name: '',
+          songTitle: null,
+        ));
         return PushResult.skipped;
       }
       rethrow;
