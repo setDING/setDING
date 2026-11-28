@@ -4747,7 +4747,7 @@ abstract class AppLocalizations {
   /// No description provided for @syncMissingFiles.
   ///
   /// In de, this message translates to:
-  /// **'{count, plural, =1{1 PDF wird noch geladen.} other{{count} PDFs werden noch geladen.}}'**
+  /// **'{count, plural, =1{1 Anhang wird noch geladen.} other{{count} Anhänge werden noch geladen.}}'**
   String syncMissingFiles(int count);
 
   /// No description provided for @invalidChordProTitle.
@@ -10365,7 +10365,7 @@ abstract class AppLocalizations {
   /// Shown before a file is picked (ADR-0070); limit is e.g. "1 MB".
   ///
   /// In de, this message translates to:
-  /// **'PDF, höchstens {limit}'**
+  /// **'PDF oder Bild, höchstens {limit}'**
   String attachmentPdfLimit(String limit);
 
   /// Free storage of the organization (ADR-0070), after attachmentPdfLimit.
@@ -10395,7 +10395,7 @@ abstract class AppLocalizations {
   /// No description provided for @storageTrashCounts.
   ///
   /// In de, this message translates to:
-  /// **'Gelöschte PDFs zählen mit, bis sie endgültig gelöscht sind.'**
+  /// **'Gelöschte Anhänge zählen mit, bis sie endgültig gelöscht sind.'**
   String get storageTrashCounts;
 
   /// No description provided for @storageNearlyFull.
@@ -10407,7 +10407,7 @@ abstract class AppLocalizations {
   /// A picked PDF does not fit into the organization's storage any more (ADR-0070).
   ///
   /// In de, this message translates to:
-  /// **'«{name}» ({size}) passt nicht mehr in den Speicher der Organisation: {used} von {limit} belegt. Gelöschte PDFs zählen mit, bis sie endgültig gelöscht sind.'**
+  /// **'«{name}» ({size}) passt nicht mehr in den Speicher der Organisation: {used} von {limit} belegt. Gelöschte Anhänge zählen mit, bis sie endgültig gelöscht sind.'**
   String attachmentDoesNotFit(
     String name,
     String size,
@@ -10418,7 +10418,7 @@ abstract class AppLocalizations {
   /// A PDF deleted on its own in the trash (ADR-0070): its song and size.
   ///
   /// In de, this message translates to:
-  /// **'PDF in «{song}» · {size}'**
+  /// **'Anhang in «{song}» · {size}'**
   String trashAttachmentOf(String song, String size);
 
   /// Import summary (ADR-0070): attachments left out because they are over the maximum size; a list follows.
@@ -10432,6 +10432,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'«{song}» · {size} (höchstens {limit})'**
   String importSkippedFile(String song, String size, String limit);
+
+  /// An image whose content is not the type its extension says (#1227); type is e.g. "PNG".
+  ///
+  /// In de, this message translates to:
+  /// **'«{name}» ist keine gültige {type}-Datei und kann nicht angehängt werden.'**
+  String attachmentWrongType(String name, String type);
+
+  /// Heading of the images an import left out because their content does not match their extension (#1227).
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Bild wurde nicht importiert, weil sein Inhalt nicht zu seinem Dateityp passt:} other{{count} Bilder wurden nicht importiert, weil ihr Inhalt nicht zu ihrem Dateityp passt:}}'**
+  String importSkippedWrongType(int count);
 }
 
 class _AppLocalizationsDelegate

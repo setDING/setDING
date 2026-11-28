@@ -79,4 +79,64 @@ void main() {
       });
     });
   }
+
+  // The server detects the type by content and refuses other files
+  // (#1227); the app checks the same before attaching.
+  group('attachmentTypeOf', () {
+    List<int> text(String s) => s.codeUnits;
+
+    test('detects the synced types by their content', () {
+      expect(attachmentTypeOf(text('%PDF-1.7\n')), 'pdf');
+      expect(
+        attachmentTypeOf([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0]),
+        'png',
+      );
+      expect(attachmentTypeOf([0xFF, 0xD8, 0xFF, 0xE1, 0]), 'jpg');
+      expect(attachmentTypeOf(text('GIF87a..')), 'gif');
+      expect(attachmentTypeOf(text('GIF89a..')), 'gif');
+      expect(attachmentTypeOf(text('RIFF\x00\x00\x00\x00WEBPVP8 ')), 'webp');
+      expect(attachmentTypeOf(text('RIFF\x00\x00\x00\x00WAVEfmt ')), isNull);
+      expect(attachmentTypeOf(const []), isNull);
+      expect(attachmentTypeOf(text('just text')), isNull);
+    });
+
+    test('an SVG is text whose first element is <svg', () {
+      expect(attachmentTypeOf(text('<svg xmlns="x"/>')), 'svg');
+      expect(attachmentTypeOf(text('  \n<SVG width="1">')), 'svg');
+      expect(
+        attachmentTypeOf(
+          text(
+            '\u00EF\u00BB\u00BF<?xml version="1.0"?>\n<!-- by hand -->\n'
+            '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "x.dtd">\n'
+            '<svg viewBox="0 0 1 1"></svg>',
+          ),
+        ),
+        'svg',
+      );
+      // HTML with an SVG inside is no SVG, nor is a binary file.
+      expect(attachmentTypeOf(text('<html><svg/></html>')), isNull);
+      expect(attachmentTypeOf(text('<svgfoo/>')), isNull);
+      expect(attachmentTypeOf([...text('<svg '), 0, 1]), isNull);
+    });
+
+    test('contentMatchesType compares with the extension', () {
+      final png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+      expect(contentMatchesType('a.png', png), isTrue);
+      expect(contentMatchesType('a.PNG', png), isTrue);
+      expect(contentMatchesType('a.svg', png), isFalse);
+      expect(contentMatchesType('a.jpeg', [0xFF, 0xD8, 0xFF, 0xE0]), isTrue);
+      expect(contentMatchesType('a.jpg', [0xFF, 0xD8, 0xFF, 0xE0]), isTrue);
+      expect(contentMatchesType('a.png', text('<svg/>')), isFalse);
+      expect(contentMatchesType('a.bin', png), isFalse);
+    });
+
+    test('images have the server limit of 1 MB (ADR-0070)', () {
+      expect(maxAttachmentBytesFor('a.png'), 1024 * 1024);
+      expect(maxAttachmentBytesFor('a.svg'), 1024 * 1024);
+      expect(maxAttachmentBytesFor('a.pdf'), 1024 * 1024);
+      expect(isSyncedFile('a.webp'), isTrue);
+      expect(isSyncedFile('a.pdf'), isTrue);
+      expect(isSyncedFile('a.bin'), isFalse);
+    });
+  });
 }

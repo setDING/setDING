@@ -210,6 +210,57 @@ void main() {
         name: 'Big',
         sizeBytes: 2 * 1024 * 1024,
         limitBytes: maxPdfBytes,
+        wrongType: false,
+      ),
+    ]);
+  });
+
+  // Images are synced; the server refuses large or mislabelled ones, so
+  // the import leaves them out and names them (#1227).
+  test('images over 1 MB or of the wrong type are skipped and named', () async {
+    final ids = await fill();
+    Future<void> addOld(String name, Uint8List bytes) async {
+      await storage.write(name, bytes);
+      await db
+          .into(db.attachments)
+          .insert(
+            AttachmentsCompanion.insert(
+              id: 'old-$name',
+              songId: ids.song,
+              name: name,
+              fileName: name,
+              sizeBytes: bytes.length,
+              updatedAt: DateTime.now(),
+            ),
+          );
+    }
+
+    final png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+    await addOld('big.png', Uint8List(2 * 1024 * 1024)..setAll(0, png));
+    await addOld('fake.svg', Uint8List.fromList(png));
+    final zip = await service().export(localBandId, libraryName: 'Mine');
+    final other = AppDatabase(NativeDatabase.memory());
+    addTearDown(other.close);
+    final result = await service(other).import(
+      await BackupService.read(zip),
+      libraryId: localBandId,
+      bands: {localBandId: localBandId},
+    );
+    expect(result.files, 2);
+    expect(result.skippedFiles, [
+      (
+        song: 'Hello',
+        name: 'big.png',
+        sizeBytes: 2 * 1024 * 1024,
+        limitBytes: maxImageBytes,
+        wrongType: false,
+      ),
+      (
+        song: 'Hello',
+        name: 'fake.svg',
+        sizeBytes: png.length,
+        limitBytes: maxImageBytes,
+        wrongType: true,
       ),
     ]);
   });

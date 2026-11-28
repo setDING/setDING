@@ -1074,8 +1074,10 @@ class SongRepository {
 
   /// Adds a PDF or image attachment ([extension] without dot). Throws
   /// [AttachmentTooLargeException] above [maxAttachmentBytesFor] its type
-  /// (1 MB for a PDF, ADR-0070; 20 MB for an image). [id]: kept when the local
-  /// library is restored (ADR-0054); default a new one.
+  /// (1 MB for a PDF or an image, ADR-0070), and
+  /// [AttachmentTypeMismatchException] for an image whose content is not the
+  /// type of [extension] (the server would refuse it, #1227). [id]: kept
+  /// when the local library is restored (ADR-0054); default a new one.
   Future<String> addAttachment(
     String songId, {
     required String name,
@@ -1088,6 +1090,9 @@ class SongRepository {
     final limit = maxAttachmentBytesFor('file.$ext');
     if (bytes.length > limit) {
       throw AttachmentTooLargeException(bytes.length, limitBytes: limit);
+    }
+    if (isImageFile('file.$ext') && !contentMatchesType('file.$ext', bytes)) {
+      throw AttachmentTypeMismatchException(ext);
     }
     final newId = id ?? _uuid.v4();
     final fileName = '$newId.${ext.isEmpty ? 'bin' : ext}';
@@ -1117,13 +1122,13 @@ class SongRepository {
     return newId;
   }
 
-  /// Only PDF attachments are synced (ADR-0009); images stay on the device.
+  /// PDFs (ADR-0009) and images for `{image}` (#1227) are synced.
   Future<void> _markAttachment(
     String id,
     String songId,
     String fileName,
   ) async {
-    if (!isPdfFile(fileName)) return;
+    if (!isSyncedFile(fileName)) return;
     final song = await (db.select(
       db.songs,
     )..where((s) => s.id.equals(songId))).getSingleOrNull();

@@ -1688,13 +1688,18 @@ class FakeSyncBackend implements SyncBackend {
           },
         }, 400);
       }
-      // The server sets the size from the file.
+      // The server sets the size from the file and stores it under the
+      // uploaded name with a random suffix, keeping the extension (#1227).
+      final uploaded = attachment.file ?? '${attachment.id}.pdf';
+      final dot = uploaded.lastIndexOf('.');
       attachment = RemoteAttachment(
         id: attachment.id,
         organizationId: attachment.organizationId,
         songId: attachment.songId,
         name: attachment.name,
-        file: attachment.file,
+        file:
+            '${uploaded.substring(0, dot < 0 ? uploaded.length : dot)}_abc'
+            '${dot < 0 ? '' : uploaded.substring(dot)}',
         pages: attachment.pages,
         sizeBytes: bytes.length,
         revision: attachment.revision,

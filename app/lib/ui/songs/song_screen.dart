@@ -130,8 +130,9 @@ class _SongScreenState extends ConsumerState<SongScreen> {
   Future<void> _updateOverlay(SongOverlay Function(SongOverlay) change) =>
       _repo.updateOverlay(widget.songId, change);
 
-  /// Attaches picked files. A file over its maximum size (1 MB for a PDF,
-  /// ADR-0070) is refused at once, also offline; a PDF that does not fit
+  /// Attaches picked files. A file over its maximum size (1 MB for a PDF or
+  /// an image, ADR-0070) is refused at once, also offline, as is an image
+  /// whose content is not its type (#1227); a file that does not fit
   /// into the organization's storage any more (when it is known) too, with
   /// the usage and the way to the trash.
   Future<void> _addAttachment() async {
@@ -146,12 +147,22 @@ class _SongScreenState extends ConsumerState<SongScreen> {
       final check = checkAttachment(
         file.name,
         file.bytes.length,
+        bytes: file.bytes,
         storage: storage,
         added: added,
       );
       if (check == AttachmentCheck.tooLarge) {
         final limit = formatLimit(maxAttachmentBytesFor(file.name));
         showMessageOn(messenger, l10n.attachmentTooLarge(limit));
+        continue;
+      }
+      if (check == AttachmentCheck.wrongType) {
+        final type = p.extension(file.name).replaceFirst('.', '');
+        showMessageOn(
+          messenger,
+          l10n.attachmentWrongType(file.name, type.toUpperCase()),
+          key: const Key('attachment-wrong-type'),
+        );
         continue;
       }
       if (check == AttachmentCheck.doesNotFit) {
@@ -185,7 +196,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
         pages: pdf ? await countPdfPages(file.bytes) : null,
         extension: extension,
       );
-      if (pdf) added += file.bytes.length;
+      added += file.bytes.length;
     }
   }
 

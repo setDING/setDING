@@ -2766,8 +2766,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count PDF aún se están descargando.',
-      one: '1 PDF aún se está descargando.',
+      other: '$count adjuntos aún se están descargando.',
+      one: '1 adjunto aún se está descargando.',
     );
     return '$_temp0';
   }
@@ -6798,7 +6798,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String attachmentPdfLimit(String limit) {
-    return 'PDF, como máximo $limit';
+    return 'PDF o imagen, como máximo $limit';
   }
 
   @override
@@ -6821,7 +6821,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get storageTrashCounts =>
-      'Los PDF eliminados cuentan hasta que se eliminan definitivamente.';
+      'Los adjuntos eliminados cuentan hasta que se eliminan definitivamente.';
 
   @override
   String get storageNearlyFull =>
@@ -6834,12 +6834,12 @@ class AppLocalizationsEs extends AppLocalizations {
     String used,
     String limit,
   ) {
-    return '«$name» ($size) ya no cabe en el almacenamiento de la organización: $used de $limit ocupados. Los PDF eliminados cuentan hasta que se eliminan definitivamente.';
+    return '«$name» ($size) ya no cabe en el almacenamiento de la organización: $used de $limit ocupados. Los adjuntos eliminados cuentan hasta que se eliminan definitivamente.';
   }
 
   @override
   String trashAttachmentOf(String song, String size) {
-    return 'PDF en «$song» · $size';
+    return 'Adjunto en «$song» · $size';
   }
 
   @override
@@ -6856,5 +6856,22 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String importSkippedFile(String song, String size, String limit) {
     return '«$song» · $size (como máximo $limit)';
+  }
+
+  @override
+  String attachmentWrongType(String name, String type) {
+    return '«$name» no es un archivo $type válido y no se puede adjuntar.';
+  }
+
+  @override
+  String importSkippedWrongType(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count imágenes no se importaron porque su contenido no coincide con su tipo de archivo:',
+      one: '1 imagen no se importó porque su contenido no coincide con su tipo de archivo:',
+    );
+    return '$_temp0';
   }
 }

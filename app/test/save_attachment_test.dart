@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:setding/data/attachment_storage.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/platform/svg_viewer_page.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/ui/songs/save_attachment.dart';
 import 'package:setding/ui/songs/song_screen.dart';
@@ -42,6 +45,27 @@ void main() {
       expect(attachmentMimeType('x.JPG'), 'image/jpeg');
       expect(attachmentMimeType('x.svg'), 'image/svg+xml');
       expect(attachmentMimeType('x.bin'), 'application/octet-stream');
+    });
+
+    // An SVG of a bandmate opened as a document in a tab of the web client
+    // would run its scripts in the app's origin (#1227): it is shown as an
+    // image on a page that forbids scripts.
+    test('an SVG is opened as an image on a page without scripts', () {
+      final svg = utf8.encode(
+        '<svg xmlns="http://www.w3.org/2000/svg">'
+        '<script>alert(1)</script></svg>',
+      );
+      final page = svgViewerPage(Uint8List.fromList(svg));
+      expect(page, isNot(contains('<script')));
+      expect(page, isNot(contains('<svg')));
+      expect(page, contains("content=\"default-src 'none'; img-src data:;"));
+      expect(
+        page,
+        contains(
+          '<img alt="" src="data:image/svg+xml;base64,${base64Encode(svg)}">',
+        ),
+      );
+      expect(RegExp('<img').allMatches(page), hasLength(1));
     });
   });
 

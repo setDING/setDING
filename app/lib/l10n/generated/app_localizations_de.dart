@@ -2766,8 +2766,8 @@ class AppLocalizationsDe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count PDFs werden noch geladen.',
-      one: '1 PDF wird noch geladen.',
+      other: '$count Anhänge werden noch geladen.',
+      one: '1 Anhang wird noch geladen.',
     );
     return '$_temp0';
   }
@@ -6810,7 +6810,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String attachmentPdfLimit(String limit) {
-    return 'PDF, höchstens $limit';
+    return 'PDF oder Bild, höchstens $limit';
   }
 
   @override
@@ -6833,7 +6833,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get storageTrashCounts =>
-      'Gelöschte PDFs zählen mit, bis sie endgültig gelöscht sind.';
+      'Gelöschte Anhänge zählen mit, bis sie endgültig gelöscht sind.';
 
   @override
   String get storageNearlyFull =>
@@ -6846,12 +6846,12 @@ class AppLocalizationsDe extends AppLocalizations {
     String used,
     String limit,
   ) {
-    return '«$name» ($size) passt nicht mehr in den Speicher der Organisation: $used von $limit belegt. Gelöschte PDFs zählen mit, bis sie endgültig gelöscht sind.';
+    return '«$name» ($size) passt nicht mehr in den Speicher der Organisation: $used von $limit belegt. Gelöschte Anhänge zählen mit, bis sie endgültig gelöscht sind.';
   }
 
   @override
   String trashAttachmentOf(String song, String size) {
-    return 'PDF in «$song» · $size';
+    return 'Anhang in «$song» · $size';
   }
 
   @override
@@ -6868,5 +6868,22 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String importSkippedFile(String song, String size, String limit) {
     return '«$song» · $size (höchstens $limit)';
+  }
+
+  @override
+  String attachmentWrongType(String name, String type) {
+    return '«$name» ist keine gültige $type-Datei und kann nicht angehängt werden.';
+  }
+
+  @override
+  String importSkippedWrongType(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count Bilder wurden nicht importiert, weil ihr Inhalt nicht zu ihrem Dateityp passt:',
+      one: '1 Bild wurde nicht importiert, weil sein Inhalt nicht zu seinem Dateityp passt:',
+    );
+    return '$_temp0';
   }
 }

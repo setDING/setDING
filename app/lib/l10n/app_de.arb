@@ -1383,7 +1383,7 @@
   "pdfLoadFailed": "Das PDF konnte nicht vom Server geladen werden. Prüfe die Verbindung und öffne den Song erneut.",
   "openAttachment": "Anzeigen",
   "imageMissing": "Das Bild ist nicht auf diesem Gerät.",
-  "syncMissingFiles": "{count, plural, =1{1 PDF wird noch geladen.} other{{count} PDFs werden noch geladen.}}",
+  "syncMissingFiles": "{count, plural, =1{1 Anhang wird noch geladen.} other{{count} Anhänge werden noch geladen.}}",
   "@syncMissingFiles": {
     "placeholders": {
       "count": {
@@ -4217,7 +4217,7 @@
   },
   "retryUpload": "Erneut hochladen",
   "uploadRefusalStorageFull": "der Speicher der Organisation ist voll",
-  "attachmentPdfLimit": "PDF, höchstens {limit}",
+  "attachmentPdfLimit": "PDF oder Bild, höchstens {limit}",
   "@attachmentPdfLimit": {
     "description": "Shown before a file is picked (ADR-0070); limit is e.g. \"1 MB\".",
     "placeholders": {
@@ -4260,9 +4260,9 @@
       }
     }
   },
-  "storageTrashCounts": "Gelöschte PDFs zählen mit, bis sie endgültig gelöscht sind.",
+  "storageTrashCounts": "Gelöschte Anhänge zählen mit, bis sie endgültig gelöscht sind.",
   "storageNearlyFull": "Der Speicher der Organisation ist fast voll.",
-  "attachmentDoesNotFit": "«{name}» ({size}) passt nicht mehr in den Speicher der Organisation: {used} von {limit} belegt. Gelöschte PDFs zählen mit, bis sie endgültig gelöscht sind.",
+  "attachmentDoesNotFit": "«{name}» ({size}) passt nicht mehr in den Speicher der Organisation: {used} von {limit} belegt. Gelöschte Anhänge zählen mit, bis sie endgültig gelöscht sind.",
   "@attachmentDoesNotFit": {
     "description": "A picked PDF does not fit into the organization's storage any more (ADR-0070).",
     "placeholders": {
@@ -4280,7 +4280,7 @@
       }
     }
   },
-  "trashAttachmentOf": "PDF in «{song}» · {size}",
+  "trashAttachmentOf": "Anhang in «{song}» · {size}",
   "@trashAttachmentOf": {
     "description": "A PDF deleted on its own in the trash (ADR-0070): its song and size.",
     "placeholders": {
@@ -4313,6 +4313,27 @@
       },
       "limit": {
         "type": "String"
+      }
+    }
+  },
+  "attachmentWrongType": "«{name}» ist keine gültige {type}-Datei und kann nicht angehängt werden.",
+  "@attachmentWrongType": {
+    "description": "An image whose content is not the type its extension says (#1227); type is e.g. \"PNG\".",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "importSkippedWrongType": "{count, plural, =1{1 Bild wurde nicht importiert, weil sein Inhalt nicht zu seinem Dateityp passt:} other{{count} Bilder wurden nicht importiert, weil ihr Inhalt nicht zu ihrem Dateityp passt:}}",
+  "@importSkippedWrongType": {
+    "description": "Heading of the images an import left out because their content does not match their extension (#1227).",
+    "placeholders": {
+      "count": {
+        "type": "int"
       }
     }
   }

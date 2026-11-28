@@ -36,7 +36,16 @@ Future<({String songId, String setId, List<String> pdfIds})> _setup(
     await app.songs.addAttachment(
       songId,
       name: 'photo.png',
-      bytes: Uint8List(8),
+      bytes: Uint8List.fromList([
+        0x89,
+        0x50,
+        0x4E,
+        0x47,
+        0x0D,
+        0x0A,
+        0x1A,
+        0x0A,
+      ]),
       extension: 'png',
     );
   }

@@ -159,6 +159,62 @@ void main() {
     dir.deleteSync(recursive: true);
   });
 
+  // Images are synced and the server refuses large or mislabelled ones
+  // (#1227): a ChordPro ZIP leaves them out and names them.
+  test('ZIP import skips images over 1 MB or of the wrong type', () async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    final dir = Directory.systemTemp.createTempSync('setding_zip');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final storage = FileAttachmentStorage(dir);
+    final songs = SongRepository(db, storage);
+    final big = Uint8List.fromList([
+      ...onePixelPng,
+      ...List.filled(1024 * 1024, 0),
+    ]);
+    final archive = Archive()
+      ..addFile(
+        ArchiveFile.bytes(
+          'song.cho',
+          utf8.encode(
+            '{title: Pics}\n{image: src="ok.png"}\n{image: src="big.png"}\n'
+            '{image: src="fake.svg"}\n[C]x',
+          ),
+        ),
+      )
+      ..addFile(ArchiveFile.bytes('ok.png', onePixelPng))
+      ..addFile(ArchiveFile.bytes('big.png', big))
+      ..addFile(ArchiveFile.bytes('fake.svg', onePixelPng));
+    final zip = Uint8List.fromList(ZipEncoder().encode(archive));
+    final result = await ImportExportService(
+      songs,
+      SetRepository(db, storage),
+    ).importFiles([ImportFile('songs.zip', zip)]);
+    expect(result.imported, 1);
+    final song = (await songs.watchSongs().first).single;
+    expect(
+      [for (final a in await songs.getAttachments(song.id)) a.name],
+      ['ok.png'],
+    );
+    expect(result.skippedFiles, [
+      (
+        song: 'Pics',
+        name: 'big.png',
+        sizeBytes: big.length,
+        limitBytes: maxImageBytes,
+        wrongType: false,
+      ),
+      (
+        song: 'Pics',
+        name: 'fake.svg',
+        sizeBytes: onePixelPng.length,
+        limitBytes: maxImageBytes,
+        wrongType: true,
+      ),
+    ]);
+    expect(result.needsReview, isTrue);
+  });
+
   testWidgets('song shows attached images, SVG, textblock and Lilypond', (
     tester,
   ) async {
