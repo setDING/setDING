@@ -4091,6 +4091,15 @@ class $AttachmentsTable extends Attachments
     defaultValue: const Constant(false),
   );
   @override
+  late final GeneratedColumnWithTypeConverter<UploadRefusal?, String>
+  uploadRefused = GeneratedColumn<String>(
+    'upload_refused',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  ).withConverter<UploadRefusal?>($AttachmentsTable.$converteruploadRefusedn);
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     songId,
@@ -4104,6 +4113,7 @@ class $AttachmentsTable extends Attachments
     deleted,
     deletedAt,
     purged,
+    uploadRefused,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4255,6 +4265,12 @@ class $AttachmentsTable extends Attachments
         DriftSqlType.bool,
         data['${effectivePrefix}purged'],
       )!,
+      uploadRefused: $AttachmentsTable.$converteruploadRefusedn.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}upload_refused'],
+        ),
+      ),
     );
   }
 
@@ -4262,6 +4278,15 @@ class $AttachmentsTable extends Attachments
   $AttachmentsTable createAlias(String alias) {
     return $AttachmentsTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<UploadRefusal, String, String>
+  $converteruploadRefused = const EnumNameConverter<UploadRefusal>(
+    UploadRefusal.values,
+  );
+  static JsonTypeConverter2<UploadRefusal?, String?, String?>
+  $converteruploadRefusedn = JsonTypeConverter2.asNullable(
+    $converteruploadRefused,
+  );
 }
 
 class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
@@ -4287,6 +4312,11 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
   /// The server purged the deleted record's content after 30 days
   /// (ADR-0043, schema 21): it is no longer in the trash.
   final bool purged;
+
+  /// Why the server refused to take the new file (#1225, schema 43); null
+  /// when it is on the server or not sent yet. A refused attachment stays
+  /// on this device only and is not sent again until the person retries.
+  final UploadRefusal? uploadRefused;
   const AttachmentEntry({
     required this.id,
     required this.songId,
@@ -4300,6 +4330,7 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
     required this.deleted,
     this.deletedAt,
     required this.purged,
+    this.uploadRefused,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4322,6 +4353,11 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
     }
     map['purged'] = Variable<bool>(purged);
+    if (!nullToAbsent || uploadRefused != null) {
+      map['upload_refused'] = Variable<String>(
+        $AttachmentsTable.$converteruploadRefusedn.toSql(uploadRefused),
+      );
+    }
     return map;
   }
 
@@ -4345,6 +4381,9 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
           ? const Value.absent()
           : Value(deletedAt),
       purged: Value(purged),
+      uploadRefused: uploadRefused == null && nullToAbsent
+          ? const Value.absent()
+          : Value(uploadRefused),
     );
   }
 
@@ -4366,6 +4405,9 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
       deleted: serializer.fromJson<bool>(json['deleted']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
       purged: serializer.fromJson<bool>(json['purged']),
+      uploadRefused: $AttachmentsTable.$converteruploadRefusedn.fromJson(
+        serializer.fromJson<String?>(json['uploadRefused']),
+      ),
     );
   }
   @override
@@ -4384,6 +4426,9 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
       'deleted': serializer.toJson<bool>(deleted),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
       'purged': serializer.toJson<bool>(purged),
+      'uploadRefused': serializer.toJson<String?>(
+        $AttachmentsTable.$converteruploadRefusedn.toJson(uploadRefused),
+      ),
     };
   }
 
@@ -4400,6 +4445,7 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
     bool? deleted,
     Value<DateTime?> deletedAt = const Value.absent(),
     bool? purged,
+    Value<UploadRefusal?> uploadRefused = const Value.absent(),
   }) => AttachmentEntry(
     id: id ?? this.id,
     songId: songId ?? this.songId,
@@ -4413,6 +4459,9 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
     deleted: deleted ?? this.deleted,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
     purged: purged ?? this.purged,
+    uploadRefused: uploadRefused.present
+        ? uploadRefused.value
+        : this.uploadRefused,
   );
   AttachmentEntry copyWithCompanion(AttachmentsCompanion data) {
     return AttachmentEntry(
@@ -4430,6 +4479,9 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
       purged: data.purged.present ? data.purged.value : this.purged,
+      uploadRefused: data.uploadRefused.present
+          ? data.uploadRefused.value
+          : this.uploadRefused,
     );
   }
 
@@ -4447,7 +4499,8 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
           ..write('updatedAt: $updatedAt, ')
           ..write('deleted: $deleted, ')
           ..write('deletedAt: $deletedAt, ')
-          ..write('purged: $purged')
+          ..write('purged: $purged, ')
+          ..write('uploadRefused: $uploadRefused')
           ..write(')'))
         .toString();
   }
@@ -4466,6 +4519,7 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
     deleted,
     deletedAt,
     purged,
+    uploadRefused,
   );
   @override
   bool operator ==(Object other) =>
@@ -4482,7 +4536,8 @@ class AttachmentEntry extends DataClass implements Insertable<AttachmentEntry> {
           other.updatedAt == this.updatedAt &&
           other.deleted == this.deleted &&
           other.deletedAt == this.deletedAt &&
-          other.purged == this.purged);
+          other.purged == this.purged &&
+          other.uploadRefused == this.uploadRefused);
 }
 
 class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
@@ -4498,6 +4553,7 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
   final Value<bool> deleted;
   final Value<DateTime?> deletedAt;
   final Value<bool> purged;
+  final Value<UploadRefusal?> uploadRefused;
   final Value<int> rowid;
   const AttachmentsCompanion({
     this.id = const Value.absent(),
@@ -4512,6 +4568,7 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
     this.deleted = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.purged = const Value.absent(),
+    this.uploadRefused = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   AttachmentsCompanion.insert({
@@ -4527,6 +4584,7 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
     this.deleted = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.purged = const Value.absent(),
+    this.uploadRefused = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        songId = Value(songId),
@@ -4547,6 +4605,7 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
     Expression<bool>? deleted,
     Expression<DateTime>? deletedAt,
     Expression<bool>? purged,
+    Expression<String>? uploadRefused,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -4562,6 +4621,7 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
       if (deleted != null) 'deleted': deleted,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (purged != null) 'purged': purged,
+      if (uploadRefused != null) 'upload_refused': uploadRefused,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4579,6 +4639,7 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
     Value<bool>? deleted,
     Value<DateTime?>? deletedAt,
     Value<bool>? purged,
+    Value<UploadRefusal?>? uploadRefused,
     Value<int>? rowid,
   }) {
     return AttachmentsCompanion(
@@ -4594,6 +4655,7 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
       deleted: deleted ?? this.deleted,
       deletedAt: deletedAt ?? this.deletedAt,
       purged: purged ?? this.purged,
+      uploadRefused: uploadRefused ?? this.uploadRefused,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4637,6 +4699,11 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
     if (purged.present) {
       map['purged'] = Variable<bool>(purged.value);
     }
+    if (uploadRefused.present) {
+      map['upload_refused'] = Variable<String>(
+        $AttachmentsTable.$converteruploadRefusedn.toSql(uploadRefused.value),
+      );
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4658,6 +4725,7 @@ class AttachmentsCompanion extends UpdateCompanion<AttachmentEntry> {
           ..write('deleted: $deleted, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('purged: $purged, ')
+          ..write('uploadRefused: $uploadRefused, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -15458,6 +15526,7 @@ typedef $$AttachmentsTableCreateCompanionBuilder =
       Value<bool> deleted,
       Value<DateTime?> deletedAt,
       Value<bool> purged,
+      Value<UploadRefusal?> uploadRefused,
       Value<int> rowid,
     });
 typedef $$AttachmentsTableUpdateCompanionBuilder =
@@ -15474,6 +15543,7 @@ typedef $$AttachmentsTableUpdateCompanionBuilder =
       Value<bool> deleted,
       Value<DateTime?> deletedAt,
       Value<bool> purged,
+      Value<UploadRefusal?> uploadRefused,
       Value<int> rowid,
     });
 
@@ -15561,6 +15631,12 @@ class $$AttachmentsTableFilterComposer
   ColumnFilters<bool> get purged => $composableBuilder(
     column: $table.purged,
     builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<UploadRefusal?, UploadRefusal, String>
+  get uploadRefused => $composableBuilder(
+    column: $table.uploadRefused,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
   $$SongsTableFilterComposer get songId {
@@ -15651,6 +15727,11 @@ class $$AttachmentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get uploadRefused => $composableBuilder(
+    column: $table.uploadRefused,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$SongsTableOrderingComposer get songId {
     final $$SongsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -15719,6 +15800,12 @@ class $$AttachmentsTableAnnotationComposer
   GeneratedColumn<bool> get purged =>
       $composableBuilder(column: $table.purged, builder: (column) => column);
 
+  GeneratedColumnWithTypeConverter<UploadRefusal?, String> get uploadRefused =>
+      $composableBuilder(
+        column: $table.uploadRefused,
+        builder: (column) => column,
+      );
+
   $$SongsTableAnnotationComposer get songId {
     final $$SongsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -15783,6 +15870,7 @@ class $$AttachmentsTableTableManager
                 Value<bool> deleted = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<bool> purged = const Value.absent(),
+                Value<UploadRefusal?> uploadRefused = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AttachmentsCompanion(
                 id: id,
@@ -15797,6 +15885,7 @@ class $$AttachmentsTableTableManager
                 deleted: deleted,
                 deletedAt: deletedAt,
                 purged: purged,
+                uploadRefused: uploadRefused,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -15813,6 +15902,7 @@ class $$AttachmentsTableTableManager
                 Value<bool> deleted = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<bool> purged = const Value.absent(),
+                Value<UploadRefusal?> uploadRefused = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AttachmentsCompanion.insert(
                 id: id,
@@ -15827,6 +15917,7 @@ class $$AttachmentsTableTableManager
                 deleted: deleted,
                 deletedAt: deletedAt,
                 purged: purged,
+                uploadRefused: uploadRefused,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

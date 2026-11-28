@@ -138,6 +138,7 @@ map=(
   contact_new 54g_contact_new
   contact_invite 54h_contact_invite
   song_attachment_menu 55_song_attachment_menu
+  song_attachment_refused 55b_song_attachment_refused
   song_sources 56_song_sources
   live_projection_start 63_live_projection_start
   projection_sheet 63b_projection_sheet

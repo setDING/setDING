@@ -254,6 +254,7 @@ limit, and that deleting does not free space until the purge. Therefore:
      librarians, band leaders).
   8. **No further upload limits.**
 - 2026-11-28: Accepted by the owner.
+- 2026-11-28: The marking of any refused upload is implemented (#1225, ADR-0009): local column `attachments.upload_refused` (schema 43) with the reasons *no permission*, *too large* and *refused*, the one-time message after the sync and *Upload again* in the attachment's menu. The quota adds a reason of its own for `storage_limit_reached` (today it shows as *refused by the server*) and the retry when the usage route shows enough room.
 
 ## Open points
 

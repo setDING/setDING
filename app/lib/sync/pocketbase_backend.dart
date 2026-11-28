@@ -1629,7 +1629,7 @@ class PocketBaseBackend implements SyncBackend {
         return BackendException(BackendErrorKind.notOrgMember, e.response);
       }
     }
-    return BackendException(BackendErrorKind.server, e.response);
+    return BackendException(BackendErrorKind.server, e.response, e.statusCode);
   }
 }
 

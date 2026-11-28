@@ -3531,5 +3531,40 @@
   "linkNoAccessMessage": "Not available: it was deleted, or you have no access to it.",
   "linkSignInMessage": "Sign in to see it.",
   "linkShare": "Share link",
-  "linkCopied": "Link copied"
+  "linkCopied": "Link copied",
+  "attachmentOnlyHere": "Only on this device: {reason}",
+  "@attachmentOnlyHere": {
+    "description": "Marker of an attachment the server refused (#1225); reason is one of uploadRefusal*.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadRefusalNotAllowed": "no permission to upload",
+  "uploadRefusalTooLarge": "the file is too large for the server",
+  "uploadRefusalOther": "refused by the server",
+  "attachmentUploadRefused": "The server did not accept “{name}” of “{song}” ({reason}). The attachment stays on this device only.",
+  "@attachmentUploadRefused": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "song": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "attachmentUploadsRefused": "{count, plural, =1{The server did not accept 1 attachment. It stays on this device only.} other{The server did not accept {count} attachments. They stay on this device only.}}",
+  "@attachmentUploadsRefused": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "retryUpload": "Upload again"
 }

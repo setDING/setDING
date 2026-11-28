@@ -146,12 +146,45 @@ enum BackendErrorKind {
 }
 
 class BackendException implements Exception {
-  const BackendException(this.kind, [this.detail]);
+  const BackendException(this.kind, [this.detail, this.statusCode]);
 
   final BackendErrorKind kind;
 
-  /// Technical detail for logs; never shown to the user.
+  /// Technical detail for logs; never shown to the user. For an error
+  /// reported by the server, its response body.
   final Object? detail;
+
+  /// HTTP status of the server's answer, where it decides [refused]: for
+  /// [BackendErrorKind.server]; null when unknown.
+  final int? statusCode;
+
+  /// Whether the server refused the request for good (#1225): sending it
+  /// again gets the same answer, e.g. no permission (403/404) or a
+  /// validation error (400). False for errors that may go away by
+  /// themselves: no network, signed out, an app update needed (426), a
+  /// conflict, a rate limit (429) or a server error (5xx).
+  bool get refused => switch (kind) {
+    BackendErrorKind.network ||
+    BackendErrorKind.signedOut ||
+    BackendErrorKind.updateRequired ||
+    BackendErrorKind.conflict => false,
+    BackendErrorKind.server => switch (statusCode) {
+      408 || 429 => false,
+      final s? => s >= 400 && s < 500,
+      null => false,
+    },
+    _ => true,
+  };
+
+  /// The error code the server gave for [field] of the record (a
+  /// PocketBase validation error, e.g. `validation_file_size_limit`), or
+  /// null.
+  String? fieldCode(String field) {
+    final body = detail;
+    final data = body is Map ? body['data'] : null;
+    final error = data is Map ? data[field] : null;
+    return error is Map ? error['code'] as String? : null;
+  }
 
   @override
   String toString() => 'BackendException(${kind.name}, $detail)';

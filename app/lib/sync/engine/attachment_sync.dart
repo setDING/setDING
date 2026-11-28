@@ -10,6 +10,15 @@ import 'sync_store.dart';
 
 const _log = Log('sync');
 
+/// An attachment upload the server refused in a sync run (#1225): the
+/// attachment stays on this device only.
+typedef RefusedUpload = ({
+  String attachmentId,
+  String name,
+  String songTitle,
+  UploadRefusal reason,
+});
+
 /// Sync of PDF attachments (ADR-0009): metadata by delta pull and push,
 /// files uploaded with their record and downloaded to every device.
 class AttachmentSync {
@@ -31,6 +40,28 @@ class AttachmentSync {
 
   /// Records changes of other people (ADR-0045).
   final ChangeRecorder? changes;
+
+  var _refused = <RefusedUpload>[];
+
+  /// The uploads refused since the last call, for the report of a sync run
+  /// (#1225).
+  List<RefusedUpload> takeRefused() {
+    final refused = _refused;
+    _refused = [];
+    return refused;
+  }
+
+  /// Why the server refused an upload with [e] ([BackendException.refused]).
+  /// Lasting answers that are not listed here, e.g. a storage limit, are
+  /// [UploadRefusal.refused] until they get a value of their own.
+  static UploadRefusal refusalOf(BackendException e) {
+    if (e.kind == BackendErrorKind.notAllowed) return UploadRefusal.notAllowed;
+    if (e.statusCode == 413 ||
+        e.fieldCode('file') == 'validation_file_size_limit') {
+      return UploadRefusal.tooLarge;
+    }
+    return UploadRefusal.refused;
+  }
 
   /// Changes by others than [logChangesFor] (the signed-in user) are
   /// recorded in the change log (ADR-0045); null records nothing, e.g. on
@@ -204,7 +235,9 @@ class AttachmentSync {
       return PushResult.skipped;
     }
     final create = a.revision == 0;
-    if (create && a.deleted) {
+    // Deleted before it reached the server, or refused by the server: sent
+    // again only when the person retries (#1225).
+    if (create && (a.deleted || a.uploadRefused != null)) {
       await store.done(entry);
       return PushResult.skipped;
     }
@@ -242,19 +275,42 @@ class AttachmentSync {
           AttachmentsCompanion(
             revision: Value(stored.revision),
             remoteFile: Value(stored.file ?? a.remoteFile),
+            uploadRefused: const Value(null),
           ),
         );
         await store.done(entry);
       });
       return PushResult.done;
     } on BackendException catch (e) {
-      if (e.kind == BackendErrorKind.network ||
-          e.kind == BackendErrorKind.signedOut) {
-        rethrow;
+      if (!e.refused) {
+        // A server error or a rate limit: the entry stays and is sent again
+        // in the next sync; the other changes are sent meanwhile.
+        if (e.kind == BackendErrorKind.server) {
+          _log.warning('Attachment ${a.id} not pushed, trying again later', e);
+          return PushResult.skipped;
+        }
+        rethrow; // no network, signed out, update needed
       }
-      // Not allowed, too large or refused: the attachment stays local.
-      _log.warning('Attachment ${a.id} not pushed', e);
-      await store.done(entry);
+      // Not allowed, too large or refused otherwise: a lasting answer
+      // (#1225). A new file stays on this device, marked, until the person
+      // retries or removes it; a refused rename or deletion stays local.
+      _log.warning('Attachment ${a.id} refused by the server', e);
+      final reason = refusalOf(e);
+      await db.transaction(() async {
+        if (create) {
+          await (db.update(db.attachments)..where((x) => x.id.equals(a.id)))
+              .write(AttachmentsCompanion(uploadRefused: Value(reason)));
+        }
+        await store.done(entry);
+      });
+      if (create) {
+        _refused.add((
+          attachmentId: a.id,
+          name: a.name,
+          songTitle: song.title,
+          reason: reason,
+        ));
+      }
       return PushResult.skipped;
     }
   }

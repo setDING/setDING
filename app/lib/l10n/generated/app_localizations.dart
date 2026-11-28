@@ -10313,6 +10313,48 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Link kopiert'**
   String get linkCopied;
+
+  /// Marker of an attachment the server refused (#1225); reason is one of uploadRefusal*.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur auf diesem Gerät: {reason}'**
+  String attachmentOnlyHere(String reason);
+
+  /// No description provided for @uploadRefusalNotAllowed.
+  ///
+  /// In de, this message translates to:
+  /// **'keine Berechtigung zum Hochladen'**
+  String get uploadRefusalNotAllowed;
+
+  /// No description provided for @uploadRefusalTooLarge.
+  ///
+  /// In de, this message translates to:
+  /// **'die Datei ist für den Server zu gross'**
+  String get uploadRefusalTooLarge;
+
+  /// No description provided for @uploadRefusalOther.
+  ///
+  /// In de, this message translates to:
+  /// **'vom Server abgelehnt'**
+  String get uploadRefusalOther;
+
+  /// No description provided for @attachmentUploadRefused.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Server hat «{name}» von «{song}» nicht angenommen ({reason}). Der Anhang bleibt nur auf diesem Gerät.'**
+  String attachmentUploadRefused(String name, String song, String reason);
+
+  /// No description provided for @attachmentUploadsRefused.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Der Server hat 1 Anhang nicht angenommen. Er bleibt nur auf diesem Gerät.} other{Der Server hat {count} Anhänge nicht angenommen. Sie bleiben nur auf diesem Gerät.}}'**
+  String attachmentUploadsRefused(int count);
+
+  /// No description provided for @retryUpload.
+  ///
+  /// In de, this message translates to:
+  /// **'Erneut hochladen'**
+  String get retryUpload;
 }
 
 class _AppLocalizationsDelegate

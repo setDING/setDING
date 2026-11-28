@@ -78,9 +78,16 @@ void downgradeToSchema39(Database raw) {
   }
 }
 
+/// Turns a current database back into schema 42: attachments without a
+/// refused upload (#1225).
+void downgradeToSchema42(Database raw) {
+  raw.execute('ALTER TABLE attachments DROP COLUMN upload_refused');
+}
+
 /// Turns a current database back into schema 41: no people without an
 /// account (ADR-0064).
 void downgradeToSchema41(Database raw) {
+  downgradeToSchema42(raw);
   raw.execute('DROP TABLE contacts');
   raw.execute('ALTER TABLE setlists DROP COLUMN lineup_contacts');
 }
@@ -1519,6 +1526,32 @@ void main() {
     expect(set.lineupCustom, isTrue);
     expect(set.lineupContacts, isEmpty);
     expect(await upgraded.select(upgraded.contacts).get(), isEmpty);
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 42 database: attachments keep their values and '
+      'have no refused upload (#1225)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final repo = SongRepository(current, FileAttachmentStorage(dir));
+    final id = await repo.createSong(source: '{title: Song}');
+    await repo.addAttachment(
+      id,
+      name: 'Score',
+      bytes: Uint8List.fromList('%PDF-1.4'.codeUnits),
+      pages: 2,
+    );
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema42(raw);
+    raw.execute('PRAGMA user_version = 42');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final a = await upgraded.select(upgraded.attachments).getSingle();
+    expect(a.name, 'Score');
+    expect(a.pages, 2);
+    expect(a.uploadRefused, isNull);
     await upgraded.close();
   });
 }

@@ -545,6 +545,142 @@ void main() {
       expect(await outbox(), isEmpty);
     });
 
+    // A refused upload was dropped silently: marked as pushed, never
+    // shown, never sent again (#1225).
+    group('a refused upload (#1225)', () {
+      Future<AttachmentEntry> attachment(String id) async =>
+          (await songs.getAttachments(id)).single;
+
+      test('stays on this device, marked, and is reported once', () async {
+        final id = await songs.createSong(source: '{title: Song}');
+        final a = await songs.addAttachment(id, name: 'Score', bytes: pdf);
+        server.attachmentUploadError = const BackendException(
+          BackendErrorKind.notAllowed,
+          null,
+          403,
+        );
+
+        final report = await engine.sync();
+        expect(report.error, isNull);
+        expect(server.attachments, isEmpty);
+        expect(server.songs[id], isNotNull, reason: 'the song is pushed');
+        expect((await attachment(id)).uploadRefused, UploadRefusal.notAllowed);
+        expect(report.refusedUploads, [
+          (
+            attachmentId: a,
+            name: 'Score',
+            songTitle: 'Song',
+            reason: UploadRefusal.notAllowed,
+          ),
+        ]);
+        expect(await outbox(), isEmpty);
+
+        // Not sent again by itself, also not after a rename.
+        server.attachmentUploadError = null;
+        await songs.renameAttachment(a, 'Horns');
+        final again = await engine.sync();
+        expect(server.attachmentUploads, 1);
+        expect(again.refusedUploads, isEmpty);
+        expect(server.attachments, isEmpty);
+        expect((await attachment(id)).uploadRefused, UploadRefusal.notAllowed);
+      });
+
+      test('is sent again when the person retries', () async {
+        final id = await songs.createSong(source: '{title: Song}');
+        final a = await songs.addAttachment(id, name: 'Score', bytes: pdf);
+        server.attachmentUploadError = const BackendException(
+          BackendErrorKind.server,
+          null,
+          400,
+        );
+        await engine.sync();
+        expect((await attachment(id)).uploadRefused, UploadRefusal.refused);
+
+        server.attachmentUploadError = null;
+        await songs.retryUpload(a);
+        expect((await attachment(id)).uploadRefused, isNull);
+        final report = await engine.sync();
+        expect(report.pushed, 1);
+        expect(server.files[server.attachments[a]!.file], pdf);
+        expect((await attachment(id)).uploadRefused, isNull);
+        expect(await outbox(), isEmpty);
+      });
+
+      test('a file too large for the server is named as such', () async {
+        final id = await songs.createSong(source: '{title: Song}');
+        await songs.addAttachment(id, name: 'Score', bytes: pdf);
+        server.attachmentUploadError = const BackendException(
+          BackendErrorKind.server,
+          {
+            'data': {
+              'file': {'code': 'validation_file_size_limit'},
+            },
+          },
+          400,
+        );
+        final report = await engine.sync();
+        expect(report.refusedUploads.single.reason, UploadRefusal.tooLarge);
+        expect((await attachment(id)).uploadRefused, UploadRefusal.tooLarge);
+      });
+
+      test('a removed refused attachment is gone', () async {
+        final id = await songs.createSong(source: '{title: Song}');
+        await songs.addAttachment(id, name: 'Score', bytes: pdf);
+        server.attachmentUploadError = const BackendException(
+          BackendErrorKind.notAllowed,
+        );
+        await engine.sync();
+        await songs.deleteAttachment(await attachment(id));
+        server.attachmentUploadError = null;
+        await engine.sync();
+        expect(server.attachmentUploads, 1);
+        expect(server.attachments, isEmpty);
+        expect(await outbox(), isEmpty);
+      });
+    });
+
+    test('a server error or a rate limit is retried in the next sync '
+        '(#1225)', () async {
+      final id = await songs.createSong(source: '{title: Song}');
+      final a = await songs.addAttachment(id, name: 'Score', bytes: pdf);
+      final other = await songs.createSong(source: '{title: Other}');
+      for (final status in [503, 429]) {
+        server.attachmentUploadError = BackendException(
+          BackendErrorKind.server,
+          null,
+          status,
+        );
+        final report = await engine.sync();
+        expect(report.error, isNull);
+        expect(report.refusedUploads, isEmpty);
+        expect(server.attachments, isEmpty);
+        expect((await songs.getAttachments(id)).single.uploadRefused, isNull);
+        expect(await outbox(), hasLength(1), reason: 'only the attachment');
+      }
+      expect(server.songs[other], isNotNull, reason: 'the rest is pushed');
+
+      server.attachmentUploadError = null;
+      await engine.sync();
+      expect(server.files[server.attachments[a]!.file], pdf);
+      expect(await outbox(), isEmpty);
+    });
+
+    test('without network, the upload is sent in the next sync', () async {
+      final id = await songs.createSong(source: '{title: Song}');
+      final a = await songs.addAttachment(id, name: 'Score', bytes: pdf);
+      server.attachmentUploadError = const BackendException(
+        BackendErrorKind.network,
+      );
+      final report = await engine.sync();
+      expect(report.error, BackendErrorKind.network);
+      expect(report.refusedUploads, isEmpty);
+      expect((await songs.getAttachments(id)).single.uploadRefused, isNull);
+
+      server.attachmentUploadError = null;
+      await engine.sync();
+      expect(server.files[server.attachments[a]!.file], pdf);
+    });
+
     test('downloads PDFs of other devices', () async {
       server.putSong(remoteSong('s1', '{title: Song}'));
       server.putAttachment(

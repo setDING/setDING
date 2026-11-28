@@ -1698,5 +1698,12 @@
   "linkNoAccessMessage": "Non disponibile: è stato eliminato, oppure non hai accesso.",
   "linkSignInMessage": "Accedi per vederlo.",
   "linkShare": "Condividi link",
-  "linkCopied": "Link copiato"
+  "linkCopied": "Link copiato",
+  "attachmentOnlyHere": "Solo su questo dispositivo: {reason}",
+  "uploadRefusalNotAllowed": "nessuna autorizzazione al caricamento",
+  "uploadRefusalTooLarge": "il file è troppo grande per il server",
+  "uploadRefusalOther": "rifiutato dal server",
+  "attachmentUploadRefused": "Il server non ha accettato “{name}” di “{song}” ({reason}). L'allegato resta solo su questo dispositivo.",
+  "attachmentUploadsRefused": "{count, plural, =1{Il server non ha accettato 1 allegato. Resta solo su questo dispositivo.} other{Il server non ha accettato {count} allegati. Restano solo su questo dispositivo.}}",
+  "retryUpload": "Carica di nuovo"
 }

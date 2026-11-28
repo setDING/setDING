@@ -6749,4 +6749,38 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get linkCopied => 'Link copiato';
+
+  @override
+  String attachmentOnlyHere(String reason) {
+    return 'Solo su questo dispositivo: $reason';
+  }
+
+  @override
+  String get uploadRefusalNotAllowed => 'nessuna autorizzazione al caricamento';
+
+  @override
+  String get uploadRefusalTooLarge => 'il file è troppo grande per il server';
+
+  @override
+  String get uploadRefusalOther => 'rifiutato dal server';
+
+  @override
+  String attachmentUploadRefused(String name, String song, String reason) {
+    return 'Il server non ha accettato “$name” di “$song” ($reason). L\'allegato resta solo su questo dispositivo.';
+  }
+
+  @override
+  String attachmentUploadsRefused(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Il server non ha accettato $count allegati. Restano solo su questo dispositivo.',
+      one: 'Il server non ha accettato 1 allegato. Resta solo su questo dispositivo.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get retryUpload => 'Carica di nuovo';
 }

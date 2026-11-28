@@ -29,6 +29,7 @@ import '../settings/user_settings_store.dart';
 import '../util/log.dart';
 
 export 'engine/change_recorder.dart' show SyncChange, SyncChangeKind;
+export 'engine/attachment_sync.dart' show RefusedUpload;
 
 const _log = Log('sync');
 
@@ -44,6 +45,7 @@ class SyncReport {
     this.goneBands = const [],
     this.closedOrganizations = const [],
     this.changes = const [],
+    this.refusedUploads = const [],
     this.error,
   });
 
@@ -70,6 +72,10 @@ class SyncReport {
   /// Songs and sets someone else changed or deleted, applied in this run
   /// (#691).
   final List<SyncChange> changes;
+
+  /// Attachments the server refused to take in this run (#1225); they stay
+  /// on this device only and are not sent again by themselves.
+  final List<RefusedUpload> refusedUploads;
 
   /// Why the run stopped early (e.g. offline), or null.
   final BackendErrorKind? error;
@@ -168,6 +174,7 @@ class SyncEngine {
     var gone = const BandChanges();
     try {
       _changes.takeRun(); // left over from a run that stopped early
+      _attachments.takeRefused();
       // Recent changes of the overview are kept for 30 days (ADR-0045).
       await _changes.log.prune();
       if (refreshBands) gone = await bands.refresh();
@@ -260,6 +267,7 @@ class SyncEngine {
         goneBands: gone.goneBands,
         closedOrganizations: gone.closedOrganizations,
         changes: _changes.takeRun(),
+        refusedUploads: _attachments.takeRefused(),
       );
     } on BackendException catch (e) {
       _log.warning('Sync stopped', e);
@@ -272,6 +280,7 @@ class SyncEngine {
         goneBands: gone.goneBands,
         closedOrganizations: gone.closedOrganizations,
         changes: _changes.takeRun(),
+        refusedUploads: _attachments.takeRefused(),
         error: e.kind,
       );
     }
@@ -320,6 +329,8 @@ class SyncEngine {
         SyncCollection.attachments,
         'SELECT a.id FROM attachments a JOIN songs s ON s.id = a.song_id '
         'WHERE a.revision = 0 AND a.deleted = 0 AND s.deleted = 0 '
+        // Refused by the server: sent again when the person retries (#1225).
+        'AND a.upload_refused IS NULL '
         "AND lower(a.file_name) LIKE '%.pdf' "
         'AND s.library_id IN (${placeholders(libs.length)})',
         libs,

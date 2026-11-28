@@ -9,6 +9,7 @@ import { Image } from 'astro:assets';
 import ExampleSong from '../../../components/ExampleSong.astro';
 import song from '../../../../../docs/screenshots/song_de.png';
 import attachmentMenu from '../../../../../docs/screenshots/song_attachment_menu_de.png';
+import attachmentRefused from '../../../../../docs/screenshots/song_attachment_refused_de.png';
 import adjustmentOffer from '../../../../../docs/screenshots/adjustment_offer_de.png';
 import phoneMenu from '../../../../../docs/screenshots/song_phone_menu_de.png';
 import stackedChoruses from '../../../../../docs/screenshots/live_stacked_choruses_de.png';
@@ -114,6 +115,18 @@ sehen, können einen Anhang über sein Menü als Datei **Speichern**, z. B. um i
 drucken oder weiterzugeben; im Browser wird er heruntergeladen.
 
 <Image src={attachmentMenu} alt="Das Panel «Anhänge» mit zwei PDFs; das Menü des PDFs «Bläser» zeigt Umbenennen, Speichern und Löschen" />
+
+### Nur auf diesem Gerät
+
+Nimmt der Server einen neuen Anhang nicht an, z. B. weil du in dieser Bibliothek
+keine Anhänge hinzufügen darfst oder die Datei für den Server zu gross ist, sagt
+dir setDING das einmal nach dem Synchronisieren. Der Anhang bleibt dann **nur auf
+diesem Gerät**: Er ist in den Anhängen markiert, mit dem Grund, und deine
+Bandkollegen bekommen ihn nicht. setDING versucht es nicht von selbst wieder. Im
+Menü des Anhangs kannst du ihn **Erneut hochladen**, z. B. wenn du die Berechtigung
+inzwischen hast, oder ihn **Löschen**.
+
+<Image src={attachmentRefused} alt="Das Panel «Anhänge»: das PDF «Bläser» ist als «Nur auf diesem Gerät» markiert, mit dem Grund: keine Berechtigung zum Hochladen" />
 
 ### PDF im Live-Modus
 
