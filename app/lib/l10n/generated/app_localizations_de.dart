@@ -6848,4 +6848,9 @@ class AppLocalizationsDe extends AppLocalizations {
   ) {
     return '«$name» ($size) passt nicht mehr in den Speicher der Organisation: $used von $limit belegt. Gelöschte PDFs zählen mit, bis sie endgültig gelöscht sind.';
   }
+
+  @override
+  String trashAttachmentOf(String song, String size) {
+    return 'PDF in «$song» · $size';
+  }
 }

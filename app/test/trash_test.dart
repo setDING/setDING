@@ -310,6 +310,59 @@ void main() {
       expect(server.sets[setId]!.items, isEmpty);
     });
 
+    // ADR-0070: a single deleted PDF counts against the storage until it is
+    // purged; organization admins and librarians purge it at once.
+    test('a PDF deleted on its own is in the trash, comes back, and is '
+        'purged as a tombstone', () async {
+      final id = await songs.createSong(source: '{title: Song}');
+      final kept = await songs.addAttachment(id, name: 'Kept', bytes: pdf);
+      final gone = await songs.addAttachment(id, name: 'Horns', bytes: pdf);
+      final other = await songs.createSong(source: '{title: Other}');
+      await songs.addAttachment(other, name: 'With song', bytes: pdf);
+      await engine.sync();
+      Future<AttachmentEntry> row(String a) =>
+          (db.select(db.attachments)..where((x) => x.id.equals(a))).getSingle();
+      await songs.deleteAttachment(await row(gone));
+      // The attachments of a deleted song go with their song.
+      await songs.deleteSong(other);
+      await engine.sync();
+      expect(
+        [
+          for (final (a, song) in await trash().watchAttachments('o1').first)
+            (a.name, song),
+        ],
+        [('Horns', 'Song')],
+      );
+      // The local library's attachments are not listed.
+      expect(await trash().watchAttachments(localBandId).first, isEmpty);
+
+      await trash().restoreAttachments([gone]);
+      expect((await row(gone)).deleted, isFalse);
+      await engine.sync();
+      expect(server.attachments[gone]!.deleted, isFalse);
+
+      await songs.deleteAttachment(await row(gone));
+      await engine.sync();
+      final file = (await row(gone)).fileName;
+      await trash().purgeAttachments([gone]);
+      expect(await trash().watchAttachments('o1').first, isEmpty);
+      expect(await storage.exists(file), isFalse);
+      await engine.sync();
+      expect(server.attachments[gone]!.purged, isTrue);
+      expect(server.attachments[kept]!.purged, isFalse);
+      expect(await db.select(db.syncOutbox).get(), isEmpty);
+    });
+
+    test('a PDF that is not deleted is not purged', () async {
+      final id = await songs.createSong(source: '{title: Song}');
+      final a = await songs.addAttachment(id, name: 'Score', bytes: pdf);
+      await engine.sync();
+      await trash().purgeAttachments([a]);
+      await engine.sync();
+      expect(server.attachments[a]!.purged, isFalse);
+      expect((await songs.getAttachments(id)).single.purged, isFalse);
+    });
+
     test('purged records leave the trash', () async {
       final id = await songs.createSong(source: '{title: Song}');
       await engine.sync();

@@ -284,6 +284,12 @@ limit, and that deleting does not free space until the purge. Therefore:
   20 MB. The organization screen shows "Storage: … of …" for those who may
   upload PDFs (`LibraryView.canSeeStorage`), leading to the trash. Archived PDFs
   over 1 MB are skipped on import instead of failing it.
+- 2026-11-28: The purge of a single deleted attachment is in the app (#1226): the
+  songs trash of an organization's library also lists the PDFs deleted on their own
+  (their song still in the library, already on the server), with *Restore* and
+  *Delete permanently*; a purge is synced as a tombstone (`purged`), and the file
+  on the device goes at once. Attachments of the local library are not listed:
+  their file goes with the undo of the deletion, as before.
 
 ## Open points
 

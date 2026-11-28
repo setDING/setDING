@@ -116,6 +116,7 @@ map=(
   settings_space_beat 19c_settings_space_beat
   songs_trash 45_songs_trash
   songs_trash_menu 45b_songs_trash_menu
+  songs_trash_pdf 45c_songs_trash_pdf
   backup_replace_choice 44_backup_replace_choice
   backup_replace 44b_backup_replace
   hide_local_library 45_hide_local_library

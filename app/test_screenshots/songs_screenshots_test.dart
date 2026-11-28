@@ -23,6 +23,7 @@ import 'package:setding/ui/songs/import_dialog.dart';
 import 'package:setding/ui/songs/song_screen.dart';
 import 'package:setding/ui/songs/song_list.dart';
 import 'package:setding/ui/songs/songs_screen.dart';
+import 'package:setding/ui/trash/trash_screen.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -34,6 +35,7 @@ import 'screenshot_support.dart';
 
 void main() {
   setUpScreenshots();
+  songsTrashPdfScreenshots();
 
   // Songs with possible conversions (#798): the song list filtered from the
   // overview's To do card, with the icon and Convert all. The second song
@@ -1093,6 +1095,65 @@ void main() {
       );
       await tester.pumpAndSettle();
       await shot(tester, '${lang}_45b_songs_trash_menu');
+      await app.dispose(tester);
+    });
+  }
+}
+
+/// A PDF deleted on its own in the trash of an organization's library,
+/// with the menu to delete it permanently (ADR-0070).
+void songsTrashPdfScreenshots() {
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('songs trash pdf $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final songs = TestApp.songsIn(app, 'o1', userId: 'ann');
+      final now = DateTime.now();
+      final horns = (await tester.runAsync(() async {
+        final song = await songs.createSong(
+          source: '{title: Morning Light}\n{artist: Ann Trainor}\n[G]Hello',
+        );
+        final horns = await songs.addAttachment(
+          song,
+          name: lang == 'de' ? 'Bläser' : 'Horns',
+          bytes: Uint8List(593920),
+          pages: 4,
+        );
+        final old = await songs.createSong(
+          source: '{title: Amazing Grace}\n{artist: John Newton}\n[G]Hello',
+        );
+        await songs.deleteSong(old);
+        await (app.db.update(
+          app.db.songs,
+        )..where((s) => s.id.equals(old))).write(
+          SongsCompanion(
+            deletedAt: Value(now.subtract(const Duration(days: 12))),
+          ),
+        );
+        // On the server, deleted on its own two days ago.
+        await (app.db.update(
+          app.db.attachments,
+        )..where((a) => a.id.equals(horns))).write(
+          AttachmentsCompanion(
+            revision: const Value(1),
+            deleted: const Value(true),
+            deletedAt: Value(now.subtract(const Duration(days: 2))),
+          ),
+        );
+        return horns;
+      }))!;
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: const TrashScreen.songs(libraryId: 'o1')),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(ValueKey('trash-menu-$horns')));
+      await tester.pumpAndSettle();
+      await shot(tester, '${lang}_45c_songs_trash_pdf');
       await app.dispose(tester);
     });
   }

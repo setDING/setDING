@@ -10414,6 +10414,12 @@ abstract class AppLocalizations {
     String used,
     String limit,
   );
+
+  /// A PDF deleted on its own in the trash (ADR-0070): its song and size.
+  ///
+  /// In de, this message translates to:
+  /// **'PDF in «{song}» · {size}'**
+  String trashAttachmentOf(String song, String size);
 }
 
 class _AppLocalizationsDelegate

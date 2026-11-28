@@ -314,6 +314,7 @@ class AttachmentSync {
       revision: a.revision,
       deleted: a.deleted,
       deletedAt: a.deletedAt,
+      purged: a.purged,
     );
     try {
       final stored = await backend.pushAttachment(

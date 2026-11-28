@@ -1233,6 +1233,8 @@ class PocketBaseBackend implements SyncBackend {
                 'name': attachment.name,
                 'deleted': attachment.deleted,
                 'deleted_at': _dateValue(attachment.deletedAt),
+                // Deleted permanently from the trash (ADR-0070).
+                if (attachment.purged) 'purged': true,
               },
             );
       }

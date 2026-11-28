@@ -6794,4 +6794,9 @@ class AppLocalizationsEn extends AppLocalizations {
   ) {
     return '“$name” ($size) no longer fits into the organization\'s storage: $used of $limit used. Deleted PDFs count until they are deleted permanently.';
   }
+
+  @override
+  String trashAttachmentOf(String song, String size) {
+    return 'PDF in “$song” · $size';
+  }
 }

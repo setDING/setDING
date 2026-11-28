@@ -266,6 +266,39 @@ void main() {
     expect(await b.fetchOrgStorage('o1'), isNull);
   });
 
+  // ADR-0070: a single deleted attachment purged from the trash.
+  test('a purged attachment sends purged; others do not', () async {
+    final store = MemorySessionStore(_storedSession());
+    final b = backend(
+      store,
+      (r) async => _json(200, {
+        'id': 'a1',
+        'collectionId': 'c',
+        'collectionName': 'attachments',
+        'organization': 'o1',
+        'song': 's1',
+        'name': 'Horns',
+        'file': '',
+        'revision': 9,
+        'deleted': true,
+        'purged': true,
+      }),
+    );
+    RemoteAttachment attachment({required bool purged}) => RemoteAttachment(
+      id: 'a1',
+      organizationId: 'o1',
+      songId: 's1',
+      name: 'Horns',
+      deleted: true,
+      deletedAt: DateTime.utc(2026, 11, 28),
+      purged: purged,
+    );
+    await b.pushAttachment(attachment(purged: true), create: false);
+    expect(jsonDecode(requests.last.body), containsPair('purged', true));
+    await b.pushAttachment(attachment(purged: false), create: false);
+    expect(jsonDecode(requests.last.body), isNot(contains('purged')));
+  });
+
   test('clears a session the server rejects', () async {
     final store = MemorySessionStore(_storedSession());
     final b = backend(

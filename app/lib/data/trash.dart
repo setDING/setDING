@@ -42,6 +42,103 @@ class TrashRepository {
             ..orderBy([(s) => OrderingTerm.desc(s.deletedAt)]))
           .watch();
 
+  /// Attachments of [libraryId] deleted on their own (their song is still
+  /// in the library) that are on the server, with the title of their song,
+  /// most recently deleted first. They still count against the
+  /// organization's storage until purged (ADR-0070); attachments of the
+  /// local library are not listed, their file goes with the undo.
+  Stream<List<(AttachmentEntry, String)>> watchAttachments(String libraryId) {
+    if (libraryId == localBandId) return Stream.value(const []);
+    final q =
+        db.select(db.attachments).join([
+            innerJoin(db.songs, db.songs.id.equalsExp(db.attachments.songId)),
+          ])
+          ..where(
+            db.songs.libraryId.equals(libraryId) &
+                db.songs.deleted.equals(false) &
+                db.attachments.deleted.equals(true) &
+                db.attachments.purged.equals(false) &
+                db.attachments.revision.isBiggerThanValue(0) &
+                db.attachments.deletedAt.isBiggerThanValue(_cutoff),
+          )
+          ..orderBy([OrderingTerm.desc(db.attachments.deletedAt)]);
+    return q.watch().map(
+      (rows) => [
+        for (final r in rows)
+          (r.readTable(db.attachments), r.readTable(db.songs).title),
+      ],
+    );
+  }
+
+  /// Restores attachments deleted on their own; synced like an edit.
+  Future<void> restoreAttachments(Iterable<String> ids) =>
+      db.transaction(() async {
+        for (final (a, song) in await _attachmentsWithSong(ids)) {
+          await (db.update(
+            db.attachments,
+          )..where((x) => x.id.equals(a.id))).write(
+            AttachmentsCompanion(
+              deleted: const Value(false),
+              deletedAt: const Value(null),
+              updatedAt: Value(_clock()),
+            ),
+          );
+          await markDirty(
+            db,
+            SyncCollection.attachments,
+            a.id,
+            scope: song.libraryId,
+          );
+        }
+      });
+
+  /// Deletes deleted attachments permanently (ADR-0070, organization admins
+  /// and librarians, which the server checks): they become tombstones
+  /// (`purged`), synced like an edit, so the server removes the file and it
+  /// no longer counts against the storage. The file on this device goes at
+  /// once.
+  Future<void> purgeAttachments(Iterable<String> ids) async {
+    final files = <String>[];
+    await db.transaction(() async {
+      for (final (a, song) in await _attachmentsWithSong(ids)) {
+        if (!a.deleted || a.purged) continue;
+        await (db.update(
+          db.attachments,
+        )..where((x) => x.id.equals(a.id))).write(
+          AttachmentsCompanion(
+            purged: const Value(true),
+            updatedAt: Value(_clock()),
+          ),
+        );
+        await markDirty(
+          db,
+          SyncCollection.attachments,
+          a.id,
+          scope: song.libraryId,
+        );
+        files.add(a.fileName);
+      }
+    });
+    await _deleteFiles(files);
+  }
+
+  Future<List<(AttachmentEntry, SongEntry)>> _attachmentsWithSong(
+    Iterable<String> ids,
+  ) async {
+    final rows =
+        await (db.select(db.attachments).join([
+              innerJoin(db.songs, db.songs.id.equalsExp(db.attachments.songId)),
+            ])..where(
+              db.attachments.id.isIn(ids) &
+                  db.songs.libraryId.equals(localBandId).not(),
+            ))
+            .get();
+    return [
+      for (final r in rows)
+        (r.readTable(db.attachments), r.readTable(db.songs)),
+    ];
+  }
+
   /// Deleted sets of [bandId], most recently deleted first.
   Stream<List<SetlistEntry>> watchSets(String bandId) =>
       (db.select(db.setlists)
