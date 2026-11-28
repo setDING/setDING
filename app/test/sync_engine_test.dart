@@ -196,21 +196,46 @@ void main() {
       },
     );
 
-    test(
-      'a song deleted on the server disappears and leaves its sets',
-      () async {
-        server.putSong(remoteSong('s1', '{title: Gone}'));
-        await engine.sync();
-        final setId = await sets.createSet(name: 'Gig');
-        await sets.addSongs(setId, ['s1']);
-        await engine.sync();
+    test('a song deleted on the server disappears but stays in its sets as '
+        'missing (#1261)', () async {
+      server.putSong(remoteSong('s1', '{title: Gone}'));
+      await engine.sync();
+      final setId = await sets.createSet(name: 'Gig');
+      await sets.addSongs(setId, ['s1']);
+      await engine.sync();
 
-        server.putSong(remoteSong('s1', '{title: Gone}', deleted: true));
-        await engine.sync();
-        expect(await songs.getSong('s1'), isNull);
-        expect(await sets.getItems(setId), isEmpty);
-      },
-    );
+      server.putSong(remoteSong('s1', '{title: Gone}', deleted: true));
+      await engine.sync();
+      expect(await songs.getSong('s1'), isNull);
+      // Until #1261 the item was removed here without pushing the set.
+      final items = await sets.getItems(setId);
+      expect(items.map((i) => i.item.songId), ['s1']);
+      expect(items.single.song, isNull, reason: 'shown as song missing');
+      expect(await outbox(), isEmpty, reason: 'the set is not changed');
+    });
+
+    test('a set item of a song deleted and restored on another device is the '
+        'same as on the server (#1261)', () async {
+      server.putSong(remoteSong('s1', '{title: Back}'));
+      await engine.sync();
+      final setId = await sets.createSet(name: 'Gig');
+      await sets.addSongs(setId, ['s1']);
+      await engine.sync();
+      final onServer = server.sets[setId]!.items.map((i) => i.songId).toList();
+      expect(onServer, ['s1']);
+
+      // Another device deletes the song and restores it from the trash;
+      // this device syncs in between.
+      server.putSong(remoteSong('s1', '{title: Back}', deleted: true));
+      await engine.sync();
+      server.putSong(remoteSong('s1', '{title: Back}'));
+      await engine.sync();
+
+      final items = await sets.getItems(setId);
+      expect(items.map((i) => i.item.songId), onServer);
+      expect(items.single.song?.title, 'Back', reason: 'normal again');
+      expect(server.sets[setId]!.items.map((i) => i.songId), onServer);
+    });
 
     test('a song created and deleted before syncing is never sent', () async {
       final id = await songs.createSong(source: '{title: Oops}');
