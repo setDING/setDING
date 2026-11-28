@@ -9,6 +9,7 @@ import { Image } from 'astro:assets';
 import ExampleSong from '../../../../components/ExampleSong.astro';
 import song from '../../../../../../docs/screenshots/song.png';
 import attachmentMenu from '../../../../../../docs/screenshots/song_attachment_menu.png';
+import attachmentRefused from '../../../../../../docs/screenshots/song_attachment_refused.png';
 import adjustmentOffer from '../../../../../../docs/screenshots/adjustment_offer.png';
 import phoneMenu from '../../../../../../docs/screenshots/song_phone_menu.png';
 import stackedChoruses from '../../../../../../docs/screenshots/live_stacked_choruses.png';
@@ -108,6 +109,17 @@ song can **Save** an attachment from its menu as a file, e.g. to print it or sen
 on; in the browser it is downloaded.
 
 <Image src={attachmentMenu} alt="The Attachments panel with two PDFs; the menu of the Horns PDF shows Rename, Save and Delete" />
+
+### Only on this device
+
+If the server does not accept a new attachment, e.g. because you may not add
+attachments in this library or the file is too large for the server, setDING tells
+you once after syncing. The attachment then stays **only on this device**: it is
+marked in the attachments, with the reason, and your bandmates do not get it.
+setDING does not try again by itself. In the attachment's menu you can **Upload
+again**, e.g. once you have the permission, or **Delete** it.
+
+<Image src={attachmentRefused} alt="The Attachments panel: the Horns PDF is marked “Only on this device”, with the reason: no permission to upload" />
 
 ### PDF in live mode
 

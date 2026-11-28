@@ -72,6 +72,7 @@ synced and displayed.
 - 2026-11-16: Two pages side by side in landscape implemented (#150): live mode shows spreads fitted to the screen and turns a spread at a time; portrait keeps the scrollable viewer with one page per turn.
 - 2026-11-18: Attachments can be opened from the song screen without changing the live view choice (#507): a PDF opens in live mode for that song only, an image in a full-screen, zoomable view.
 - 2026-11-23: Attachments can be saved as a file from their menu (#1025), by everyone who sees the song: the platform's save dialog, a download on web (the file is fetched on demand first, ADR-0018).
+- 2026-11-28: A refused upload is no longer dropped silently (#1225). When the server gives a lasting answer to a new attachment (no permission, 403/404, or a validation error, 400, e.g. the file is too large), the attachment stays on the device marked "Only on this device" with the reason (local column `attachments.upload_refused`, schema 43), the sync report names it and the person is told once; it is not sent again until the person chooses *Upload again* in its menu, or deletes it. Network errors, server errors (5xx), rate limits (429) and a required update (426) are not refusals: the upload is sent again in the next sync, server errors and rate limits without stopping the other pushes. Further lasting answers (e.g. a storage limit, ADR-0070) fit as another refusal reason.
 
 ## Open points
 

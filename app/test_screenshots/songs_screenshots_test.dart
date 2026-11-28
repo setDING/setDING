@@ -382,6 +382,52 @@ void main() {
     });
   }
 
+  // An attachment the server refused: only on this device, with the
+  // reason (#1225).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('song attachment refused $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final song = (await tester.runAsync(() async {
+        final id = await app.songs.createSong(source: demoSongSource);
+        final horns = await app.songs.addAttachment(
+          id,
+          name: lang == 'de' ? 'Bläser' : 'Horns',
+          bytes: Uint8List(184320),
+          pages: 2,
+        );
+        await app.songs.addAttachment(
+          id,
+          name: 'Piano',
+          bytes: Uint8List(262144),
+          pages: 3,
+        );
+        await (app.db.update(
+          app.db.attachments,
+        )..where((a) => a.id.equals(horns))).write(
+          const AttachmentsCompanion(
+            uploadRefused: Value(UploadRefusal.notAllowed),
+          ),
+        );
+        return id;
+      }))!;
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(home: SongScreen(songId: song)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('open-attachments')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('attachment-only-here')), findsOneWidget);
+      await shot(tester, '${lang}_55b_song_attachment_refused');
+      await app.dispose(tester);
+    });
+  }
+
   // The offer to copy the adjustments of another language version
   // (ADR-0053, #808).
   for (final (lang, dark) in [('de', false), ('en', true)]) {

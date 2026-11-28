@@ -1601,6 +1601,13 @@ class FakeSyncBackend implements SyncBackend {
       ..sort((a, b) => a.revision.compareTo(b.revision));
   }
 
+  /// When set, uploads of new attachments fail with it, e.g. a refusal
+  /// (#1225) or a server error.
+  BackendException? attachmentUploadError;
+
+  /// Uploads of new attachments, also refused ones.
+  int attachmentUploads = 0;
+
   @override
   Future<RemoteAttachment> pushAttachment(
     RemoteAttachment attachment, {
@@ -1609,12 +1616,19 @@ class FakeSyncBackend implements SyncBackend {
   }) async {
     _requireUser();
     pushCount++;
+    if (create) attachmentUploads++;
     if (!songs.containsKey(attachment.songId)) {
-      throw const BackendException(BackendErrorKind.server);
+      // The song relation fails the validation, as on the server.
+      throw const BackendException(BackendErrorKind.server, null, 400);
     }
     if (create) {
+      if (attachmentUploadError case final e?) throw e;
       if (bytes == null || bytes.length > 20 * 1024 * 1024) {
-        throw const BackendException(BackendErrorKind.server);
+        throw const BackendException(BackendErrorKind.server, {
+          'data': {
+            'file': {'code': 'validation_file_size_limit'},
+          },
+        }, 400);
       }
       return putAttachment(attachment, bytes: bytes);
     }

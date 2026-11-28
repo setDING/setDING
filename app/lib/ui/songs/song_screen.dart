@@ -58,6 +58,7 @@ import 'adjustment_offer.dart';
 import 'language_versions.dart';
 import 'song_language.dart';
 import 'song_links_panel.dart';
+import 'refused_uploads.dart';
 import '../widgets/menu_action.dart';
 import '../routes.dart';
 import '../share_link.dart';
@@ -1353,11 +1354,12 @@ class _AttachmentsCard extends ConsumerWidget {
         RadioListTile<String?>(
           value: a.id,
           title: Text(a.name),
-          subtitle: Text(
+          subtitle: _subtitle(
             [
               if (a.pages != null) l10n.pagesCount(a.pages!),
               formatBytes(a.sizeBytes),
             ].join(' · '),
+            a,
           ),
           secondary: _actions(context, repo, a),
         ),
@@ -1413,6 +1415,17 @@ class _AttachmentsCard extends ConsumerWidget {
     return inPanel ? list : Card.outlined(child: list);
   }
 
+  /// The size of an attachment and, when the server refused it (#1225),
+  /// that it is only on this device.
+  Widget _subtitle(String info, AttachmentEntry a) => switch (a.uploadRefused) {
+    null => Text(info),
+    final reason => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [Text(info), RefusedUploadMarker(reason)],
+    ),
+  };
+
   /// The open button and the menu of an attachment.
   Widget _actions(
     BuildContext context,
@@ -1441,6 +1454,8 @@ class _AttachmentsCard extends ConsumerWidget {
       onSelected: (value) async {
         if (value == 'save') {
           onSave(a);
+        } else if (value == 'retry') {
+          await repo.retryUpload(a.id);
         } else if (value == 'rename') {
           final name = await askText(
             context,
@@ -1463,6 +1478,13 @@ class _AttachmentsCard extends ConsumerWidget {
         }
       },
       itemBuilder: (_) => [
+        // Refused by the server (#1225): sent again on request.
+        if (a.uploadRefused != null)
+          MenuAction(
+            value: 'retry',
+            icon: Icons.cloud_upload_outlined,
+            label: l10n.retryUpload,
+          ),
         if (canRename)
           MenuAction(
             value: 'rename',
@@ -1474,7 +1496,9 @@ class _AttachmentsCard extends ConsumerWidget {
           icon: Icons.download_outlined,
           label: l10n.save,
         ),
-        if (canDelete) ...[
+        // A refused attachment is only here: whoever added it may remove
+        // it (#1225).
+        if (canDelete || a.uploadRefused != null) ...[
           const PopupMenuDivider(),
           MenuAction(
             value: 'delete',

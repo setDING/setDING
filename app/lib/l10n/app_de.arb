@@ -4172,5 +4172,40 @@
         "type": "String"
       }
     }
-  }
+  },
+  "attachmentOnlyHere": "Nur auf diesem Gerät: {reason}",
+  "@attachmentOnlyHere": {
+    "description": "Marker of an attachment the server refused (#1225); reason is one of uploadRefusal*.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadRefusalNotAllowed": "keine Berechtigung zum Hochladen",
+  "uploadRefusalTooLarge": "die Datei ist für den Server zu gross",
+  "uploadRefusalOther": "vom Server abgelehnt",
+  "attachmentUploadRefused": "Der Server hat «{name}» von «{song}» nicht angenommen ({reason}). Der Anhang bleibt nur auf diesem Gerät.",
+  "@attachmentUploadRefused": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "song": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "attachmentUploadsRefused": "{count, plural, =1{Der Server hat 1 Anhang nicht angenommen. Er bleibt nur auf diesem Gerät.} other{Der Server hat {count} Anhänge nicht angenommen. Sie bleiben nur auf diesem Gerät.}}",
+  "@attachmentUploadsRefused": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "retryUpload": "Erneut hochladen"
 }

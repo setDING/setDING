@@ -1139,6 +1139,19 @@ class SongRepository {
     if (a != null) await _markAttachment(a.id, a.songId, a.fileName);
   });
 
+  /// Sends an attachment the server refused (#1225) again with the next
+  /// sync, e.g. after the person got the permission or the server's limit
+  /// was raised.
+  Future<void> retryUpload(String id) => _write(() async {
+    await (db.update(db.attachments)..where((a) => a.id.equals(id))).write(
+      const AttachmentsCompanion(uploadRefused: Value(null)),
+    );
+    final a = await (db.select(
+      db.attachments,
+    )..where((a) => a.id.equals(id))).getSingleOrNull();
+    if (a != null) await _markAttachment(a.id, a.songId, a.fileName);
+  });
+
   /// Soft-deletes an attachment; its file is kept for an undo
   /// ([restoreAttachment]) until [purgeFiles].
   Future<DeletedAttachment> deleteAttachment(AttachmentEntry attachment) =>

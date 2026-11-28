@@ -1,0 +1,76 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
+
+import '../../data/database.dart';
+import '../../l10n/generated/app_localizations.dart';
+import '../../sync/sync_controller.dart';
+import '../../sync/sync_engine.dart' show RefusedUpload;
+import '../theme.dart';
+import '../widgets/dialogs.dart';
+
+/// Why the server refused an attachment upload (#1225), as the end of a
+/// sentence.
+String uploadRefusalText(AppLocalizations l10n, UploadRefusal reason) =>
+    switch (reason) {
+      UploadRefusal.notAllowed => l10n.uploadRefusalNotAllowed,
+      UploadRefusal.tooLarge => l10n.uploadRefusalTooLarge,
+      UploadRefusal.refused => l10n.uploadRefusalOther,
+    };
+
+/// The marker of an attachment the server refused (#1225): it is only on
+/// this device, with the reason. Retry and remove are in its menu.
+class RefusedUploadMarker extends StatelessWidget {
+  const RefusedUploadMarker(this.reason, {super.key});
+
+  final UploadRefusal reason;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final color = StatusColors.of(context).warning;
+    // The icon is part of the text, so a narrow panel wraps it as one.
+    return Text.rich(
+      key: const Key('attachment-only-here'),
+      TextSpan(
+        children: [
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Padding(
+              padding: const EdgeInsetsDirectional.only(end: 4),
+              child: Icon(Icons.cloud_off_outlined, size: 16, color: color),
+            ),
+          ),
+          TextSpan(
+            text: l10n.attachmentOnlyHere(uploadRefusalText(l10n, reason)),
+          ),
+        ],
+      ),
+      style: TextStyle(color: color),
+    );
+  }
+}
+
+/// After a sync: tells the person once which attachments the server
+/// refused (#1225). The sync does not send them again by itself, so each
+/// refusal is told once. Call from the home screen's `build`.
+void listenForRefusedUploads(BuildContext context, WidgetRef ref) {
+  ref.listen(syncControllerProvider.select((s) => s.lastReport), (_, report) {
+    final refused = report?.refusedUploads ?? const <RefusedUpload>[];
+    if (refused.isEmpty) return;
+    final l10n = AppLocalizations.of(context);
+    final message = switch (refused) {
+      [final r] => l10n.attachmentUploadRefused(
+        r.name,
+        r.songTitle,
+        uploadRefusalText(l10n, r.reason),
+      ),
+      _ => l10n.attachmentUploadsRefused(refused.length),
+    };
+    showMessageOn(
+      ScaffoldMessenger.maybeOf(context),
+      message,
+      key: const Key('attachment-upload-refused'),
+      duration: const Duration(seconds: 10),
+    );
+  });
+}

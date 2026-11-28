@@ -631,4 +631,73 @@ void main() {
       );
     });
   });
+
+  // A refused request is not sent again by itself; a server error or a rate
+  // limit may go away (#1225).
+  group('refused requests (#1225)', () {
+    const attachment = RemoteAttachment(
+      id: 'a1',
+      organizationId: 'o1',
+      songId: 's1',
+      name: 'Score',
+      sizeBytes: 3,
+    );
+    Future<BackendException> pushFails(int status, Object body) async {
+      final b = backend(
+        MemorySessionStore(_storedSession()),
+        (r) async => _json(status, body),
+        rateLimitBackoff: const [],
+      );
+      try {
+        await b.pushAttachment(attachment, create: true, bytes: [1, 2, 3]);
+      } on BackendException catch (e) {
+        return e;
+      }
+      fail('no error');
+    }
+
+    test('a validation error is refused, with the code of its field', () async {
+      final e = await pushFails(400, {
+        'status': 400,
+        'message': 'Failed to create record.',
+        'data': {
+          'file': {
+            'code': 'validation_file_size_limit',
+            'message': 'Too large.',
+          },
+        },
+      });
+      expect(e.kind, BackendErrorKind.server);
+      expect(e.statusCode, 400);
+      expect(e.refused, isTrue);
+      expect(e.fieldCode('file'), 'validation_file_size_limit');
+      expect(e.fieldCode('name'), isNull);
+    });
+
+    test('no permission is refused', () async {
+      final e = await pushFails(403, {'status': 403, 'message': 'Forbidden'});
+      expect(e.kind, BackendErrorKind.notAllowed);
+      expect(e.refused, isTrue);
+    });
+
+    test('a server error and a rate limit are not refused', () async {
+      for (final status in [500, 503, 429]) {
+        final e = await pushFails(status, {'status': status, 'message': 'x'});
+        expect(e.kind, BackendErrorKind.server, reason: '$status');
+        expect(e.refused, isFalse, reason: '$status');
+      }
+    });
+
+    test('an update needed and no network are not refused', () async {
+      expect(
+        (await pushFails(426, {'status': 426, 'message': 'x'})).refused,
+        isFalse,
+      );
+      expect(const BackendException(BackendErrorKind.network).refused, isFalse);
+      expect(
+        const BackendException(BackendErrorKind.signedOut).refused,
+        isFalse,
+      );
+    });
+  });
 }

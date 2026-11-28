@@ -19,6 +19,7 @@ import 'backup/full_backup.dart';
 import 'home_tab.dart';
 import 'sync_hints.dart';
 import 'songs/song_reports.dart' show listenForReportAnswers;
+import 'songs/refused_uploads.dart' show listenForRefusedUploads;
 import 'widgets/app_update.dart';
 import 'widgets/dialogs.dart';
 import 'widgets/logo.dart';
@@ -257,6 +258,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     listenForLiveSummary(context, ref);
     // Answers to the person's mistake reports (ADR-0060).
     listenForReportAnswers(context, ref);
+    // Attachments the server refused to take (#1225).
+    listenForRefusedUploads(context, ref);
     // A dot on the settings, where the update is described (ADR-0036).
     final update = ref.watch(updateCheckProvider) != null;
     final destinations = [

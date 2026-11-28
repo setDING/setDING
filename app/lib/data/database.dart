@@ -327,9 +327,19 @@ class Attachments extends Table {
   /// (ADR-0043, schema 21): it is no longer in the trash.
   BoolColumn get purged => boolean().withDefault(const Constant(false))();
 
+  /// Why the server refused to take the new file (#1225, schema 43); null
+  /// when it is on the server or not sent yet. A refused attachment stays
+  /// on this device only and is not sent again until the person retries.
+  TextColumn get uploadRefused => textEnum<UploadRefusal>().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }
+
+/// Why the server refused an attachment upload (#1225): the person may not
+/// add it (any more), the file is too large, or another reason the server
+/// gave. Each one is a lasting answer, unlike a network or server error.
+enum UploadRefusal { notAllowed, tooLarge, refused }
 
 @TableIndex(name: 'setlists_band', columns: {#bandId, #deleted})
 @DataClassName('SetlistEntry')
@@ -820,7 +830,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 42;
+  int get schemaVersion => 43;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -1194,6 +1204,10 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(contacts);
         await m.createIndex(contactsOrganization);
         await m.addColumn(setlists, setlists.lineupContacts);
+      }
+      if (from < 43) {
+        // Refused attachment uploads (#1225).
+        await m.addColumn(attachments, attachments.uploadRefused);
       }
     },
     beforeOpen: (details) async {
