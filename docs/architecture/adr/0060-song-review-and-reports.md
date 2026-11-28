@@ -327,6 +327,7 @@ Older clients that import songs do not set *to review*.
   every organization member, sets and arrangements per band, overlays,
   annotations and settings per user, and the plays are replaced as a whole.
 - 2026-11-28: A report screenshot is at most 300 KB (`maxSize` of `screenshot`, was 1 MB; screenshots already stored stay), ADR-0070 (#1226); the app scales a screenshot down before sending it. A larger screenshot (from an app before this change) is left out by the server instead of refusing the report, so reporting never fails on the size. Screenshots do not count against the storage limit of the organization.
+- 2026-11-28: A new report the server refuses for good stays on the reporter's device, marked "Only on this device" with the reason, and is not sent again until the reporter taps *Send again*; *Withdraw* removes it from the device (#1269, ADR-0004).
 
 ## Open points
 

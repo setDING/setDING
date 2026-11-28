@@ -81,7 +81,14 @@ void downgradeToSchema39(Database raw) {
 /// Turns a current database back into schema 42: attachments without a
 /// refused upload (#1225).
 void downgradeToSchema42(Database raw) {
+  downgradeToSchema43(raw);
   raw.execute('ALTER TABLE attachments DROP COLUMN upload_refused');
+}
+
+/// Turns a current database back into schema 43: mistake reports without
+/// a refused upload (#1269).
+void downgradeToSchema43(Database raw) {
+  raw.execute('ALTER TABLE song_reports DROP COLUMN upload_refused');
 }
 
 /// Turns a current database back into schema 41: no people without an
@@ -1552,6 +1559,33 @@ void main() {
     expect(a.name, 'Score');
     expect(a.pages, 2);
     expect(a.uploadRefused, isNull);
+    await upgraded.close();
+  });
+
+  test('upgrades a schema 43 database: mistake reports keep their values '
+      'and are not refused (#1269)', () async {
+    final current = AppDatabase(NativeDatabase(file));
+    final storage = FileAttachmentStorage(dir);
+    final id = await SongRepository(
+      current,
+      storage,
+    ).createSong(source: '{title: Song}');
+    final r = await SongReviewRepository(
+      current,
+      storage,
+    ).report(id, category: SongReportCategory.chords, comment: 'Wrong chord');
+    await current.close();
+
+    final raw = sqlite3.open(file.path);
+    downgradeToSchema43(raw);
+    raw.execute('PRAGMA user_version = 43');
+    raw.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    final report = await upgraded.select(upgraded.songReports).getSingle();
+    expect(report.id, r);
+    expect(report.comment, 'Wrong chord');
+    expect(report.uploadRefused, isNull);
     await upgraded.close();
   });
 }

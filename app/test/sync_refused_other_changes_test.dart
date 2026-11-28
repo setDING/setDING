@@ -404,7 +404,10 @@ void main() {
       ));
     });
 
-    for (final (label, refusal) in [('403', _forbidden), ('400', _invalid)]) {
+    for (final (label, refusal, reason) in [
+      ('403', _forbidden, UploadRefusal.notAllowed),
+      ('400', _invalid, UploadRefusal.refused),
+    ]) {
       test(
         'a refused new report stays on this device, told once ($label)',
         () async {
@@ -428,18 +431,70 @@ void main() {
               songTitle: 'Song',
             ),
           ]);
-          // Sent again with every sync, as a report not on the server, but
-          // told once.
+          // Marked as refused and not sent again with every sync (#1269);
+          // before, it went out again in each sync.
+          expect((await reportRow(r))!.uploadRefused, reason);
+          final pushes = server.pushCount;
           final again = await engine.sync();
           expect(again.error, isNull);
-          expect(again.undoneChanges, isEmpty);
-
-          server.reportPushError = null;
-          await engine.sync();
-          expect(server.reports[r]!.comment, 'Wrong chord');
+          expect(again.undoneChanges, isEmpty, reason: 'told once');
+          expect(server.pushCount, pushes, reason: 'before: sent again');
+          expect(await outbox(), isEmpty);
         },
       );
     }
+
+    test(
+      'a refused new report is sent again only on request (#1269)',
+      () async {
+        final id = await syncedSong();
+        final r = await review.report(
+          id,
+          category: SongReportCategory.chords,
+          comment: 'Wrong chord',
+        );
+        server.reportPushError = _forbidden;
+        await engine.sync();
+        server.reportPushError = null;
+        await engine.sync();
+        expect(server.reports[r], isNull, reason: 'not sent by itself');
+
+        await review.sendAgain(r);
+        final report = await engine.sync();
+        expect(report.undoneChanges, isEmpty);
+        expect(server.reports[r]!.comment, 'Wrong chord');
+        final row = (await reportRow(r))!;
+        expect(row.uploadRefused, isNull);
+        expect(row.revision, greaterThan(0));
+        expect(row.onlyHere, isFalse);
+      },
+    );
+
+    test('a report refused again after sending again is told again '
+        '(#1269)', () async {
+      final id = await syncedSong();
+      final r = await review.report(id, category: SongReportCategory.chords);
+      server.reportPushError = _forbidden;
+      await engine.sync();
+      await review.sendAgain(r);
+      final report = await engine.sync();
+      expect(report.undoneChanges.single.kind, RefusedRecord.keptReport);
+      expect((await reportRow(r))!.uploadRefused, UploadRefusal.notAllowed);
+    });
+
+    test('withdrawing a refused new report removes it (#1269)', () async {
+      final id = await syncedSong();
+      final r = await review.report(id, category: SongReportCategory.chords);
+      server.reportPushError = _forbidden;
+      await engine.sync();
+      server.reportPushError = null;
+
+      await review.withdraw(r);
+      expect(await reportRow(r), isNull);
+      expect(await outbox(), isEmpty);
+      await engine.sync();
+      expect(server.reports[r], isNull);
+    });
 
     test('a server error is sent again in the next sync', () async {
       final id = await syncedSong();

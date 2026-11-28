@@ -6974,4 +6974,18 @@ class AppLocalizationsIt extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get reportRefusalNotAllowed =>
+      'nessuna autorizzazione a segnalare errori';
+
+  @override
+  String get reportRefusalTooLarge =>
+      'lo screenshot è troppo grande per il server';
+
+  @override
+  String get reportSendAgain => 'Invia di nuovo';
+
+  @override
+  String get reportSentAgainMessage => 'La segnalazione viene inviata di nuovo';
 }

@@ -17,6 +17,7 @@ import '../overview/recent_changes.dart' show personNamesProvider;
 import '../widgets/dialogs.dart';
 import '../live/page_turner.dart' show isPageTurnKey;
 import '../widgets/side_panel.dart';
+import 'refused_uploads.dart' show OnlyHereMarker, reportRefusalText;
 import 'report_screenshot.dart';
 import 'song_attention.dart';
 
@@ -409,6 +410,15 @@ class _ReportCard extends ConsumerWidget {
               ].join(' · '),
               style: muted,
             ),
+            // Refused by the server (#1269): only on this device until the
+            // person sends it again, like a refused upload (#1225).
+            if (report.onlyHere) ...[
+              const SizedBox(height: 4),
+              OnlyHereMarker(
+                reportRefusalText(l10n, report.uploadRefused!),
+                key: const Key('report-only-here'),
+              ),
+            ],
             if (status == SongReportStatus.resolved) ...[
               const SizedBox(height: 4),
               Text(
@@ -423,6 +433,15 @@ class _ReportCard extends ConsumerWidget {
               Wrap(
                 spacing: 8,
                 children: [
+                  if (report.isOpen && mine && report.onlyHere)
+                    TextButton(
+                      key: const Key('report-send-again'),
+                      onPressed: () => act(
+                        () => review.sendAgain(report.id),
+                        l10n.reportSentAgainMessage,
+                      ),
+                      child: Text(l10n.reportSendAgain),
+                    ),
                   if (report.isOpen && mine)
                     TextButton(
                       key: const Key('report-withdraw'),

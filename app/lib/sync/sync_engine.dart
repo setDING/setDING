@@ -447,12 +447,13 @@ class SyncEngine {
         'AND s.library_id IN (${placeholders(libs.length)})',
         [userId, ...libs],
       );
-      // Mistake reports of this user not on the server (ADR-0060).
+      // Mistake reports of this user not on the server (ADR-0060), except
+      // the ones the server refused (#1269).
       await enqueue(
         SyncCollection.songReports,
         'SELECT r.id FROM song_reports r JOIN songs s ON s.id = r.song_id '
         'WHERE r.revision = 0 AND r.deleted = 0 AND r.author_id = ? '
-        'AND s.deleted = 0 '
+        'AND r.upload_refused IS NULL AND s.deleted = 0 '
         'AND r.library_id IN (${placeholders(libs.length)})',
         [userId, ...libs],
       );

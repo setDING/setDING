@@ -1735,5 +1735,9 @@
   "importSkippedFiles": "{count, plural, =1{1 anexo não foi importado porque é demasiado grande:} other{{count} anexos não foram importados porque são demasiado grandes:}}",
   "importSkippedFile": "«{song}» · {size} (no máximo {limit})",
   "attachmentWrongType": "«{name}» não é um ficheiro {type} válido e não pode ser anexado.",
-  "importSkippedWrongType": "{count, plural, =1{1 imagem não foi importada porque o conteúdo não corresponde ao tipo de ficheiro:} other{{count} imagens não foram importadas porque o conteúdo não corresponde ao tipo de ficheiro:}}"
+  "importSkippedWrongType": "{count, plural, =1{1 imagem não foi importada porque o conteúdo não corresponde ao tipo de ficheiro:} other{{count} imagens não foram importadas porque o conteúdo não corresponde ao tipo de ficheiro:}}",
+  "reportRefusalNotAllowed": "sem permissão para reportar erros",
+  "reportRefusalTooLarge": "a captura de ecrã é demasiado grande para o servidor",
+  "reportSendAgain": "Enviar de novo",
+  "reportSentAgainMessage": "O relato é enviado de novo"
 }

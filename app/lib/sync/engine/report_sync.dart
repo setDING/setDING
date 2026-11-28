@@ -8,6 +8,7 @@ import '../../data/database.dart';
 import '../../data/outbox.dart';
 import '../../util/log.dart';
 import '../sync_backend.dart';
+import 'attachment_sync.dart' show AttachmentSync;
 import 'refused_changes.dart';
 import 'sync_store.dart';
 
@@ -239,12 +240,18 @@ class ReportSync {
       await store.done(entry);
       return PushResult.skipped;
     }
+    final create = report.revision == 0;
+    // Refused by the server: sent again only when the person sends it
+    // again (#1269).
+    if (create && report.uploadRefused != null) {
+      await store.done(entry);
+      return PushResult.skipped;
+    }
     // The song must be on the server first.
     if (song.revision == 0) {
       if (song.deleted) await store.done(entry);
       return PushResult.skipped;
     }
-    final create = report.revision == 0;
     // A screenshot not on the server yet goes with the create, or is added
     // to the report afterwards (never replaced, ADR-0060).
     List<int>? screenshot;
@@ -293,6 +300,7 @@ class ReportSync {
             remoteScreenshot: Value(stored.screenshot),
             resolvedBy: Value(stored.resolvedBy),
             resolvedAt: Value(stored.resolvedAt),
+            uploadRefused: const Value(null),
           ),
         );
         await store.done(entry);
@@ -308,10 +316,17 @@ class ReportSync {
       );
       if (create) {
         // A new report the server refused for good stays on this device as
-        // the person wrote it; as a report not on the server it is sent
-        // again with every sync, and told once (#1264).
+        // the person wrote it, marked like a refused upload (#1225): it is
+        // not sent again until the person sends it again, and told once
+        // (#1264, #1269).
         _log.warning('Report ${report.id} refused, kept on this device', e);
-        await undone.keepLocal(entry, change, sentAgain: true);
+        final reason = AttachmentSync.refusalOf(e);
+        await db.transaction(() async {
+          await (db.update(db.songReports)
+                ..where((r) => r.id.equals(report.id)))
+              .write(SongReportsCompanion(uploadRefused: Value(reason)));
+          await undone.keepLocal(entry, change);
+        });
         return PushResult.skipped;
       }
       // Not allowed (e.g. resolved meanwhile) or a validation error: the

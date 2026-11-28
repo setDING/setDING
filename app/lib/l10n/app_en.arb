@@ -3543,7 +3543,7 @@
   "linkCopied": "Link copied",
   "attachmentOnlyHere": "Only on this device: {reason}",
   "@attachmentOnlyHere": {
-    "description": "Marker of an attachment the server refused (#1225); reason is one of uploadRefusal*.",
+    "description": "Marker of an attachment (#1225) or a new mistake report (#1269) the server refused; reason is one of uploadRefusal* or reportRefusal*.",
     "placeholders": {
       "reason": {
         "type": "String"
@@ -3828,5 +3828,21 @@
         "type": "int"
       }
     }
+  },
+  "reportRefusalNotAllowed": "no permission to report mistakes",
+  "@reportRefusalNotAllowed": {
+    "description": "Why the server refused a new mistake report (#1269), the end of attachmentOnlyHere."
+  },
+  "reportRefusalTooLarge": "the screenshot is too large for the server",
+  "@reportRefusalTooLarge": {
+    "description": "Why the server refused a new mistake report (#1269): its screenshot is too large; the end of attachmentOnlyHere."
+  },
+  "reportSendAgain": "Send again",
+  "@reportSendAgain": {
+    "description": "Action on a mistake report the server refused (#1269): send it again with the next sync, like retryUpload."
+  },
+  "reportSentAgainMessage": "The report is sent again",
+  "@reportSentAgainMessage": {
+    "description": "Message after reportSendAgain (#1269)."
   }
 }

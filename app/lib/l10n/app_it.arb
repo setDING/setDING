@@ -1735,5 +1735,9 @@
   "importSkippedFiles": "{count, plural, =1{1 allegato non è stato importato perché è troppo grande:} other{{count} allegati non sono stati importati perché sono troppo grandi:}}",
   "importSkippedFile": "«{song}» · {size} (al massimo {limit})",
   "attachmentWrongType": "«{name}» non è un file {type} valido e non può essere allegato.",
-  "importSkippedWrongType": "{count, plural, =1{1 immagine non è stata importata perché il suo contenuto non corrisponde al tipo di file:} other{{count} immagini non sono state importate perché il loro contenuto non corrisponde al tipo di file:}}"
+  "importSkippedWrongType": "{count, plural, =1{1 immagine non è stata importata perché il suo contenuto non corrisponde al tipo di file:} other{{count} immagini non sono state importate perché il loro contenuto non corrisponde al tipo di file:}}",
+  "reportRefusalNotAllowed": "nessuna autorizzazione a segnalare errori",
+  "reportRefusalTooLarge": "lo screenshot è troppo grande per il server",
+  "reportSendAgain": "Invia di nuovo",
+  "reportSentAgainMessage": "La segnalazione viene inviata di nuovo"
 }

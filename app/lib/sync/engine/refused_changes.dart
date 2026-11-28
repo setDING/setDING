@@ -104,24 +104,11 @@ class RefusedChanges {
     }
   }
 
-  /// Records already told as kept that are sent again with every sync
-  /// (a new mistake report not on the server): told once while the app
-  /// runs (#1264).
-  final _toldKept = <String>{};
-
   /// Removes the refused [entry] of [change] from the outbox without
   /// undoing it: what the person wrote stays on this device as it is
-  /// (#1264). [sentAgain] is for records the sync sends again by itself,
-  /// which are told only once while the app runs.
-  Future<void> keepLocal(
-    OutboxEntry entry,
-    RefusedChange change, {
-    bool sentAgain = false,
-  }) async {
+  /// (#1264).
+  Future<void> keepLocal(OutboxEntry entry, RefusedChange change) async {
     await store.done(entry);
-    if (sentAgain && !_toldKept.add('${change.kind.name}:${change.id}')) {
-      return;
-    }
     if (!_changes.any((c) => c.kind == change.kind && c.id == change.id)) {
       _changes.add(change);
     }

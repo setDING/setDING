@@ -19,6 +19,16 @@ String uploadRefusalText(AppLocalizations l10n, UploadRefusal reason) =>
       UploadRefusal.storageFull => l10n.uploadRefusalStorageFull,
     };
 
+/// Why the server refused a new mistake report (#1269), as the end of a
+/// sentence.
+String reportRefusalText(AppLocalizations l10n, UploadRefusal reason) =>
+    switch (reason) {
+      UploadRefusal.notAllowed => l10n.reportRefusalNotAllowed,
+      UploadRefusal.tooLarge => l10n.reportRefusalTooLarge,
+      UploadRefusal.refused => l10n.uploadRefusalOther,
+      UploadRefusal.storageFull => l10n.uploadRefusalStorageFull,
+    };
+
 /// The marker of an attachment the server refused (#1225): it is only on
 /// this device, with the reason. Retry and remove are in its menu.
 class RefusedUploadMarker extends StatelessWidget {
@@ -27,12 +37,26 @@ class RefusedUploadMarker extends StatelessWidget {
   final UploadRefusal reason;
 
   @override
+  Widget build(BuildContext context) => OnlyHereMarker(
+    uploadRefusalText(AppLocalizations.of(context), reason),
+    key: const Key('attachment-only-here'),
+  );
+}
+
+/// The marker of a record the server refused that stays on this device
+/// only, with the [reason] in words: an attachment (#1225) or a new
+/// mistake report (#1269).
+class OnlyHereMarker extends StatelessWidget {
+  const OnlyHereMarker(this.reason, {super.key});
+
+  final String reason;
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final color = StatusColors.of(context).warning;
     // The icon is part of the text, so a narrow panel wraps it as one.
     return Text.rich(
-      key: const Key('attachment-only-here'),
       TextSpan(
         children: [
           WidgetSpan(
@@ -42,9 +66,7 @@ class RefusedUploadMarker extends StatelessWidget {
               child: Icon(Icons.cloud_off_outlined, size: 16, color: color),
             ),
           ),
-          TextSpan(
-            text: l10n.attachmentOnlyHere(uploadRefusalText(l10n, reason)),
-          ),
+          TextSpan(text: l10n.attachmentOnlyHere(reason)),
         ],
       ),
       style: TextStyle(color: color),

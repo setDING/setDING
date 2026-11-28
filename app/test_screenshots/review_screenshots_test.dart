@@ -5,6 +5,8 @@ import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:drift/drift.dart' show Value;
+import 'package:setding/data/database.dart';
 import 'package:setding/data/song_review.dart';
 
 import '../test/test_app.dart';
@@ -188,6 +190,40 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('song-reports')), findsOneWidget);
       await shot(tester, '${lang}_53e_song_reports');
+      await app.dispose(tester);
+    });
+  }
+
+  // A new report the server refused: only on this device, with the
+  // reason and Send again (#1269).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('song report refused $lang', (tester) async {
+      final app = await setup(tester, lang, dark);
+      await tester.runAsync(() async {
+        final song = await (app.db.select(
+          app.db.songs,
+        )..where((s) => s.title.equals('Morning Light'))).getSingle();
+        await (app.db.update(
+          app.db.songReports,
+        )..where((r) => r.songId.equals(song.id))).write(
+          const SongReportsCompanion(
+            uploadRefused: Value(UploadRefusal.notAllowed),
+          ),
+        );
+      });
+      await tester.pumpWidget(
+        RepaintBoundary(key: UniqueKey(), child: app.build()),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('overview-todo-toReview')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Morning Light'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('open-song-reports')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('report-only-here')), findsOneWidget);
+      expect(find.byKey(const Key('report-send-again')), findsOneWidget);
+      await shot(tester, '${lang}_53f_song_report_refused');
       await app.dispose(tester);
     });
   }

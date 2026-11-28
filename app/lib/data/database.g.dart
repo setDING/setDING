@@ -10810,6 +10810,15 @@ class $SongReportsTable extends SongReports
     defaultValue: const Constant(false),
   );
   @override
+  late final GeneratedColumnWithTypeConverter<UploadRefusal?, String>
+  uploadRefused = GeneratedColumn<String>(
+    'upload_refused',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  ).withConverter<UploadRefusal?>($SongReportsTable.$converteruploadRefusedn);
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     songId,
@@ -10828,6 +10837,7 @@ class $SongReportsTable extends SongReports
     revision,
     deleted,
     purged,
+    uploadRefused,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -11033,6 +11043,12 @@ class $SongReportsTable extends SongReports
         DriftSqlType.bool,
         data['${effectivePrefix}purged'],
       )!,
+      uploadRefused: $SongReportsTable.$converteruploadRefusedn.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}upload_refused'],
+        ),
+      ),
     );
   }
 
@@ -11040,6 +11056,15 @@ class $SongReportsTable extends SongReports
   $SongReportsTable createAlias(String alias) {
     return $SongReportsTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<UploadRefusal, String, String>
+  $converteruploadRefused = const EnumNameConverter<UploadRefusal>(
+    UploadRefusal.values,
+  );
+  static JsonTypeConverter2<UploadRefusal?, String?, String?>
+  $converteruploadRefusedn = JsonTypeConverter2.asNullable(
+    $converteruploadRefused,
+  );
 }
 
 class SongReportRow extends DataClass implements Insertable<SongReportRow> {
@@ -11081,6 +11106,12 @@ class SongReportRow extends DataClass implements Insertable<SongReportRow> {
 
   /// Purged with its song (ADR-0043): no text, location or screenshot.
   final bool purged;
+
+  /// Why the server refused to take the new report (#1269, schema 44);
+  /// null when it is on the server or not sent yet. Like a refused
+  /// attachment upload (#1225), a refused report stays on this device only
+  /// and is not sent again until the person sends it again.
+  final UploadRefusal? uploadRefused;
   const SongReportRow({
     required this.id,
     required this.songId,
@@ -11099,6 +11130,7 @@ class SongReportRow extends DataClass implements Insertable<SongReportRow> {
     required this.revision,
     required this.deleted,
     required this.purged,
+    this.uploadRefused,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -11134,6 +11166,11 @@ class SongReportRow extends DataClass implements Insertable<SongReportRow> {
     map['revision'] = Variable<int>(revision);
     map['deleted'] = Variable<bool>(deleted);
     map['purged'] = Variable<bool>(purged);
+    if (!nullToAbsent || uploadRefused != null) {
+      map['upload_refused'] = Variable<String>(
+        $SongReportsTable.$converteruploadRefusedn.toSql(uploadRefused),
+      );
+    }
     return map;
   }
 
@@ -11170,6 +11207,9 @@ class SongReportRow extends DataClass implements Insertable<SongReportRow> {
       revision: Value(revision),
       deleted: Value(deleted),
       purged: Value(purged),
+      uploadRefused: uploadRefused == null && nullToAbsent
+          ? const Value.absent()
+          : Value(uploadRefused),
     );
   }
 
@@ -11196,6 +11236,9 @@ class SongReportRow extends DataClass implements Insertable<SongReportRow> {
       revision: serializer.fromJson<int>(json['revision']),
       deleted: serializer.fromJson<bool>(json['deleted']),
       purged: serializer.fromJson<bool>(json['purged']),
+      uploadRefused: $SongReportsTable.$converteruploadRefusedn.fromJson(
+        serializer.fromJson<String?>(json['uploadRefused']),
+      ),
     );
   }
   @override
@@ -11219,6 +11262,9 @@ class SongReportRow extends DataClass implements Insertable<SongReportRow> {
       'revision': serializer.toJson<int>(revision),
       'deleted': serializer.toJson<bool>(deleted),
       'purged': serializer.toJson<bool>(purged),
+      'uploadRefused': serializer.toJson<String?>(
+        $SongReportsTable.$converteruploadRefusedn.toJson(uploadRefused),
+      ),
     };
   }
 
@@ -11240,6 +11286,7 @@ class SongReportRow extends DataClass implements Insertable<SongReportRow> {
     int? revision,
     bool? deleted,
     bool? purged,
+    Value<UploadRefusal?> uploadRefused = const Value.absent(),
   }) => SongReportRow(
     id: id ?? this.id,
     songId: songId ?? this.songId,
@@ -11262,6 +11309,9 @@ class SongReportRow extends DataClass implements Insertable<SongReportRow> {
     revision: revision ?? this.revision,
     deleted: deleted ?? this.deleted,
     purged: purged ?? this.purged,
+    uploadRefused: uploadRefused.present
+        ? uploadRefused.value
+        : this.uploadRefused,
   );
   SongReportRow copyWithCompanion(SongReportsCompanion data) {
     return SongReportRow(
@@ -11292,6 +11342,9 @@ class SongReportRow extends DataClass implements Insertable<SongReportRow> {
       revision: data.revision.present ? data.revision.value : this.revision,
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
       purged: data.purged.present ? data.purged.value : this.purged,
+      uploadRefused: data.uploadRefused.present
+          ? data.uploadRefused.value
+          : this.uploadRefused,
     );
   }
 
@@ -11314,7 +11367,8 @@ class SongReportRow extends DataClass implements Insertable<SongReportRow> {
           ..write('createdAt: $createdAt, ')
           ..write('revision: $revision, ')
           ..write('deleted: $deleted, ')
-          ..write('purged: $purged')
+          ..write('purged: $purged, ')
+          ..write('uploadRefused: $uploadRefused')
           ..write(')'))
         .toString();
   }
@@ -11338,6 +11392,7 @@ class SongReportRow extends DataClass implements Insertable<SongReportRow> {
     revision,
     deleted,
     purged,
+    uploadRefused,
   );
   @override
   bool operator ==(Object other) =>
@@ -11359,7 +11414,8 @@ class SongReportRow extends DataClass implements Insertable<SongReportRow> {
           other.createdAt == this.createdAt &&
           other.revision == this.revision &&
           other.deleted == this.deleted &&
-          other.purged == this.purged);
+          other.purged == this.purged &&
+          other.uploadRefused == this.uploadRefused);
 }
 
 class SongReportsCompanion extends UpdateCompanion<SongReportRow> {
@@ -11380,6 +11436,7 @@ class SongReportsCompanion extends UpdateCompanion<SongReportRow> {
   final Value<int> revision;
   final Value<bool> deleted;
   final Value<bool> purged;
+  final Value<UploadRefusal?> uploadRefused;
   final Value<int> rowid;
   const SongReportsCompanion({
     this.id = const Value.absent(),
@@ -11399,6 +11456,7 @@ class SongReportsCompanion extends UpdateCompanion<SongReportRow> {
     this.revision = const Value.absent(),
     this.deleted = const Value.absent(),
     this.purged = const Value.absent(),
+    this.uploadRefused = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SongReportsCompanion.insert({
@@ -11419,6 +11477,7 @@ class SongReportsCompanion extends UpdateCompanion<SongReportRow> {
     this.revision = const Value.absent(),
     this.deleted = const Value.absent(),
     this.purged = const Value.absent(),
+    this.uploadRefused = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        songId = Value(songId),
@@ -11443,6 +11502,7 @@ class SongReportsCompanion extends UpdateCompanion<SongReportRow> {
     Expression<int>? revision,
     Expression<bool>? deleted,
     Expression<bool>? purged,
+    Expression<String>? uploadRefused,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -11463,6 +11523,7 @@ class SongReportsCompanion extends UpdateCompanion<SongReportRow> {
       if (revision != null) 'revision': revision,
       if (deleted != null) 'deleted': deleted,
       if (purged != null) 'purged': purged,
+      if (uploadRefused != null) 'upload_refused': uploadRefused,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -11485,6 +11546,7 @@ class SongReportsCompanion extends UpdateCompanion<SongReportRow> {
     Value<int>? revision,
     Value<bool>? deleted,
     Value<bool>? purged,
+    Value<UploadRefusal?>? uploadRefused,
     Value<int>? rowid,
   }) {
     return SongReportsCompanion(
@@ -11505,6 +11567,7 @@ class SongReportsCompanion extends UpdateCompanion<SongReportRow> {
       revision: revision ?? this.revision,
       deleted: deleted ?? this.deleted,
       purged: purged ?? this.purged,
+      uploadRefused: uploadRefused ?? this.uploadRefused,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -11563,6 +11626,11 @@ class SongReportsCompanion extends UpdateCompanion<SongReportRow> {
     if (purged.present) {
       map['purged'] = Variable<bool>(purged.value);
     }
+    if (uploadRefused.present) {
+      map['upload_refused'] = Variable<String>(
+        $SongReportsTable.$converteruploadRefusedn.toSql(uploadRefused.value),
+      );
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -11589,6 +11657,7 @@ class SongReportsCompanion extends UpdateCompanion<SongReportRow> {
           ..write('revision: $revision, ')
           ..write('deleted: $deleted, ')
           ..write('purged: $purged, ')
+          ..write('uploadRefused: $uploadRefused, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -19703,6 +19772,7 @@ typedef $$SongReportsTableCreateCompanionBuilder =
       Value<int> revision,
       Value<bool> deleted,
       Value<bool> purged,
+      Value<UploadRefusal?> uploadRefused,
       Value<int> rowid,
     });
 typedef $$SongReportsTableUpdateCompanionBuilder =
@@ -19724,6 +19794,7 @@ typedef $$SongReportsTableUpdateCompanionBuilder =
       Value<int> revision,
       Value<bool> deleted,
       Value<bool> purged,
+      Value<UploadRefusal?> uploadRefused,
       Value<int> rowid,
     });
 
@@ -19820,6 +19891,12 @@ class $$SongReportsTableFilterComposer
     column: $table.purged,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnWithTypeConverterFilters<UploadRefusal?, UploadRefusal, String>
+  get uploadRefused => $composableBuilder(
+    column: $table.uploadRefused,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
 }
 
 class $$SongReportsTableOrderingComposer
@@ -19915,6 +19992,11 @@ class $$SongReportsTableOrderingComposer
     column: $table.purged,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get uploadRefused => $composableBuilder(
+    column: $table.uploadRefused,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SongReportsTableAnnotationComposer
@@ -19986,6 +20068,12 @@ class $$SongReportsTableAnnotationComposer
 
   GeneratedColumn<bool> get purged =>
       $composableBuilder(column: $table.purged, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<UploadRefusal?, String> get uploadRefused =>
+      $composableBuilder(
+        column: $table.uploadRefused,
+        builder: (column) => column,
+      );
 }
 
 class $$SongReportsTableTableManager
@@ -20036,6 +20124,7 @@ class $$SongReportsTableTableManager
                 Value<int> revision = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
                 Value<bool> purged = const Value.absent(),
+                Value<UploadRefusal?> uploadRefused = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SongReportsCompanion(
                 id: id,
@@ -20055,6 +20144,7 @@ class $$SongReportsTableTableManager
                 revision: revision,
                 deleted: deleted,
                 purged: purged,
+                uploadRefused: uploadRefused,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -20076,6 +20166,7 @@ class $$SongReportsTableTableManager
                 Value<int> revision = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
                 Value<bool> purged = const Value.absent(),
+                Value<UploadRefusal?> uploadRefused = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SongReportsCompanion.insert(
                 id: id,
@@ -20095,6 +20186,7 @@ class $$SongReportsTableTableManager
                 revision: revision,
                 deleted: deleted,
                 purged: purged,
+                uploadRefused: uploadRefused,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
