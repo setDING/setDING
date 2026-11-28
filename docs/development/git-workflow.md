@@ -221,7 +221,9 @@ to be decided.
 > runs every job (`make check-full`) and `make coverage` on `main` every night
 > (and by hand: `gh workflow run Nightly`). The run's page shows a summary of the
 > tests and the line coverage; the test reports and the lcov/HTML coverage are
-> its artifact `nightly-reports` (30 days). A red night opens the issue
+> its artifact `nightly-reports` (30 days). The coverage ratchet
+> (`make coverage-ratchet`, [coverage.md](coverage.md)) runs after the
+> measurement: a critical area below its minimum fails the night. A red night opens the issue
 > *ci: nightly full check failed* (`priority:high`, treat it as red CI on `main`
 > below) or comments on the open one; the next green night closes it.
 
@@ -238,7 +240,7 @@ prints the runner's CPUs and memory.
 |---|---|---|
 | `test` | `tool/check.sh`: format (`dart format --set-exit-if-changed`), `analyze` without infos, `l10n` (all ARB keys in German and English, no "ß"), unit and widget tests of `packages/chordpro` and `app` | **Manual only** (required again towards version 1) |
 | `build` | Android build (APK); iOS and Windows builds at least on `main` | Planned (needs the Android SDK, a macOS and a Windows runner) |
-| `nightly` | `nightly.yml`: `tool/check.sh` with `CHECK_FULL=1` and `make coverage` on `main`, summary on the run's page, issue on failure | **Every night** (not a required check) |
+| `nightly` | `nightly.yml`: `tool/check.sh` with `CHECK_FULL=1`, `make coverage` and the coverage ratchet on `main`, summary on the run's page, issue on failure | **Every night** (not a required check) |
 | `commit-lint` | PR title follows Conventional Commits | Planned |
 
 **Upgrading Flutter:** set `FLUTTER_VERSION` in the `Makefile` in the same PR as the

@@ -39,6 +39,11 @@ class SelectTest(unittest.TestCase):
     def test_upgrade_guard_runs_its_tests(self):
         self.assertEqual(jobs('tool/upgrade_guard.py'), ['tools'])
 
+    def test_coverage_ratchet_runs_its_tests(self):
+        # test_ratchet checks the checked-in minimums' paths (#1247).
+        self.assertEqual(jobs('tool/coverage/ratchet.json'), ['tools'])
+        self.assertEqual(jobs('tool/coverage/ratchet.py'), ['tools'])
+
     def test_nightly_test_summary_runs_its_tests(self):
         self.assertEqual(jobs('tool/ci/test_report.py'), ['tools'])
 

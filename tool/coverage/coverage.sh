@@ -3,7 +3,8 @@
 # the ChordPro package and the app (unit, widget and screenshot tests, as in
 # make check). Writes lcov reports, prints a summary (tool/coverage/summary.py)
 # and, if genhtml (lcov) is installed, an HTML report. Report only: there is no
-# threshold, and make check does not run it. COVERAGE_MARKDOWN=<file> also
+# threshold, and make check does not run it; make coverage-ratchet checks the
+# minimums of the critical areas afterwards (tool/coverage/ratchet.py, #1247). COVERAGE_MARKDOWN=<file> also
 # appends a Markdown summary to <file> (the nightly CI run's page, #1249).
 #
 # The server's API rules and hooks run inside PocketBase and are not measured

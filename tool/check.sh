@@ -45,13 +45,14 @@ report() {
 # Each job runs in its own subshell with `set -e`; the first failing command
 # fails the job.
 
-# Python tools: the coverage summary of make coverage (it does not run here:
-# measuring coverage slows the tests down).
+# Python tools: the coverage summary and the coverage ratchet of make coverage
+# and make coverage-ratchet (they do not run here: measuring coverage slows the
+# tests down; the nightly CI run measures it, #1247).
 # And the job selection of this script (tool/check_select.py) and the
 # parallel-upgrade check of make upgrade (tool/upgrade_guard.py).
 job_tools() {
   cd "$ROOT/tool/coverage"
-  python3 -m unittest -q test_summary
+  python3 -m unittest -q test_summary test_ratchet
   cd "$ROOT/tool"
   python3 -m unittest -q test_check_select
   python3 -m unittest -q test_upgrade_guard

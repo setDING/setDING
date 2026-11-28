@@ -130,7 +130,8 @@ def markdown(parts, lowest):
     out = [
         "## Line coverage",
         "",
-        "Report only, no threshold ([coverage.md](docs/development/coverage.md)).",
+        "Report only, no threshold; the critical areas have a minimum (coverage ratchet, "
+        "[coverage.md](docs/development/coverage.md)).",
         "",
         "| Part | Coverage | Lines | Files | Not loaded by any test |",
         "|---|---:|---:|---:|---:|",
@@ -189,7 +190,7 @@ def main(argv=None):
         help="also append a Markdown summary to FILE (e.g. $GITHUB_STEP_SUMMARY)",
     )
     args = parser.parse_args(argv)
-    output = ["Line coverage (report only, no threshold):"]
+    output = ["Line coverage (report only; make coverage-ratchet checks the critical areas):"]
     parts = []
     for name, lcov, package_dir in args.part:
         with open(lcov, encoding="utf-8") as f:

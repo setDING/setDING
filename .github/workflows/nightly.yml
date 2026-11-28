@@ -4,8 +4,10 @@
 # Runs every job of the test gate (make check-full) and the coverage
 # measurement every night, so failures that only show in the full parallel run
 # and outdated libraries are found early. The run's page shows a summary of the
-# tests and the line coverage; the reports are kept as artifacts. A red run
-# opens an issue (or comments on the open one); the next green run closes it.
+# tests, the line coverage and the coverage ratchet (an area below its minimum
+# in tool/coverage/ratchet.json fails the run, #1247); the reports are kept as
+# artifacts. A red run opens an issue (or comments on the open one); the next
+# green run closes it.
 # It is not a required check: the local make check stays the gate.
 name: Nightly
 
@@ -75,10 +77,16 @@ jobs:
           fi
 
       - name: Coverage (make coverage)
+        id: coverage
         if: ${{ !cancelled() }}
         env:
           COVERAGE_MARKDOWN: ${{ github.step_summary }}
         run: tool/coverage/coverage.sh
+
+      # The minimums of the critical areas (make coverage-ratchet, #1247).
+      - name: Coverage ratchet
+        if: ${{ !cancelled() && steps.coverage.outcome == 'success' }}
+        run: python3 tool/coverage/ratchet.py --markdown "$GITHUB_STEP_SUMMARY"
 
       - name: Keep the reports
         if: ${{ !cancelled() }}
@@ -116,9 +124,9 @@ jobs:
               gh issue comment "$open" --body "Still failing on \`${GITHUB_SHA::8}\`: $RUN"
             else
               gh issue create --title "$TITLE" --label type:fix --label priority:high \
-                --body "The nightly full check (\`make check-full\`) failed on \`main\` at \`${GITHUB_SHA::8}\`: $RUN
+                --body "The nightly full check (\`make check-full\`, \`make coverage-ratchet\`) failed on \`main\` at \`${GITHUB_SHA::8}\`: $RUN
 
-          The run's page has the test summary; the failing job's output is in the log of *Full check*. Reproduce with \`make check-full\`, fix forward or revert in a PR (git-workflow.md section 7). The next green night closes this issue."
+          The run's page has the test summary and the coverage ratchet; the failing job's output is in the log of *Full check* (or *Coverage ratchet*: add tests for the area that dropped). Reproduce with \`make check-full\` or \`make coverage-ratchet\`, fix forward or revert in a PR (git-workflow.md section 7). The next green night closes this issue."
             fi
           elif [ -n "$open" ]; then
             gh issue close "$open" --comment "Green again on \`${GITHUB_SHA::8}\`: $RUN"
