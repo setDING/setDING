@@ -72,8 +72,10 @@ fi
 if command -v systemd-analyze >/dev/null 2>&1; then
   # The units start binaries that only exist on the server.
   # The owner's servers use the unit of the self-hosting docs as well.
+  # Only the problems of our unit count: verify also loads the machine's own
+  # units and reports theirs (e.g. on GitHub's runner, #1254).
   out="$(systemd-analyze verify --man=no "$examples/setding.service" 2>&1 |
-    grep -v -E 'Command .* is not executable: No such file or directory' || true)"
+    "$ROOT/tool/systemd_verify_filter.py" "$examples/setding.service" || true)"
   if [ -n "$out" ]; then
     echo "$out"
     echo "ops: systemd units: problems found"
