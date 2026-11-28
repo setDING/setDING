@@ -243,6 +243,10 @@ class SyncEngine {
         pulled += n;
         settingsTakenOver = takenOver;
       }
+      // Uploads refused for a full storage, once there is room (ADR-0070).
+      for (final org in orgIds) {
+        await _attachments.retryWhenRoom(org);
+      }
       await _enqueueUnsynced(visible, userId: user.id, orgIds: orgIds);
       final p = await _push(user.id);
       pushed += p.$1;

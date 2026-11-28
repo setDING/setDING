@@ -1705,5 +1705,6 @@
   "uploadRefusalOther": "rifiutato dal server",
   "attachmentUploadRefused": "Il server non ha accettato “{name}” di “{song}” ({reason}). L'allegato resta solo su questo dispositivo.",
   "attachmentUploadsRefused": "{count, plural, =1{Il server non ha accettato 1 allegato. Resta solo su questo dispositivo.} other{Il server non ha accettato {count} allegati. Restano solo su questo dispositivo.}}",
-  "retryUpload": "Carica di nuovo"
+  "retryUpload": "Carica di nuovo",
+  "uploadRefusalStorageFull": "lo spazio di archiviazione dell'organizzazione è pieno"
 }

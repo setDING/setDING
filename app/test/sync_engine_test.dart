@@ -623,6 +623,46 @@ void main() {
         expect((await attachment(id)).uploadRefused, UploadRefusal.tooLarge);
       });
 
+      test('a full storage is named as such and retried once there is room '
+          '(ADR-0070)', () async {
+        final id = await songs.createSong(source: '{title: Song}');
+        final big = Uint8List.fromList([...pdf, ...List.filled(600, 32)]);
+        final first = await songs.addAttachment(id, name: 'One', bytes: big);
+        await engine.sync();
+        expect(server.attachments[first], isNotNull);
+        server.storageLimitBytes = 1000;
+        final second = await songs.addAttachment(id, name: 'Two', bytes: big);
+        final report = await engine.sync();
+        expect(report.refusedUploads.single.reason, UploadRefusal.storageFull);
+        final local = (await songs.getAttachments(id))
+            .firstWhere((a) => a.id == second);
+        expect(local.uploadRefused, UploadRefusal.storageFull);
+
+        // Still full: not sent again.
+        await engine.sync();
+        expect(server.attachmentUploads, 2);
+
+        // Room again (the first one was purged): sent with the next sync.
+        server.putAttachment(
+          RemoteAttachment(
+            id: first,
+            organizationId: 'o1',
+            songId: id,
+            name: 'One',
+            sizeBytes: big.length,
+            deleted: true,
+            purged: true,
+          ),
+        );
+        final again = await engine.sync();
+        expect(again.refusedUploads, isEmpty);
+        expect(server.attachmentUploads, 3);
+        expect(server.attachments[second], isNotNull);
+        final after = (await songs.getAttachments(id))
+            .where((a) => a.id == second);
+        expect(after.single.uploadRefused, isNull);
+      });
+
       test('a removed refused attachment is gone', () async {
         final id = await songs.createSong(source: '{title: Song}');
         await songs.addAttachment(id, name: 'Score', bytes: pdf);

@@ -1705,5 +1705,6 @@
   "uploadRefusalOther": "refusé par le serveur",
   "attachmentUploadRefused": "Le serveur n'a pas accepté « {name} » de « {song} » ({reason}). La pièce jointe reste seulement sur cet appareil.",
   "attachmentUploadsRefused": "{count, plural, =1{Le serveur n'a pas accepté 1 pièce jointe. Elle reste seulement sur cet appareil.} other{Le serveur n'a pas accepté {count} pièces jointes. Elles restent seulement sur cet appareil.}}",
-  "retryUpload": "Envoyer à nouveau"
+  "retryUpload": "Envoyer à nouveau",
+  "uploadRefusalStorageFull": "l'espace de stockage de l'organisation est plein"
 }

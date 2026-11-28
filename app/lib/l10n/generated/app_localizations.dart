@@ -10355,6 +10355,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Erneut hochladen'**
   String get retryUpload;
+
+  /// No description provided for @uploadRefusalStorageFull.
+  ///
+  /// In de, this message translates to:
+  /// **'der Speicher der Organisation ist voll'**
+  String get uploadRefusalStorageFull;
 }
 
 class _AppLocalizationsDelegate

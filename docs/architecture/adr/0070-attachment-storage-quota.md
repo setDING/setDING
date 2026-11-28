@@ -272,6 +272,11 @@ limit, and that deleting does not free space until the purge. Therefore:
     saved without it) instead of refusing the report: apps from before this
     decision scale screenshots to 1 MB only, and reporting must not fail on the
     size (section 2).
+- 2026-11-28: App sync part implemented (#1226): a refusal with
+  `storage_limit_reached` is the reason *the organization's storage is full*
+  (`UploadRefusal.storageFull`); such attachments are sent again by the sync when
+  the storage route shows enough room (oldest first, as many as fit). Report
+  screenshots are scaled to at most 300 KB.
 
 ## Open points
 

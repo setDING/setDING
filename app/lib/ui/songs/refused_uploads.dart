@@ -15,6 +15,7 @@ String uploadRefusalText(AppLocalizations l10n, UploadRefusal reason) =>
       UploadRefusal.notAllowed => l10n.uploadRefusalNotAllowed,
       UploadRefusal.tooLarge => l10n.uploadRefusalTooLarge,
       UploadRefusal.refused => l10n.uploadRefusalOther,
+      UploadRefusal.storageFull => l10n.uploadRefusalStorageFull,
     };
 
 /// The marker of an attachment the server refused (#1225): it is only on

@@ -52,15 +52,68 @@ class AttachmentSync {
   }
 
   /// Why the server refused an upload with [e] ([BackendException.refused]).
-  /// Lasting answers that are not listed here, e.g. a storage limit, are
-  /// [UploadRefusal.refused] until they get a value of their own.
+  /// Lasting answers that are not listed here are [UploadRefusal.refused]
+  /// until they get a value of their own.
   static UploadRefusal refusalOf(BackendException e) {
     if (e.kind == BackendErrorKind.notAllowed) return UploadRefusal.notAllowed;
+    // The organization's storage limit (ADR-0070).
+    if (e.fieldCode('file') == 'storage_limit_reached') {
+      return UploadRefusal.storageFull;
+    }
     if (e.statusCode == 413 ||
         e.fieldCode('file') == 'validation_file_size_limit') {
       return UploadRefusal.tooLarge;
     }
     return UploadRefusal.refused;
+  }
+
+  /// Sends the attachments of [orgId] that the server refused because its
+  /// storage was full (ADR-0070 §7) again when the storage route shows
+  /// enough room: the oldest first, as many as fit. Without such
+  /// attachments, nothing is asked.
+  Future<int> retryWhenRoom(String orgId) async {
+    final waiting =
+        await (db.select(db.attachments).join([
+                innerJoin(
+                  db.songs,
+                  db.songs.id.equalsExp(db.attachments.songId),
+                ),
+              ])
+              ..where(
+                db.attachments.uploadRefused.equalsValue(
+                      UploadRefusal.storageFull,
+                    ) &
+                    db.attachments.deleted.equals(false) &
+                    db.songs.libraryId.equals(orgId),
+              )
+              ..orderBy([OrderingTerm.asc(db.attachments.updatedAt)]))
+            .map((r) => r.readTable(db.attachments))
+            .get();
+    if (waiting.isEmpty) return 0;
+    final OrgStorage? storage;
+    try {
+      storage = await backend.fetchOrgStorage(orgId);
+    } on BackendException catch (e) {
+      if (e.kind == BackendErrorKind.signedOut) rethrow;
+      return 0;
+    }
+    if (storage == null) return 0;
+    var free = storage.freeBytes;
+    var retried = 0;
+    for (final a in waiting) {
+      if (free != null) {
+        if (a.sizeBytes > free) continue;
+        free -= a.sizeBytes;
+      }
+      await db.transaction(() async {
+        await (db.update(db.attachments)..where((x) => x.id.equals(a.id)))
+            .write(const AttachmentsCompanion(uploadRefused: Value(null)));
+        await markDirty(db, SyncCollection.attachments, a.id, scope: orgId);
+      });
+      retried++;
+    }
+    if (retried > 0) _log.info('Uploading $retried attachments again: room');
+    return retried;
   }
 
   /// Changes by others than [logChangesFor] (the signed-in user) are

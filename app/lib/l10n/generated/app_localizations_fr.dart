@@ -6795,4 +6795,8 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get retryUpload => 'Envoyer à nouveau';
+
+  @override
+  String get uploadRefusalStorageFull =>
+      'l\'espace de stockage de l\'organisation est plein';
 }

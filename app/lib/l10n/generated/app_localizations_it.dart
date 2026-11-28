@@ -6783,4 +6783,8 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get retryUpload => 'Carica di nuovo';
+
+  @override
+  String get uploadRefusalStorageFull =>
+      'lo spazio di archiviazione dell\'organizzazione è pieno';
 }

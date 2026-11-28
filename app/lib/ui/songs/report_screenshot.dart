@@ -60,7 +60,10 @@ Future<Uint8List> encodeScreenshot(
     final data = await out.toByteData(format: ui.ImageByteFormat.png);
     out.dispose();
     final bytes = data!.buffer.asUint8List();
-    if (bytes.length <= maxScreenshotBytes || scale < 0.2) return bytes;
+    // Small enough, or as small as it gets.
+    if (bytes.length <= maxScreenshotBytes || (width == 1 && height == 1)) {
+      return bytes;
+    }
     scale *= 0.75;
   }
 }
