@@ -105,10 +105,14 @@ Kapo**: Die Akkorde passen sich an, die Tonart des Songs bleibt.
 
 An jeden Song lassen sich PDF-Noten hängen, z. B. die Partitur für die Bläser. Sie
 werden mit dem Song synchronisiert und sind auf jedem Gerät offline verfügbar.
+Bilder, auf die der Song mit `{image}` verweist, werden genauso synchronisiert: Deine
+Bandkollegen sehen sie im Song auf ihren Geräten und im Browser.
 
 1. Öffne den Song und tippe auf **Anhänge**.
 2. Tippe auf **Datei anhängen** und wähle ein PDF oder ein Bild. Ein PDF darf
-   höchstens 1 MB gross sein (ein Bild, das auf deinem Gerät bleibt, 20 MB). Unter
+   höchstens 1 MB gross sein, ein Bild (PNG, JPEG, GIF, WebP oder SVG) ebenso. Ein
+   Bild, dessen Inhalt nicht zu seiner Dateiendung passt (z. B. ein PNG namens
+   `logo.svg`), lehnt setDING sofort ab, weil der Server es nicht annähme. Unter
    dem Knopf zeigt setDING diese Grenze und, für Admins, Bibliothek und
    Bandleitungen, wie viel Speicher der Organisation noch frei ist.
 3. Im Menü des Anhangs kannst du ihn **Umbenennen** oder **Löschen**.
@@ -121,14 +125,14 @@ drucken oder weiterzugeben; im Browser wird er heruntergeladen.
 
 ### Speicher der Organisation
 
-Alle PDFs einer Organisation zusammen dürfen auf dem Server höchstens 25 MB belegen,
-ausser der Server setzt eine andere Grenze. Gelöschte PDFs zählen mit, bis sie im
-Papierkorb endgültig gelöscht sind. Ein grösseres PDF oder eines, das nicht mehr
+Alle PDFs und Bilder einer Organisation zusammen dürfen auf dem Server höchstens
+25 MB belegen, ausser der Server setzt eine andere Grenze. Gelöschte Anhänge zählen
+mit, bis sie im Papierkorb endgültig gelöscht sind. Ein grösserer Anhang oder einer, der nicht mehr
 Platz hat, lehnt setDING sofort mit dem Grund ab; bei vollem Speicher bietet die
 Meldung den **Papierkorb** an. Ab 90 % warnt der Hinweis unter **Datei anhängen**.
 Die Belegung steht auch in der Organisation unter **Speicher**.
 
-<Image src={attachmentStorage} alt="Das Panel «Anhänge»: unter «Datei anhängen» «PDF, höchstens 1 MB · 424 KB von 25 MB frei» und die Warnung, dass der Speicher fast voll ist; das PDF «Bläser» ist markiert «Nur auf diesem Gerät: der Speicher der Organisation ist voll»" />
+<Image src={attachmentStorage} alt="Das Panel «Anhänge»: unter «Datei anhängen» «PDF oder Bild, höchstens 1 MB · 424 KB von 25 MB frei» und die Warnung, dass der Speicher fast voll ist; das PDF «Bläser» ist markiert «Nur auf diesem Gerät: der Speicher der Organisation ist voll»; darunter das Bild logo.png" />
 
 ### Nur auf diesem Gerät
 

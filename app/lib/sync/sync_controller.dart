@@ -49,6 +49,20 @@ final attachmentFileProvider = FutureProvider.autoDispose
       return ref.watch(attachmentFetcherProvider).fetch(attachmentId);
     });
 
+/// On the web client, loads the image attachments of [attachments] that are
+/// on the server but not in memory yet (ADR-0018), so that `{image}` draws
+/// them once they arrived (#1227): the caller is built again then. Does
+/// nothing in the apps, which download every attachment (ADR-0009).
+void watchWebImages(WidgetRef ref, List<AttachmentEntry> attachments) {
+  if (!ref.watch(webClientProvider)) return;
+  final storage = ref.watch(attachmentStorageProvider);
+  for (final a in attachments) {
+    if (!isImageFile(a.fileName) || a.remoteFile == null) continue;
+    if (storage.file(a.fileName).existsSync()) continue;
+    ref.watch(attachmentFileProvider(a.id));
+  }
+}
+
 /// State of the sync for the UI.
 @immutable
 class SyncStatus {

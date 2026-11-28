@@ -119,6 +119,8 @@ class LiveItemPage extends ConsumerWidget {
     final attachments =
         ref.watch(attachmentsProvider(song.id)).value ??
         const <AttachmentEntry>[];
+    // The web client loads the images for {image} now (#1227).
+    watchWebImages(ref, attachments);
     final parsed = parseChordProCached(
       song.chordproSource,
       selectors: ref.watch(selectorsProvider),

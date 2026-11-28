@@ -233,13 +233,15 @@ name stay as they are. This also applies when you import a set.
 
 <Image src={songImport} alt="The Import songs preview: one song already here, one new song and one attachment added to an existing song" />
 
-A PDF larger than 1 MB is **not imported**, the limit of the server (see
+A PDF or image larger than 1 MB is **not imported**, the limit of the server (see
 [Storage of the organization](/en/songs/personal/#storage-of-the-organization)): its
-song is imported without it, and the summary after the import names each such PDF
-with its song, its size and the limit. This applies to song and set archives and to
-backups; a ZIP of ChordPro files never attaches PDFs.
+song is imported without it, and the summary after the import names each such
+attachment with its song, its size and the limit. An image whose content does not
+match its file extension is left out too, and named separately. This applies to song
+and set archives, to backups and to the images that a ZIP of ChordPro files attaches
+through `{image}`; such a ZIP never attaches PDFs.
 
-<Image src={songImportSkipped} alt="The summary Songs imported: one song and one attachment imported; the PDF Full score (scan) of “Morning Light”, 2.4 MB, was not imported because it is larger than 1 MB" />
+<Image src={songImportSkipped} alt="The summary Songs imported: one song and one attachment imported; the image Band photo.jpg (1.8 MB) and the PDF Full score (scan) (2.4 MB) of “Morning Light” were not imported because they are larger than 1 MB, the image logo.svg because its content does not match its file type" />
 
 ## Trash
 

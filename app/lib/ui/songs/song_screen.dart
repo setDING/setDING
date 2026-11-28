@@ -283,6 +283,8 @@ class _SongScreenState extends ConsumerState<SongScreen> {
         SongRepository.defaultOverlay(widget.songId);
     final attachments =
         ref.watch(attachmentsProvider(widget.songId)).value ?? const [];
+    // The web client loads the images for {image} now (#1227).
+    watchWebImages(ref, attachments);
     final settings = ref.watch(settingsProvider);
 
     return AsyncBody(

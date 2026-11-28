@@ -99,11 +99,15 @@ capo**: the chords change, the key of the song stays.
 ## PDF attachments
 
 You can attach PDF sheet music to any song, e.g. the score for the horns. It is
-synced with the song and available offline on every device.
+synced with the song and available offline on every device. Images that the song
+refers to with `{image}` are synced the same way: your bandmates see them in the
+song on their devices and in the browser.
 
 1. Open the song and tap **Attachments**.
-2. Tap **Attach file** and choose a PDF or an image. A PDF may be at most 1 MB
-   (an image, which stays on your device, 20 MB). Below the button, setDING shows
+2. Tap **Attach file** and choose a PDF or an image. A PDF may be at most 1 MB,
+   and so may an image (PNG, JPEG, GIF, WebP or SVG). An image whose content does
+   not match its file extension (e.g. a PNG named `logo.svg`) is refused at once,
+   because the server would not accept it. Below the button, setDING shows
    this limit and, for admins, librarians and band leaders, how much of the
    organization's storage is still free.
 3. In the attachment's menu you can **Rename** or **Delete** it.
@@ -116,14 +120,14 @@ on; in the browser it is downloaded.
 
 ### Storage of the organization
 
-All PDFs of an organization together may take at most 25 MB on the server, unless
-the server sets another limit. Deleted PDFs count until they are deleted
-permanently in the trash. A larger PDF, or one that no longer fits, is refused at
+All PDFs and images of an organization together may take at most 25 MB on the
+server, unless the server sets another limit. Deleted attachments count until they
+are deleted permanently in the trash. A larger attachment, or one that no longer fits, is refused at
 once with the reason; for a full storage, the message offers the **Trash**. From
 90 % the hint below **Attach file** warns. The usage is also on the organization's
 screen under **Storage**.
 
-<Image src={attachmentStorage} alt="The Attachments panel: below Attach file “PDF, at most 1 MB · 424 KB of 25 MB free” and the warning that the storage is nearly full; the Horns PDF is marked “Only on this device: the organization's storage is full”" />
+<Image src={attachmentStorage} alt="The Attachments panel: below Attach file “PDF or image, at most 1 MB · 424 KB of 25 MB free” and the warning that the storage is nearly full; the Horns PDF is marked “Only on this device: the organization's storage is full”; below it the image logo.png" />
 
 ### Only on this device
 

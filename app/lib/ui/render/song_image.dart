@@ -131,17 +131,22 @@ class ImageBox {
 final _sizeCache = <String, Size?>{};
 
 /// Natural size of an image file in pixels (PNG, GIF, JPEG, WebP, SVG),
-/// read from the file header. Null if unknown.
-Size? imageFileSize(StoredFile file) => _sizeCache.putIfAbsent(file.id, () {
+/// read from the file header. Null if unknown. A file that is not there
+/// yet is not remembered: the web client loads it later (#1227).
+Size? imageFileSize(StoredFile file) {
+  if (_sizeCache.containsKey(file.id)) return _sizeCache[file.id];
   final bytes = file.readStartSync(256 * 1024);
   if (bytes == null) return null;
+  Size? size;
   try {
-    if (isSvgFile(file.name)) return svgSize(String.fromCharCodes(bytes));
-    return imageBytesSize(bytes);
+    size = isSvgFile(file.name)
+        ? svgSize(String.fromCharCodes(bytes))
+        : imageBytesSize(bytes);
   } catch (_) {
-    return null;
+    size = null;
   }
-});
+  return _sizeCache[file.id] = size;
+}
 
 /// Natural size from raster image bytes.
 Size? imageBytesSize(Uint8List b) {

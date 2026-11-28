@@ -1,6 +1,7 @@
 // Screenshots of the song list and the song screen.
 // See screenshot_support.dart.
 
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -457,6 +458,13 @@ void main() {
           name: lang == 'de' ? 'Bläser' : 'Horns',
           bytes: Uint8List(593920),
           pages: 4,
+        );
+        // Images for {image} are synced and counted too (#1227).
+        await songs.addAttachment(
+          id,
+          name: 'logo.png',
+          bytes: _onePixelPng,
+          extension: 'png',
         );
         await (app.db.update(
           app.db.attachments,
@@ -1160,8 +1168,9 @@ void songsTrashPdfScreenshots() {
   }
 }
 
-/// The summary of a song archive import that skipped a PDF over 1 MB, with
-/// its song, its size and the limit (ADR-0070).
+/// The summary of a song archive import that skipped a PDF and an image
+/// over 1 MB, with their song, size and the limit (ADR-0070), and an image
+/// whose content is not its type (#1227).
 void songImportSkippedScreenshots() {
   for (final (lang, dark) in [('de', false), ('en', true)]) {
     screenshotTest('song import skipped $lang', (tester) async {
@@ -1193,6 +1202,30 @@ void songImportSkippedScreenshots() {
                 updatedAt: DateTime.now(),
               ),
             );
+        // Images are synced since #1227: one too large, one whose content
+        // is not its type.
+        Future<void> addOld(String id, String name, Uint8List bytes) async {
+          await app.storage.write(id, bytes);
+          await app.db
+              .into(app.db.attachments)
+              .insert(
+                AttachmentsCompanion.insert(
+                  id: id,
+                  songId: song,
+                  name: name,
+                  fileName: id,
+                  sizeBytes: bytes.length,
+                  updatedAt: DateTime.now(),
+                ),
+              );
+        }
+
+        await addOld(
+          'photo.jpg',
+          lang == 'de' ? 'Bandfoto.jpg' : 'Band photo.jpg',
+          Uint8List(1887437)..setAll(0, const [0xFF, 0xD8, 0xFF, 0xE0]),
+        );
+        await addOld('logo.svg', 'logo.svg', _onePixelPng);
         final zip = await SongArchiveService(BackupService(app.db, app.storage))
             .export([song]);
         await app.songs.deleteSong(song);
@@ -1253,6 +1286,11 @@ void songImportSkippedScreenshots() {
     });
   }
 }
+
+/// A 1×1 PNG.
+final _onePixelPng = base64Decode(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+);
 
 /// A Lilypond lead sheet for the notation screenshot (#725).
 const _lilypond = r'''{title: Morning Light}
