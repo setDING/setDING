@@ -3576,6 +3576,26 @@
   },
   "retryUpload": "Upload again",
   "uploadRefusalStorageFull": "the organization's storage is full",
+  "attachmentChangeUndone": "The server did not accept the change to “{name}” of “{song}”. It was undone on this device.",
+  "@attachmentChangeUndone": {
+    "description": "A change of an attachment on the server (rename, deletion, restore, purge) the server refused; undone on this device (#1229).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "song": {
+        "type": "String"
+      }
+    }
+  },
+  "attachmentChangesUndone": "{count, plural, =1{The server did not accept the change to 1 attachment. It was undone on this device.} other{The server did not accept the changes to {count} attachments. They were undone on this device.}}",
+  "@attachmentChangesUndone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "attachmentPdfLimit": "PDF or image, at most {limit}",
   "@attachmentPdfLimit": {
     "description": "Shown before a file is picked (ADR-0070); limit is e.g. \"1 MB\".",

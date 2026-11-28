@@ -10362,6 +10362,18 @@ abstract class AppLocalizations {
   /// **'der Speicher der Organisation ist voll'**
   String get uploadRefusalStorageFull;
 
+  /// A change of an attachment on the server (rename, deletion, restore, purge) the server refused; undone on this device (#1229).
+  ///
+  /// In de, this message translates to:
+  /// **'Der Server hat die Änderung an «{name}» von «{song}» nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.'**
+  String attachmentChangeUndone(String name, String song);
+
+  /// No description provided for @attachmentChangesUndone.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Der Server hat die Änderung an 1 Anhang nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.} other{Der Server hat die Änderungen an {count} Anhängen nicht angenommen. Sie wurden auf diesem Gerät rückgängig gemacht.}}'**
+  String attachmentChangesUndone(int count);
+
   /// Shown before a file is picked (ADR-0070); limit is e.g. "1 MB".
   ///
   /// In de, this message translates to:

@@ -4217,6 +4217,26 @@
   },
   "retryUpload": "Erneut hochladen",
   "uploadRefusalStorageFull": "der Speicher der Organisation ist voll",
+  "attachmentChangeUndone": "Der Server hat die Änderung an «{name}» von «{song}» nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.",
+  "@attachmentChangeUndone": {
+    "description": "A change of an attachment on the server (rename, deletion, restore, purge) the server refused; undone on this device (#1229).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "song": {
+        "type": "String"
+      }
+    }
+  },
+  "attachmentChangesUndone": "{count, plural, =1{Der Server hat die Änderung an 1 Anhang nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.} other{Der Server hat die Änderungen an {count} Anhängen nicht angenommen. Sie wurden auf diesem Gerät rückgängig gemacht.}}",
+  "@attachmentChangesUndone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "attachmentPdfLimit": "PDF oder Bild, höchstens {limit}",
   "@attachmentPdfLimit": {
     "description": "Shown before a file is picked (ADR-0070); limit is e.g. \"1 MB\".",

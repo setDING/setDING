@@ -29,7 +29,7 @@ import '../settings/user_settings_store.dart';
 import '../util/log.dart';
 
 export 'engine/change_recorder.dart' show SyncChange, SyncChangeKind;
-export 'engine/attachment_sync.dart' show RefusedUpload;
+export 'engine/attachment_sync.dart' show RefusedChange, RefusedUpload;
 
 const _log = Log('sync');
 
@@ -46,6 +46,7 @@ class SyncReport {
     this.closedOrganizations = const [],
     this.changes = const [],
     this.refusedUploads = const [],
+    this.undoneChanges = const [],
     this.error,
   });
 
@@ -76,6 +77,11 @@ class SyncReport {
   /// Attachments the server refused to take in this run (#1225); they stay
   /// on this device only and are not sent again by themselves.
   final List<RefusedUpload> refusedUploads;
+
+  /// Changes of attachments on the server (rename, deletion, restore,
+  /// purge) the server refused in this run (#1229); they were undone on
+  /// this device.
+  final List<RefusedChange> undoneChanges;
 
   /// Why the run stopped early (e.g. offline), or null.
   final BackendErrorKind? error;
@@ -175,6 +181,7 @@ class SyncEngine {
     try {
       _changes.takeRun(); // left over from a run that stopped early
       _attachments.takeRefused();
+      _attachments.takeUndone();
       // Recent changes of the overview are kept for 30 days (ADR-0045).
       await _changes.log.prune();
       if (refreshBands) gone = await bands.refresh();
@@ -251,6 +258,8 @@ class SyncEngine {
       final p = await _push(user.id);
       pushed += p.$1;
       conflicts += p.$2;
+      // The server's version of attachments whose change it refused.
+      pulled += await _attachments.pullUndone(logChangesFor: user.id);
       // After the push, so this device's frozen plays are included.
       for (final org in orgIds) {
         await _pullOrgPlays(org);
@@ -272,6 +281,7 @@ class SyncEngine {
         closedOrganizations: gone.closedOrganizations,
         changes: _changes.takeRun(),
         refusedUploads: _attachments.takeRefused(),
+        undoneChanges: _attachments.takeUndone(),
       );
     } on BackendException catch (e) {
       _log.warning('Sync stopped', e);
@@ -285,6 +295,7 @@ class SyncEngine {
         closedOrganizations: gone.closedOrganizations,
         changes: _changes.takeRun(),
         refusedUploads: _attachments.takeRefused(),
+        undoneChanges: _attachments.takeUndone(),
         error: e.kind,
       );
     }

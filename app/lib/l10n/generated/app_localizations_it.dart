@@ -6790,6 +6790,23 @@ class AppLocalizationsIt extends AppLocalizations {
       'lo spazio di archiviazione dell\'organizzazione è pieno';
 
   @override
+  String attachmentChangeUndone(String name, String song) {
+    return 'Il server non ha accettato la modifica di “$name” di “$song”. È stata annullata su questo dispositivo.';
+  }
+
+  @override
+  String attachmentChangesUndone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Il server non ha accettato le modifiche di $count allegati. Sono state annullate su questo dispositivo.',
+      one: 'Il server non ha accettato la modifica di 1 allegato. È stata annullata su questo dispositivo.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String attachmentPdfLimit(String limit) {
     return 'PDF o immagine, al massimo $limit';
   }

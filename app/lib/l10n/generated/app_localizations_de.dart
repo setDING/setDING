@@ -6809,6 +6809,23 @@ class AppLocalizationsDe extends AppLocalizations {
       'der Speicher der Organisation ist voll';
 
   @override
+  String attachmentChangeUndone(String name, String song) {
+    return 'Der Server hat die Änderung an «$name» von «$song» nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.';
+  }
+
+  @override
+  String attachmentChangesUndone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Der Server hat die Änderungen an $count Anhängen nicht angenommen. Sie wurden auf diesem Gerät rückgängig gemacht.',
+      one: 'Der Server hat die Änderung an 1 Anhang nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String attachmentPdfLimit(String limit) {
     return 'PDF oder Bild, höchstens $limit';
   }
