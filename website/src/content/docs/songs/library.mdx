@@ -245,13 +245,15 @@ gilt auch beim Import eines Sets.
 
 <Image src={songImport} alt="Die Vorschau «Songs importieren»: ein Song schon hier, ein neuer Song und ein Anhang, der bei einem vorhandenen Song ergänzt wird" />
 
-Ein PDF über 1 MB wird **nicht importiert**, das ist die Grenze des Servers (siehe
-[Speicher der Organisation](/songs/personal/#speicher-der-organisation)): Sein Song
-kommt ohne es, und die Zusammenfassung nach dem Import nennt jedes solche PDF mit
-seinem Song, seiner Grösse und der Grenze. Das gilt für Song- und Set-Archive und
-für Backups; ein ZIP mit ChordPro-Dateien hängt nie PDFs an.
+Ein PDF oder Bild über 1 MB wird **nicht importiert**, das ist die Grenze des Servers
+(siehe [Speicher der Organisation](/songs/personal/#speicher-der-organisation)): Sein
+Song kommt ohne es, und die Zusammenfassung nach dem Import nennt jeden solchen
+Anhang mit seinem Song, seiner Grösse und der Grenze. Ebenso bleibt ein Bild weg,
+dessen Inhalt nicht zu seiner Dateiendung passt; die Zusammenfassung nennt es
+gesondert. Das gilt für Song- und Set-Archive, für Backups und für die Bilder, die ein
+ZIP mit ChordPro-Dateien über `{image}` anhängt; PDFs hängt ein solches ZIP nie an.
 
-<Image src={songImportSkipped} alt="Die Zusammenfassung «Songs importiert»: ein Song und ein Anhang importiert; das PDF «Partitur (Scan)» von «Morning Light», 2.4 MB, wurde nicht importiert, weil es grösser als 1 MB ist" />
+<Image src={songImportSkipped} alt="Die Zusammenfassung «Songs importiert»: ein Song und ein Anhang importiert; das Bild «Bandfoto.jpg» (1.8 MB) und das PDF «Partitur (Scan)» (2.4 MB) von «Morning Light» wurden nicht importiert, weil sie grösser als 1 MB sind, das Bild «logo.svg», weil sein Inhalt nicht zu seinem Dateityp passt" />
 
 ## Papierkorb
 

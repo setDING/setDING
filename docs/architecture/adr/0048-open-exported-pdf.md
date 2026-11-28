@@ -63,6 +63,7 @@ opened reliably:
 - 2026-11-21: Proposed (#721). The owner chose `open_filex` over own native code
   and limited the action to PDF exports.
 - 2026-11-21: Accepted by the owner; implemented in #721.
+- 2026-11-28: On the web client an SVG attachment is opened as an image on a page without scripts (`lib/platform/svg_viewer_page.dart`), not as an SVG document: a `blob:` URL has the app's origin, and synced SVGs come from other people (#1227, ADR-0009).
 
 ## Open points
 

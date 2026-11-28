@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/database.dart';
 import '../../data/storage_providers.dart';
 import '../../l10n/generated/app_localizations.dart';
+import '../../sync/sync_controller.dart' show attachmentFileProvider;
 import '../platform/stored_file_view.dart';
 
 /// Shows an image attachment full screen, zoomable (#507).
@@ -27,7 +28,21 @@ class ImageAttachmentView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final file = ref.watch(attachmentStorageProvider).file(attachment.fileName);
+    var file = ref.watch(attachmentStorageProvider).file(attachment.fileName);
+    if (!file.existsSync()) {
+      // The web client loads the image now (ADR-0018, #1227).
+      final fetched = ref.watch(attachmentFileProvider(attachment.id));
+      if (fetched.isLoading) {
+        return Scaffold(
+          appBar: AppBar(title: Text(attachment.name)),
+          body: const Center(
+            key: Key('image-loading'),
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
+      if (fetched.value case final loaded?) file = loaded;
+    }
     return Scaffold(
       appBar: AppBar(title: Text(attachment.name)),
       body: file.existsSync()

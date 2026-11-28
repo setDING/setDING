@@ -15,6 +15,8 @@ import 'package:setding/ui/render/abc_view.dart';
 import 'package:setding/ui/render/song_image.dart';
 import 'package:setding/ui/render/song_view.dart';
 import 'package:setding/ui/songs/song_screen.dart';
+import 'package:drift/drift.dart' show Value;
+import 'package:setding/sync/sync_backend.dart' show AuthUser;
 import 'package:drift/native.dart';
 import 'package:chordpro/chordpro.dart' hide Key;
 import 'package:material_ui/material_ui.dart';
@@ -213,6 +215,52 @@ void main() {
       ),
     ]);
     expect(result.needsReview, isTrue);
+  });
+
+  // The web client keeps no files: an image of a bandmate is on the server
+  // only and was never drawn (#1227).
+  testWidgets('the web client loads an {image} from the server', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    const ann = AuthUser(id: 'ann', email: 'ann@example.test', name: 'Ann');
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'currentBandId': 'b1'},
+      user: ann,
+      web: true,
+    );
+    app.backend.addBand('b1', 'Rock', admin: ann, organizationId: 'o1');
+    final (id, imageId) = (await tester.runAsync(() async {
+      final songs = TestApp.songsIn(app, 'o1');
+      final id = await songs.createSong(
+        source: '{title: Web}\n{image: src="dot.png" width=60}\n[C]x',
+      );
+      final imageId = await songs.addAttachment(
+        id,
+        name: 'dot.png',
+        bytes: onePixelPng,
+        extension: 'png',
+      );
+      final a = await (app.db.select(
+        app.db.attachments,
+      )..where((t) => t.id.equals(imageId))).getSingle();
+      await app.storage.delete(a.fileName);
+      await (app.db.update(app.db.attachments)
+            ..where((t) => t.id.equals(imageId)))
+          .write(const AttachmentsCompanion(remoteFile: Value('srv.png')));
+      app.backend.files['srv.png'] = onePixelPng;
+      return (id, imageId);
+    }))!;
+    await tester.pumpWidget(app.build(home: SongScreen(songId: id)));
+    for (var i = 0; i < 5; i++) {
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pump();
+    }
+    await tester.pumpAndSettle();
+    expect(app.backend.downloads, 1);
+    expect(find.byType(SongImageView), findsOneWidget);
+    expect(imageId, isNotEmpty);
+    await app.dispose(tester);
   });
 
   testWidgets('song shows attached images, SVG, textblock and Lilypond', (
