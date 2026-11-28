@@ -67,6 +67,7 @@ RULES = [
     ('tool/sbom', ['sbom']),
     ('tool/release/', ['changelog']),
     ('CHANGELOG.md', ['changelog']),
+    # Coverage summary and ratchet (ratchet.json is read by test_ratchet, #1247).
     ('tool/coverage/', ['tools']),
     ('tool/ci/', ['tools']),  # nightly CI test summary (#1249)
     ('tool/build-web.sh', ['app-web']),

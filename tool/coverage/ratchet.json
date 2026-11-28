@@ -1,0 +1,28 @@
+{
+  "_comment": [
+    "Coverage ratchet of the critical areas (issue #1247, docs/development/coverage.md).",
+    "minimum: the line coverage in percent the area must keep; make coverage-ratchet",
+    "and the nightly CI run fail when an area drops more than `tolerance` points below",
+    "it, or when a file of the area is not loaded by any test.",
+    "When an area rises more than `raise_hint` points above its minimum, the check asks",
+    "to raise the value: do that in the same PR as the new tests.",
+    "Lowering a minimum is an owner decision: never lower it to make the check pass."
+  ],
+  "tolerance": 0.1,
+  "raise_hint": 1.0,
+  "parts": {
+    "app": {"lcov": "app/coverage/lcov.info", "dir": "app"},
+    "chordpro": {"lcov": "packages/chordpro/coverage/lcov.info", "dir": "packages/chordpro"}
+  },
+  "areas": [
+    {"name": "sync", "part": "app", "paths": ["lib/sync/"], "minimum": 90.6},
+    {"name": "permissions", "part": "app", "paths": ["lib/data/band_view.dart"], "minimum": 71.2},
+    {
+      "name": "import/backup",
+      "part": "app",
+      "paths": ["lib/data/backup.dart", "lib/data/zip_reader.dart", "lib/data/import_export.dart"],
+      "minimum": 97.5
+    },
+    {"name": "chordpro", "part": "chordpro", "paths": ["lib/"], "minimum": 92.8}
+  ]
+}

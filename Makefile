@@ -13,6 +13,7 @@
 #   make web-test      run the web integration tests in headless Chrome (BROWSER=firefox)
 #   make e2e           run the end-to-end tests: Linux desktop + web client against one backend
 #   make coverage   measure the test coverage (report only, no threshold)
+#   make coverage-ratchet  measure it and check the minimums of the critical areas
 #   make apk        build an Android APK for manual installation (sideloading)
 #   make android-install  install the local build as "setDING Beta" next to a release
 #   make android-keystore  create the Android release key (owner, once)
@@ -118,7 +119,7 @@ BACKEND_REGISTRATION ?= open
 # database and PDFs, XDG_DATA_HOME for the settings (shared_preferences).
 TEST_ENV := SETDING_DATA_DIR=$(DATA_DIR)/app XDG_DATA_HOME=$(DATA_DIR)/xdg
 
-.PHONY: help setup dev start build web web-serve site site-dev deps upgrade upgrade-guard apk android-install android-keystore android-upload-keystore release release-linux release-check sbom changelog reset data-dir backend check check-full release-gate rules-golden test codegen l10n coverage fuzz android-test web-test e2e perf screenshots branding examples doctor clean ci-image \
+.PHONY: help setup dev start build web web-serve site site-dev deps upgrade upgrade-guard apk android-install android-keystore android-upload-keystore release release-linux release-check sbom changelog reset data-dir backend check check-full release-gate rules-golden test codegen l10n coverage coverage-ratchet fuzz android-test web-test e2e perf screenshots branding examples doctor clean ci-image \
 	server-target server-bundle server-image server-install server-release server-site server-status server-logs server-backup server-fetch-backup server-founder-invite server-ssh
 
 help: ## Show this help
@@ -260,6 +261,9 @@ test: ## Run all tests
 
 coverage: ## Measure the test coverage of the app and the ChordPro package, report only (docs/development/coverage.md)
 	$(ROOT)/tool/coverage/coverage.sh
+
+coverage-ratchet: coverage ## Measure the coverage and check the minimum of the critical areas (tool/coverage/ratchet.json)
+	cd $(ROOT) && python3 tool/coverage/ratchet.py
 
 FUZZ_ITERATIONS ?= 10000
 
