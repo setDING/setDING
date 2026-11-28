@@ -3,8 +3,12 @@ import 'dart:typed_data';
 
 import 'package:path/path.dart' as p;
 
-/// Maximum size of an attachment (ADR-0009).
+/// Maximum size of an attachment kept on the device (ADR-0009): images
+/// for `{image}`, which are not synced.
 const maxAttachmentBytes = 20 * 1024 * 1024;
+
+/// Maximum size of a PDF attachment, the server's limit (ADR-0070).
+const maxPdfBytes = 1024 * 1024;
 
 /// File extensions of image attachments for `{image}` (ADR-0012).
 const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'];
@@ -22,10 +26,16 @@ bool isImageFile(String fileName) =>
 /// Whether a stored attachment file is an SVG image.
 bool isSvgFile(String fileName) => _extension(fileName) == 'svg';
 
-/// Thrown when an attachment exceeds [maxAttachmentBytes].
+/// The maximum size of the attachment file [fileName]: [maxPdfBytes] for a
+/// PDF, [maxAttachmentBytes] for an image.
+int maxAttachmentBytesFor(String fileName) =>
+    isPdfFile(fileName) ? maxPdfBytes : maxAttachmentBytes;
+
+/// Thrown when an attachment exceeds [maxAttachmentBytesFor] its type.
 class AttachmentTooLargeException implements Exception {
-  const AttachmentTooLargeException(this.sizeBytes);
+  const AttachmentTooLargeException(this.sizeBytes, {required this.limitBytes});
   final int sizeBytes;
+  final int limitBytes;
 
   @override
   String toString() => 'Attachment too large: $sizeBytes bytes';

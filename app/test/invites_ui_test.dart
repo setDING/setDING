@@ -60,6 +60,9 @@ void main() {
 
     expect(find.text('Invitation links'), findsOneWidget);
     expect(find.textContaining('Nobody joined yet'), findsOneWidget);
+    // The list grew with the storage line (ADR-0070): scroll to it.
+    await tester.ensureVisible(find.text('Revoke'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Revoke'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Revoke'));

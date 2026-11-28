@@ -21,6 +21,7 @@ import '../widgets/section_header.dart';
 import '../widgets/page_width.dart';
 import '../widgets/menu_action.dart';
 import '../routes.dart';
+import '../songs/storage_usage.dart';
 
 /// An organization (ADR-0017): its bands and people. Organization admins
 /// rename it, create bands in it and manage people and their roles;
@@ -80,6 +81,8 @@ class OrganizationScreen extends ConsumerWidget {
                 leading: const Icon(Icons.library_music_outlined),
                 subtitle: Text(l10n.orgSongsShared),
               ),
+              // The storage its PDFs use, for those who upload (ADR-0070).
+              StorageUsageTile(organizationId: organizationId),
               SectionHeader(l10n.orgBands),
               for (final b in bands)
                 ListTile(

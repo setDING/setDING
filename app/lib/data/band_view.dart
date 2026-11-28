@@ -182,6 +182,10 @@ class LibraryView {
           createdBy == userId &&
           updatedBy == userId);
 
+  /// See the organization's storage usage (ADR-0070): those who may upload
+  /// PDFs, librarians and band leaders. The server checks it too.
+  bool get canSeeStorage => !isLocal && (isLibrarian || isLeader);
+
   /// Delete songs and attachments: librarians.
   bool get canDeleteSongs => isLocal || isLibrarian;
 

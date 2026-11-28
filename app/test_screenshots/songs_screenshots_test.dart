@@ -14,6 +14,9 @@ import 'package:setding/ui/home_screen.dart';
 import 'package:setding/ui/home_tab.dart';
 import 'package:setding/ui/live/live_screen.dart';
 import 'package:setding/data/backup.dart';
+import 'package:setding/data/band_providers.dart';
+import 'package:setding/data/band_view.dart';
+import 'package:setding/data/org_storage_providers.dart';
 import 'package:setding/data/import_export.dart';
 import 'package:setding/data/song_archive.dart';
 import 'package:setding/ui/songs/import_dialog.dart';
@@ -424,6 +427,74 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('attachment-only-here')), findsOneWidget);
       await shot(tester, '${lang}_55b_song_attachment_refused');
+      await app.dispose(tester);
+    });
+  }
+
+  // The maximum size and the free storage before a file is picked, with
+  // the warning from 90 %, and an attachment refused because the
+  // organization's storage is full (ADR-0070).
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('song attachment storage $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final songs = TestApp.songsIn(app, 'o1', userId: 'ann');
+      final song = (await tester.runAsync(() async {
+        final id = await songs.createSong(source: demoSongSource);
+        await songs.addAttachment(
+          id,
+          name: 'Piano',
+          bytes: Uint8List(262144),
+          pages: 3,
+        );
+        final horns = await songs.addAttachment(
+          id,
+          name: lang == 'de' ? 'Bläser' : 'Horns',
+          bytes: Uint8List(593920),
+          pages: 4,
+        );
+        await (app.db.update(
+          app.db.attachments,
+        )..where((a) => a.id.equals(horns))).write(
+          const AttachmentsCompanion(
+            uploadRefused: Value(UploadRefusal.storageFull),
+          ),
+        );
+        return id;
+      }))!;
+      const mb = 1024 * 1024;
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: SongScreen(songId: song),
+            extra: [
+              libraryProvider.overrideWith(
+                (ref, id) => LibraryView(
+                  id: id,
+                  name: 'Music School',
+                  orgRole: OrgRole.librarian,
+                  userId: 'ann',
+                ),
+              ),
+              orgStorageProvider.overrideWith(
+                (ref, id) async => const OrgStorage(
+                  usedBytes: 24 * mb + 600 * 1024,
+                  limitBytes: 25 * mb,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('open-attachments')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('attachment-limit-hint')), findsOneWidget);
+      expect(find.byKey(const Key('attachment-only-here')), findsOneWidget);
+      await shot(tester, '${lang}_55c_song_attachment_storage');
       await app.dispose(tester);
     });
   }

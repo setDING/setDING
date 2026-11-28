@@ -51,7 +51,15 @@
   "attachments": "Attachments",
   "addAttachment": "Attach file",
   "noAttachments": "No attachments yet.",
-  "attachmentTooLarge": "The file is larger than 20 MB and cannot be attached.",
+  "attachmentTooLarge": "The file is larger than {limit} and cannot be attached.",
+  "@attachmentTooLarge": {
+    "description": "A picked file is over the maximum size (ADR-0070); limit is e.g. \"1 MB\".",
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
   "songLinks": "Sources",
   "noSongLinks": "No sources yet. Add recordings on YouTube, Spotify and the like.",
   "addSongLink": "Add link",
@@ -3567,5 +3575,68 @@
     }
   },
   "retryUpload": "Upload again",
-  "uploadRefusalStorageFull": "the organization's storage is full"
+  "uploadRefusalStorageFull": "the organization's storage is full",
+  "attachmentPdfLimit": "PDF, at most {limit}",
+  "@attachmentPdfLimit": {
+    "description": "Shown before a file is picked (ADR-0070); limit is e.g. \"1 MB\".",
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "storageFree": "{free} of {limit} free",
+  "@storageFree": {
+    "description": "Free storage of the organization (ADR-0070), after attachmentPdfLimit.",
+    "placeholders": {
+      "free": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "storageTitle": "Storage",
+  "storageUsage": "Storage: {used} of {limit}",
+  "@storageUsage": {
+    "description": "Storage the organization's PDFs use on the server, the trash included (ADR-0070).",
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "storageUsageUnlimited": "Storage: {used}",
+  "@storageUsageUnlimited": {
+    "description": "Storage usage on a server without a limit (ADR-0070).",
+    "placeholders": {
+      "used": {
+        "type": "String"
+      }
+    }
+  },
+  "storageTrashCounts": "Deleted PDFs count until they are deleted permanently.",
+  "storageNearlyFull": "The organization's storage is nearly full.",
+  "attachmentDoesNotFit": "“{name}” ({size}) no longer fits into the organization's storage: {used} of {limit} used. Deleted PDFs count until they are deleted permanently.",
+  "@attachmentDoesNotFit": {
+    "description": "A picked PDF does not fit into the organization's storage any more (ADR-0070).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      },
+      "used": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -51,7 +51,7 @@
   "attachments": "Anexos",
   "addAttachment": "Anexar ficheiro",
   "noAttachments": "Ainda não há anexos.",
-  "attachmentTooLarge": "O ficheiro tem mais de 20 MB e não pode ser anexado.",
+  "attachmentTooLarge": "O ficheiro tem mais de {limit} e não pode ser anexado.",
   "songLinks": "Fontes",
   "noSongLinks": "Ainda não há fontes. Adiciona gravações no YouTube, Spotify e semelhantes.",
   "addSongLink": "Adicionar link",
@@ -1706,5 +1706,13 @@
   "attachmentUploadRefused": "O servidor não aceitou “{name}” de “{song}” ({reason}). O anexo fica só neste dispositivo.",
   "attachmentUploadsRefused": "{count, plural, =1{O servidor não aceitou 1 anexo. Fica só neste dispositivo.} other{O servidor não aceitou {count} anexos. Ficam só neste dispositivo.}}",
   "retryUpload": "Carregar de novo",
-  "uploadRefusalStorageFull": "o armazenamento da organização está cheio"
+  "uploadRefusalStorageFull": "o armazenamento da organização está cheio",
+  "attachmentPdfLimit": "PDF, no máximo {limit}",
+  "storageFree": "{free} livres de {limit}",
+  "storageTitle": "Armazenamento",
+  "storageUsage": "Armazenamento: {used} de {limit}",
+  "storageUsageUnlimited": "Armazenamento: {used}",
+  "storageTrashCounts": "Os PDF eliminados contam até serem eliminados definitivamente.",
+  "storageNearlyFull": "O armazenamento da organização está quase cheio.",
+  "attachmentDoesNotFit": "«{name}» ({size}) já não cabe no armazenamento da organização: {used} de {limit} ocupados. Os PDF eliminados contam até serem eliminados definitivamente."
 }

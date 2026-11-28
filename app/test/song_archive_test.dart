@@ -374,6 +374,51 @@ void main() {
     );
   });
 
+  test('a PDF over 1 MB is skipped, its song is imported (ADR-0070)', () async {
+    final id = await songs.createSong(source: '{title: Big}\n[C]Big');
+    // A PDF from before the limit, stored as it was then.
+    final big = Uint8List(2 * 1024 * 1024)..setAll(0, pdf);
+    await storage.write('big.pdf', big);
+    await db
+        .into(db.attachments)
+        .insert(
+          AttachmentsCompanion.insert(
+            id: 'big',
+            songId: id,
+            name: 'Big score',
+            fileName: 'big.pdf',
+            sizeBytes: big.length,
+            updatedAt: DateTime.now(),
+          ),
+        );
+    await songs.addAttachment(id, name: 'Small', bytes: pdf);
+    final zip = await service().export(
+      [id],
+      options: const SongArchiveOptions(),
+      bandId: localBandId,
+    );
+    final other = AppDatabase(NativeDatabase.memory());
+    addTearDown(other.close);
+    final result = await service(other).import(
+      (await SongArchiveService.read(zip))!,
+      libraryId: localBandId,
+      canEditSong: any,
+      bandId: localBandId,
+    );
+    expect(result.songs.imported, hasLength(1));
+    final imported = result.songs.songIds[id]!;
+    expect(
+      [
+        for (final a in await SongRepository(
+          other,
+          storage,
+        ).getAttachments(imported))
+          a.name,
+      ],
+      ['Small'],
+    );
+  });
+
   test('the file name is the title of a single song, else dated', () async {
     final ids = await fill();
     final hello = (await songs.getSong(ids.hello))!;

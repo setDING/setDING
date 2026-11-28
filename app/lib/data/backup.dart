@@ -1127,7 +1127,11 @@ class BackupService {
         await restoreReview(songs, id, song);
         for (final a in attachmentsOf(song)) {
           final bytes = contents.files[a['file'] as String? ?? ''];
-          if (bytes == null || bytes.length > maxAttachmentBytes) continue;
+          // Over the maximum size of its type (1 MB for a PDF, ADR-0070).
+          if (bytes == null ||
+              bytes.length > _maxBytesOf(a['file'] as String?)) {
+            continue;
+          }
           final attachmentId = await keep(
             a['id'] as String?,
             (id) async =>
@@ -1381,7 +1385,10 @@ class BackupService {
     Map<String, dynamic> a,
   ) async {
     final bytes = contents.files[a['file'] as String? ?? ''];
-    if (bytes == null || bytes.length > maxAttachmentBytes) return null;
+    // Over the maximum size of its type (1 MB for a PDF, ADR-0070).
+    if (bytes == null || bytes.length > _maxBytesOf(a['file'] as String?)) {
+      return null;
+    }
     final ext = p
         .extension(a['file'] as String)
         .replaceFirst('.', '')
@@ -1529,3 +1536,10 @@ Map<String, Uint8List> _unzipPaths(Uint8List zip) => {
     if (entry.isFile && !entry.name.contains('__MACOSX'))
       entry.name.replaceAll(r'\', '/'): Uint8List.fromList(entry.content),
 };
+
+/// The maximum size of the archived attachment file [file] (1 MB for a PDF,
+/// ADR-0070); a file without an extension is stored as a PDF.
+int _maxBytesOf(String? file) {
+  final ext = p.extension(file ?? '').replaceFirst('.', '').toLowerCase();
+  return maxAttachmentBytesFor('file.${ext.isEmpty ? 'pdf' : ext}');
+}

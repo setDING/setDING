@@ -51,7 +51,7 @@
   "attachments": "Allegati",
   "addAttachment": "Allega file",
   "noAttachments": "Ancora nessun allegato.",
-  "attachmentTooLarge": "Il file supera i 20 MB e non può essere allegato.",
+  "attachmentTooLarge": "Il file supera {limit} e non può essere allegato.",
   "songLinks": "Fonti",
   "noSongLinks": "Ancora nessuna fonte. Aggiungi registrazioni su YouTube, Spotify e simili.",
   "addSongLink": "Aggiungi link",
@@ -1706,5 +1706,13 @@
   "attachmentUploadRefused": "Il server non ha accettato “{name}” di “{song}” ({reason}). L'allegato resta solo su questo dispositivo.",
   "attachmentUploadsRefused": "{count, plural, =1{Il server non ha accettato 1 allegato. Resta solo su questo dispositivo.} other{Il server non ha accettato {count} allegati. Restano solo su questo dispositivo.}}",
   "retryUpload": "Carica di nuovo",
-  "uploadRefusalStorageFull": "lo spazio di archiviazione dell'organizzazione è pieno"
+  "uploadRefusalStorageFull": "lo spazio di archiviazione dell'organizzazione è pieno",
+  "attachmentPdfLimit": "PDF, al massimo {limit}",
+  "storageFree": "{free} liberi su {limit}",
+  "storageTitle": "Spazio di archiviazione",
+  "storageUsage": "Spazio: {used} di {limit}",
+  "storageUsageUnlimited": "Spazio: {used}",
+  "storageTrashCounts": "I PDF eliminati contano finché non vengono eliminati definitivamente.",
+  "storageNearlyFull": "Lo spazio di archiviazione dell'organizzazione è quasi pieno.",
+  "attachmentDoesNotFit": "«{name}» ({size}) non entra più nello spazio dell'organizzazione: {used} di {limit} occupati. I PDF eliminati contano finché non vengono eliminati definitivamente."
 }

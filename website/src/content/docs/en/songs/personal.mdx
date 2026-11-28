@@ -10,6 +10,7 @@ import ExampleSong from '../../../../components/ExampleSong.astro';
 import song from '../../../../../../docs/screenshots/song.png';
 import attachmentMenu from '../../../../../../docs/screenshots/song_attachment_menu.png';
 import attachmentRefused from '../../../../../../docs/screenshots/song_attachment_refused.png';
+import attachmentStorage from '../../../../../../docs/screenshots/song_attachment_storage.png';
 import adjustmentOffer from '../../../../../../docs/screenshots/adjustment_offer.png';
 import phoneMenu from '../../../../../../docs/screenshots/song_phone_menu.png';
 import stackedChoruses from '../../../../../../docs/screenshots/live_stacked_choruses.png';
@@ -101,7 +102,10 @@ You can attach PDF sheet music to any song, e.g. the score for the horns. It is
 synced with the song and available offline on every device.
 
 1. Open the song and tap **Attachments**.
-2. Tap **Attach file** and choose a PDF or an image. A file may be at most 20 MB.
+2. Tap **Attach file** and choose a PDF or an image. A PDF may be at most 1 MB
+   (an image, which stays on your device, 20 MB). Below the button, setDING shows
+   this limit and, for admins, librarians and band leaders, how much of the
+   organization's storage is still free.
 3. In the attachment's menu you can **Rename** or **Delete** it.
 
 Everybody who may edit the song may attach and delete files. Everybody who sees the
@@ -110,13 +114,26 @@ on; in the browser it is downloaded.
 
 <Image src={attachmentMenu} alt="The Attachments panel with two PDFs; the menu of the Horns PDF shows Rename, Save and Delete" />
 
+### Storage of the organization
+
+All PDFs of an organization together may take at most 25 MB on the server, unless
+the server sets another limit. Deleted PDFs count until they are deleted
+permanently in the trash. A larger PDF, or one that no longer fits, is refused at
+once with the reason; for a full storage, the message offers the **Trash**. From
+90 % the hint below **Attach file** warns. The usage is also on the organization's
+screen under **Storage**.
+
+<Image src={attachmentStorage} alt="The Attachments panel: below Attach file “PDF, at most 1 MB · 424 KB of 25 MB free” and the warning that the storage is nearly full; the Horns PDF is marked “Only on this device: the organization's storage is full”" />
+
 ### Only on this device
 
 If the server does not accept a new attachment, e.g. because you may not add
-attachments in this library or the file is too large for the server, setDING tells
+attachments in this library, the file is too large for the server or the
+organization's storage is full (e.g. when you attached it offline), setDING tells
 you once after syncing. The attachment then stays **only on this device**: it is
 marked in the attachments, with the reason, and your bandmates do not get it.
-setDING does not try again by itself. In the attachment's menu you can **Upload
+setDING does not try again by itself, except for a full storage once there is room
+again. In the attachment's menu you can **Upload
 again**, e.g. once you have the permission, or **Delete** it.
 
 <Image src={attachmentRefused} alt="The Attachments panel: the Horns PDF is marked “Only on this device”, with the reason: no permission to upload" />

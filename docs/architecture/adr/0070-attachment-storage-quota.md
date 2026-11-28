@@ -277,6 +277,13 @@ limit, and that deleting does not free space until the purge. Therefore:
   (`UploadRefusal.storageFull`); such attachments are sent again by the sync when
   the storage route shows enough room (oldest first, as many as fit). Report
   screenshots are scaled to at most 300 KB.
+- 2026-11-28: App part implemented (#1226): "PDF, at most 1 MB" and the free
+  storage below *Attach file*, with the warning from 90 %; a PDF over 1 MB is
+  refused at once (also offline), one that does not fit (when the usage is known)
+  too, with the usage and *Trash*; images stay on the device and keep their
+  20 MB. The organization screen shows "Storage: … of …" for those who may
+  upload PDFs (`LibraryView.canSeeStorage`), leading to the trash. Archived PDFs
+  over 1 MB are skipped on import instead of failing it.
 
 ## Open points
 

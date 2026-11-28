@@ -51,7 +51,7 @@
   "attachments": "Pièces jointes",
   "addAttachment": "Joindre un fichier",
   "noAttachments": "Pas encore de pièces jointes.",
-  "attachmentTooLarge": "Le fichier dépasse 20 Mo et ne peut pas être joint.",
+  "attachmentTooLarge": "Le fichier dépasse {limit} et ne peut pas être joint.",
   "songLinks": "Sources",
   "noSongLinks": "Pas encore de sources. Ajoute des enregistrements sur YouTube, Spotify, etc.",
   "addSongLink": "Ajouter un lien",
@@ -1706,5 +1706,13 @@
   "attachmentUploadRefused": "Le serveur n'a pas accepté « {name} » de « {song} » ({reason}). La pièce jointe reste seulement sur cet appareil.",
   "attachmentUploadsRefused": "{count, plural, =1{Le serveur n'a pas accepté 1 pièce jointe. Elle reste seulement sur cet appareil.} other{Le serveur n'a pas accepté {count} pièces jointes. Elles restent seulement sur cet appareil.}}",
   "retryUpload": "Envoyer à nouveau",
-  "uploadRefusalStorageFull": "l'espace de stockage de l'organisation est plein"
+  "uploadRefusalStorageFull": "l'espace de stockage de l'organisation est plein",
+  "attachmentPdfLimit": "PDF, {limit} au maximum",
+  "storageFree": "{free} libres sur {limit}",
+  "storageTitle": "Stockage",
+  "storageUsage": "Stockage : {used} sur {limit}",
+  "storageUsageUnlimited": "Stockage : {used}",
+  "storageTrashCounts": "Les PDF supprimés comptent jusqu'à leur suppression définitive.",
+  "storageNearlyFull": "L'espace de stockage de l'organisation est presque plein.",
+  "attachmentDoesNotFit": "« {name} » ({size}) ne tient plus dans l'espace de stockage de l'organisation : {used} sur {limit} utilisés. Les PDF supprimés comptent jusqu'à leur suppression définitive."
 }
