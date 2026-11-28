@@ -81,9 +81,10 @@ class SyncReport {
   final List<RefusedUpload> refusedUploads;
 
   /// Changes the server refused for good in this run: of attachments on
-  /// the server (rename, deletion, restore, purge, #1229) and of songs,
-  /// sets and personal adjustments (#1260). They were undone on this
-  /// device.
+  /// the server (rename, deletion, restore, purge, #1229), of songs, sets
+  /// and personal adjustments (#1260), and of mistake reports, contacts and
+  /// band arrangements (#1264). They were undone on this device; the kinds
+  /// with [RefusedRecord.kept] stay on this device as they are instead.
   final List<RefusedChange> undoneChanges;
 
   /// Why the run stopped early (e.g. offline), or null.
@@ -129,13 +130,19 @@ class SyncEngine {
       undone: undone,
     );
     _overlays = OverlaySync(db, backend, store, undone: undone);
-    _annotations = AnnotationSync(db, backend, store);
-    _reports = ReportSync(db, backend, store, this.storage);
-    _contacts = ContactSync(db, backend, store);
-    _arrangements = ArrangementSync(db, backend, store, changes: _changes);
+    _annotations = AnnotationSync(db, backend, store, undone: undone);
+    _reports = ReportSync(db, backend, store, this.storage, undone: undone);
+    _contacts = ContactSync(db, backend, store, undone: undone);
+    _arrangements = ArrangementSync(
+      db,
+      backend,
+      store,
+      changes: _changes,
+      undone: undone,
+    );
     _substitutes = SubstituteSync(db, backend, store, _sets);
     if (settings case final settings?) {
-      _settings = SettingsSync(db, backend, store, settings);
+      _settings = SettingsSync(db, backend, store, settings, undone: undone);
     }
   }
 
@@ -275,11 +282,14 @@ class SyncEngine {
       pushed += p.$1;
       conflicts += p.$2;
       // The server's version of records whose change it refused (#1229,
-      // #1260); songs first, which the others need.
+      // #1260, #1264); songs first, which the others need.
       pulled += await _songs.pullUndone(logChangesFor: user.id);
+      pulled += await _reports.pullUndone();
+      pulled += await _contacts.pullUndone();
       pulled += await _sets.pullUndone(logChangesFor: user.id);
       pulled += await _attachments.pullUndone(logChangesFor: user.id);
       pulled += await _overlays.pullUndone(user.id);
+      pulled += await _arrangements.pullUndone(logChangesFor: user.id);
       // After the push, so this device's frozen plays are included.
       for (final org in orgIds) {
         await _pullOrgPlays(org);

@@ -4295,6 +4295,64 @@
       }
     }
   },
+  "reportChangeUndone": "Der Server hat die Änderung an der Fehlermeldung zu «{song}» nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.",
+  "@reportChangeUndone": {
+    "description": "A change of a mistake report on the server the server refused for good; undone on this device (#1264).",
+    "placeholders": {
+      "song": {
+        "type": "String"
+      }
+    }
+  },
+  "contactChangeUndone": "Der Server hat die Änderung an der Person ohne Konto «{name}» nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.",
+  "@contactChangeUndone": {
+    "description": "A change (or creation) of a person without an account (ADR-0064) the server refused for good; undone on this device (#1264).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "arrangementChangeUndone": "Der Server hat die Änderung am Band-Arrangement von «{song}» nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.",
+  "@arrangementChangeUndone": {
+    "description": "A change of a band arrangement (ADR-0025) the server refused for good; undone on this device (#1264).",
+    "placeholders": {
+      "song": {
+        "type": "String"
+      }
+    }
+  },
+  "reportKeptOnDevice": "Der Server hat deine Fehlermeldung zu «{song}» nicht angenommen. Sie bleibt nur auf diesem Gerät.",
+  "@reportKeptOnDevice": {
+    "description": "A new mistake report the server refused for good; it stays on this device as written (#1264).",
+    "placeholders": {
+      "song": {
+        "type": "String"
+      }
+    }
+  },
+  "annotationsKeptOnDevice": "Der Server hat deine Freihand-Notizen zu «{song}» nicht angenommen. Sie bleiben nur auf diesem Gerät.",
+  "@annotationsKeptOnDevice": {
+    "description": "Freehand annotations of a song the server refused for good; they stay on this device and are not sent again (#1264).",
+    "placeholders": {
+      "song": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsKeptOnDevice": "Der Server hat deine persönlichen Einstellungen nicht angenommen. Sie bleiben nur auf diesem Gerät.",
+  "@settingsKeptOnDevice": {
+    "description": "Personal settings the server refused for good; they stay on this device and are not sent again (#1264)."
+  },
+  "syncChangesKeptOnDevice": "{count, plural, =1{Der Server hat 1 Änderung nicht angenommen. Sie bleibt nur auf diesem Gerät.} other{Der Server hat {count} Änderungen nicht angenommen. Sie bleiben nur auf diesem Gerät.}}",
+  "@syncChangesKeptOnDevice": {
+    "description": "Several changes the server refused for good in one sync that stay on this device (new songs, mistake reports, annotations, personal settings) (#1264).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "attachmentPdfLimit": "PDF oder Bild, höchstens {limit}",
   "@attachmentPdfLimit": {
     "description": "Shown before a file is picked (ADR-0070); limit is e.g. \"1 MB\".",

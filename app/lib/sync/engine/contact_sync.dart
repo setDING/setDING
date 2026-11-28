@@ -4,6 +4,7 @@ import '../../data/database.dart';
 import '../../data/outbox.dart';
 import '../../util/log.dart';
 import '../sync_backend.dart';
+import 'refused_changes.dart';
 import 'sync_store.dart';
 
 const _log = Log('sync');
@@ -13,19 +14,21 @@ const _log = Log('sync');
 /// wins. The server sends the mail addresses only to people who may edit
 /// sets; for everybody else they stay null.
 class ContactSync {
-  ContactSync(this.db, this.backend, this.store);
+  ContactSync(this.db, this.backend, this.store, {RefusedChanges? undone})
+    : undone = undone ?? RefusedChanges(store);
 
   final AppDatabase db;
   final SyncBackend backend;
   final SyncStore store;
 
+  /// Changes of contacts the server refused for good (#1264).
+  final RefusedChanges undone;
+
   /// Pulls the changed contacts of [orgId]; a server without them (older
   /// than ADR-0064) or another error keeps what the device has.
   Future<int> pull(String orgId) async {
-    final since = await store.cursor(orgId, SyncCollection.contacts);
-    final List<RemoteContact> remote;
     try {
-      remote = await backend.pullContacts(orgId, since);
+      return (await _pull(orgId)).length;
     } on BackendException catch (e) {
       if (e.kind == BackendErrorKind.network ||
           e.kind == BackendErrorKind.signedOut) {
@@ -34,7 +37,34 @@ class ContactSync {
       _log.info('Contacts of $orgId not pulled: ${e.kind.name}');
       return 0;
     }
-    if (remote.isEmpty) return 0;
+  }
+
+  /// Pulls the server's version of the contacts whose change the server
+  /// refused in this run (#1264), so that they are undone at once; a
+  /// contact the server does not send back (never created) is removed
+  /// from this device. A failed pull stops the sync, so nothing is removed
+  /// for a server that did not answer.
+  Future<int> pullUndone() => undone.pullAgain(
+    SyncCollection.contacts,
+    RefusedRecord.contact,
+    pull: (org, _) => _pull(org),
+    remove: (ids) => db.transaction(() async {
+      await (db.delete(db.contacts)..where((c) => c.id.isIn(ids))).go();
+      await (db.delete(db.syncOutbox)..where(
+            (o) =>
+                o.collection.equals(SyncCollection.contacts) &
+                o.recordId.isIn(ids),
+          ))
+          .go();
+      _log.info('Removed ${ids.length} contacts the server does not have');
+    }),
+  );
+
+  /// [pull]; returns the IDs of the contacts the server sent.
+  Future<Set<String>> _pull(String orgId) async {
+    final since = await store.cursor(orgId, SyncCollection.contacts);
+    final remote = await backend.pullContacts(orgId, since);
+    if (remote.isEmpty) return const {};
     await db.transaction(() async {
       final ids = [for (final c in remote) c.id];
       final locals = await SyncStore.byId(
@@ -57,7 +87,7 @@ class ContactSync {
         remote.last.revision,
       );
     });
-    return remote.length;
+    return {for (final c in remote) c.id};
   }
 
   static ContactsCompanion _row(RemoteContact c) => ContactsCompanion.insert(
@@ -115,32 +145,29 @@ class ContactSync {
       });
       return PushResult.done;
     } on BackendException catch (e) {
-      if (e.kind == BackendErrorKind.network ||
-          e.kind == BackendErrorKind.signedOut) {
-        rethrow;
-      }
-      // Not allowed (e.g. deleted or linked meanwhile) or refused: the
-      // server's version comes back with the next pull.
-      _log.warning('Contact ${contact.id} not pushed', e);
-      await db.transaction(() async {
-        if (!create) {
-          final before = contact.revision - 1;
-          await (db.update(db.contacts)..where((c) => c.id.equals(contact.id)))
-              .write(ContactsCompanion(revision: Value(before)));
-          final cursor = await store.cursor(
-            contact.organizationId,
-            SyncCollection.contacts,
-          );
-          if (cursor > before) {
-            await store.setCursor(
-              contact.organizationId,
-              SyncCollection.contacts,
-              before,
-            );
-          }
-        }
-        await store.done(entry);
-      });
+      if (!e.refused) rethrow; // sent again in the next sync
+      // Not allowed (e.g. deleted or linked meanwhile) or a validation
+      // error: sending it again gets the same answer, so the change is
+      // undone and the server's version comes back (#1264).
+      _log.warning('Contact ${contact.id} refused by the server, undone', e);
+      await undone.undo(
+        entry,
+        (
+          kind: RefusedRecord.contact,
+          id: contact.id,
+          name: [
+            contact.firstName,
+            contact.lastName,
+          ].where((n) => n.isNotEmpty).join(' '),
+          songTitle: null,
+        ),
+        collection: SyncCollection.contacts,
+        scope: contact.organizationId,
+        revision: contact.revision,
+        setRevision: (before) =>
+            (db.update(db.contacts)..where((c) => c.id.equals(contact.id)))
+                .write(ContactsCompanion(revision: Value(before))),
+      );
       return PushResult.skipped;
     }
   }

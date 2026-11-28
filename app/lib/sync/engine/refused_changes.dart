@@ -5,18 +5,55 @@ import 'sync_store.dart';
 ///
 /// [keptSong] is a new song the server refused for good: it is not undone
 /// but moved into the local library "On this device", so its text is never
-/// lost (#1263).
-enum RefusedRecord { song, set, attachment, adjustment, keptSong }
+/// lost (#1263). The other `kept…` kinds are what the person wrote and the
+/// server never took (#1264): a new mistake report, freehand annotations,
+/// personal settings; they stay on this device as they are.
+enum RefusedRecord {
+  song,
+  set,
+  attachment,
+  adjustment,
+  keptSong,
+
+  /// A change of a mistake report on the server, undone (#1264).
+  report,
+
+  /// A change of a person without an account, undone (#1264).
+  contact,
+
+  /// A change of a band arrangement, undone (#1264).
+  arrangement,
+
+  /// A new mistake report, kept on this device (#1264).
+  keptReport,
+
+  /// Freehand annotations, kept on this device (#1264).
+  keptAnnotations,
+
+  /// Personal settings, kept on this device (#1264).
+  keptSettings;
+
+  /// Whether the refused change stays on this device instead of being
+  /// undone.
+  bool get kept => switch (this) {
+    keptSong || keptReport || keptAnnotations || keptSettings => true,
+    _ => false,
+  };
+}
 
 /// A change the server refused for good in a sync run (ADR-0004): an
-/// attachment change on the server (#1229), or a change of a song, set or
-/// personal adjustment (#1260). It is undone on this device, which gets the
+/// attachment change on the server (#1229), a change of a song, set or
+/// personal adjustment (#1260), or of a mistake report, contact, band
+/// arrangement, annotations or personal settings (#1264). It is undone on this device, which gets the
 /// server's version back, or loses the record when the server does not show
 /// it to the person (#1248).
 ///
-/// [id] is the record's ID (for an adjustment, its song's ID); [name] is
-/// what the person knows it by (the song title of a song or adjustment);
-/// [songTitle] is the song of an attachment.
+/// [id] is the record's ID (for an adjustment, its song's ID; for an
+/// arrangement or annotations, the outbox record ID; for settings, the
+/// user's ID); [name] is what the person knows it by (the song title of a
+/// song, adjustment, report, arrangement or annotations; the name of a
+/// contact; empty for settings); [songTitle] is the song of an attachment,
+/// adjustment, report, arrangement or annotations.
 typedef RefusedChange = ({
   RefusedRecord kind,
   String id,
@@ -62,6 +99,29 @@ class RefusedChanges {
       await store.done(entry);
     });
     _scopes.putIfAbsent(collection, () => {}).add(scope);
+    if (!_changes.any((c) => c.kind == change.kind && c.id == change.id)) {
+      _changes.add(change);
+    }
+  }
+
+  /// Records already told as kept that are sent again with every sync
+  /// (a new mistake report not on the server): told once while the app
+  /// runs (#1264).
+  final _toldKept = <String>{};
+
+  /// Removes the refused [entry] of [change] from the outbox without
+  /// undoing it: what the person wrote stays on this device as it is
+  /// (#1264). [sentAgain] is for records the sync sends again by itself,
+  /// which are told only once while the app runs.
+  Future<void> keepLocal(
+    OutboxEntry entry,
+    RefusedChange change, {
+    bool sentAgain = false,
+  }) async {
+    await store.done(entry);
+    if (sentAgain && !_toldKept.add('${change.kind.name}:${change.id}')) {
+      return;
+    }
     if (!_changes.any((c) => c.kind == change.kind && c.id == change.id)) {
       _changes.add(change);
     }

@@ -6848,6 +6848,47 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String reportChangeUndone(String song) {
+    return 'O servidor não aceitou a alteração do relato de erro de “$song”. Foi desfeita neste dispositivo.';
+  }
+
+  @override
+  String contactChangeUndone(String name) {
+    return 'O servidor não aceitou a alteração da pessoa sem conta “$name”. Foi desfeita neste dispositivo.';
+  }
+
+  @override
+  String arrangementChangeUndone(String song) {
+    return 'O servidor não aceitou a alteração do arranjo da banda de “$song”. Foi desfeita neste dispositivo.';
+  }
+
+  @override
+  String reportKeptOnDevice(String song) {
+    return 'O servidor não aceitou o teu relato de erro de “$song”. Fica só neste dispositivo.';
+  }
+
+  @override
+  String annotationsKeptOnDevice(String song) {
+    return 'O servidor não aceitou as tuas anotações de “$song”. Ficam só neste dispositivo.';
+  }
+
+  @override
+  String get settingsKeptOnDevice =>
+      'O servidor não aceitou as tuas definições pessoais. Ficam só neste dispositivo.';
+
+  @override
+  String syncChangesKeptOnDevice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'O servidor não aceitou $count alterações. Ficam só neste dispositivo.',
+      one: 'O servidor não aceitou 1 alteração. Fica só neste dispositivo.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String attachmentPdfLimit(String limit) {
     return 'PDF ou imagem, no máximo $limit';
   }

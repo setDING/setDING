@@ -8,6 +8,7 @@ import '../../data/database.dart';
 import '../../data/outbox.dart';
 import '../../util/log.dart';
 import '../sync_backend.dart';
+import 'refused_changes.dart';
 import 'sync_store.dart';
 
 const _log = Log('sync');
@@ -18,11 +19,20 @@ const _log = Log('sync');
 /// with the report, or added later when the report was created without one
 /// reaching the server; they are downloaded only when a report is opened.
 class ReportSync {
-  ReportSync(this.db, this.backend, this.store, this.storage);
+  ReportSync(
+    this.db,
+    this.backend,
+    this.store,
+    this.storage, {
+    RefusedChanges? undone,
+  }) : undone = undone ?? RefusedChanges(store);
 
   final AppDatabase db;
   final SyncBackend backend;
   final SyncStore store;
+
+  /// Changes of reports the server refused for good (#1264).
+  final RefusedChanges undone;
 
   /// Where screenshots are stored; without it, none are uploaded.
   final AttachmentStorage? storage;
@@ -52,14 +62,33 @@ class ReportSync {
     final since = rescan
         ? 0
         : await store.cursor(orgId, SyncCollection.songReports);
+    return (await _pull(
+      orgId,
+      since,
+      rescan: rescan ? (userId: userId, scope: scope) : null,
+    )).length;
+  }
+
+  /// Pulls the reports of [orgId] changed since [since]; [rescan] after a
+  /// change of the reports the user reads (see [pull]). Returns the IDs of
+  /// the reports the server sent.
+  Future<Set<String>> _pull(
+    String orgId,
+    int since, {
+    ({String userId, int scope})? rescan,
+  }) async {
     final remote = await backend.pullSongReports(orgId, since);
-    if (remote.isEmpty && !rescan) return 0;
+    if (remote.isEmpty && rescan == null) return const {};
     final removedFiles = <String>[];
     await db.transaction(() async {
       final ids = [for (final r in remote) r.id];
-      if (rescan) {
-        removedFiles.addAll(await _removeUnreadable(orgId, userId, ids));
-        await store.setCursor(orgId, SyncCollection.songReportsScope, scope);
+      if (rescan != null) {
+        removedFiles.addAll(await _removeUnreadable(orgId, rescan.userId, ids));
+        await store.setCursor(
+          orgId,
+          SyncCollection.songReportsScope,
+          rescan.scope,
+        );
         await store.setCursor(orgId, SyncCollection.songReports, 0);
       }
       if (remote.isEmpty) return;
@@ -111,11 +140,42 @@ class ReportSync {
         remote.last.revision,
       );
     });
-    for (final f in removedFiles) {
+    await _deleteFiles(removedFiles);
+    return {for (final r in remote) r.id};
+  }
+
+  Future<void> _deleteFiles(List<String> files) async {
+    for (final f in files) {
       if (await storage?.exists(f) ?? false) await storage?.delete(f);
     }
-    return remote.length;
   }
+
+  /// Pulls the server's version of the reports whose change the server
+  /// refused in this run (#1264), so that they are undone at once; a
+  /// report the server does not send back (not readable any more) leaves
+  /// this device with its screenshot.
+  Future<int> pullUndone() => undone.pullAgain(
+    SyncCollection.songReports,
+    RefusedRecord.report,
+    pull: (org, _) async =>
+        _pull(org, await store.cursor(org, SyncCollection.songReports)),
+    remove: (ids) async {
+      final rows = await (db.select(
+        db.songReports,
+      )..where((r) => r.id.isIn(ids))).get();
+      await db.transaction(() async {
+        await (db.delete(db.songReports)..where((r) => r.id.isIn(ids))).go();
+        await (db.delete(db.syncOutbox)..where(
+              (o) =>
+                  o.collection.equals(SyncCollection.songReports) &
+                  o.recordId.isIn(ids),
+            ))
+            .go();
+      });
+      await _deleteFiles([for (final r in rows) ?r.screenshotFile]);
+      _log.info('Removed ${ids.length} reports the server no longer shows');
+    },
+  );
 
   /// Values of the [SyncCollection.songReportsScope] cursor.
   static const _ownReports = 1;
@@ -239,35 +299,34 @@ class ReportSync {
       });
       return PushResult.done;
     } on BackendException catch (e) {
-      if (e.kind == BackendErrorKind.network ||
-          e.kind == BackendErrorKind.signedOut) {
-        rethrow;
+      if (!e.refused) rethrow; // sent again in the next sync
+      final change = (
+        kind: create ? RefusedRecord.keptReport : RefusedRecord.report,
+        id: report.id,
+        name: song.title,
+        songTitle: song.title,
+      );
+      if (create) {
+        // A new report the server refused for good stays on this device as
+        // the person wrote it; as a report not on the server it is sent
+        // again with every sync, and told once (#1264).
+        _log.warning('Report ${report.id} refused, kept on this device', e);
+        await undone.keepLocal(entry, change, sentAgain: true);
+        return PushResult.skipped;
       }
-      // Not allowed (e.g. resolved meanwhile) or refused.
-      _log.warning('Report ${report.id} not pushed', e);
-      await db.transaction(() async {
-        if (!create) {
-          // The server's version replaces the refused change at the next
-          // pull: this device's copy counts as older, and the report is
-          // pulled again.
-          final before = report.revision - 1;
-          await (db.update(db.songReports)
-                ..where((r) => r.id.equals(report.id)))
-              .write(SongReportsCompanion(revision: Value(before)));
-          final cursor = await store.cursor(
-            report.libraryId,
-            SyncCollection.songReports,
-          );
-          if (cursor > before) {
-            await store.setCursor(
-              report.libraryId,
-              SyncCollection.songReports,
-              before,
-            );
-          }
-        }
-        await store.done(entry);
-      });
+      // Not allowed (e.g. resolved meanwhile) or a validation error: the
+      // change is undone and the server's version comes back (#1264).
+      _log.warning('Report ${report.id} refused by the server, undone', e);
+      await undone.undo(
+        entry,
+        change,
+        collection: SyncCollection.songReports,
+        scope: report.libraryId,
+        revision: report.revision,
+        setRevision: (before) =>
+            (db.update(db.songReports)..where((r) => r.id.equals(report.id)))
+                .write(SongReportsCompanion(revision: Value(before))),
+      );
       return PushResult.skipped;
     }
   }

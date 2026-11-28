@@ -197,6 +197,47 @@ void main() {
     );
   });
 
+  test('reports, contacts, arrangements, annotations and settings (#1264)', () {
+    final l10n = lookupAppLocalizations(const Locale('en'));
+    RefusedChange change(RefusedRecord kind, [String name = 'X']) =>
+        (kind: kind, id: '${kind.name}$name', name: name, songTitle: name);
+    expect(
+      undoneChangesText(l10n, [change(RefusedRecord.report)]),
+      'The server did not accept the change to the mistake report on “X”. '
+      'It was undone on this device.',
+    );
+    expect(
+      undoneChangesText(l10n, [change(RefusedRecord.contact, 'Eve')]),
+      l10n.contactChangeUndone('Eve'),
+    );
+    expect(
+      undoneChangesText(l10n, [change(RefusedRecord.arrangement)]),
+      l10n.arrangementChangeUndone('X'),
+    );
+    expect(
+      undoneChangesText(l10n, [change(RefusedRecord.keptReport)]),
+      'The server did not accept your mistake report on “X”. It stays on '
+      'this device only.',
+    );
+    expect(
+      undoneChangesText(l10n, [change(RefusedRecord.keptAnnotations)]),
+      l10n.annotationsKeptOnDevice('X'),
+    );
+    expect(
+      undoneChangesText(l10n, [change(RefusedRecord.keptSettings, '')]),
+      l10n.settingsKeptOnDevice,
+    );
+    expect(
+      undoneChangesText(l10n, [
+        change(RefusedRecord.keptSong, 'New'),
+        change(RefusedRecord.keptSettings, ''),
+        change(RefusedRecord.contact, 'Eve'),
+        change(RefusedRecord.arrangement),
+      ]),
+      '${l10n.syncChangesKeptOnDevice(2)} ${l10n.syncChangesUndone(2)}',
+    );
+  });
+
   testWidgets('the marker shows why; the menu retries and removes', (
     tester,
   ) async {

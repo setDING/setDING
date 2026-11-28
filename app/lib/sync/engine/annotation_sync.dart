@@ -8,6 +8,7 @@ import '../../data/database.dart';
 import '../../data/outbox.dart';
 import '../../util/log.dart';
 import '../sync_backend.dart';
+import 'refused_changes.dart';
 import 'sync_store.dart';
 
 const _log = Log('sync');
@@ -18,11 +19,15 @@ const _uuid = Uuid();
 /// (on the server for a push, here for a pull: strokes changed on this
 /// device and not pushed yet win).
 class AnnotationSync {
-  AnnotationSync(this.db, this.backend, this.store);
+  AnnotationSync(this.db, this.backend, this.store, {RefusedChanges? undone})
+    : undone = undone ?? RefusedChanges(store);
 
   final AppDatabase db;
   final SyncBackend backend;
   final SyncStore store;
+
+  /// Annotations the server refused for good (#1264).
+  final RefusedChanges undone;
 
   /// Server record ID of the annotations of [userId] on [songId] and
   /// [target]: the same on every device, so two devices never create two
@@ -156,36 +161,50 @@ class AnnotationSync {
         try {
           await backend.pushAnnotations(remote, create: true);
         } on BackendException catch (e) {
-          // Created by another device of the same person meanwhile.
-          if (e.kind != BackendErrorKind.server) rethrow;
+          // Created by another device of the same person meanwhile; an
+          // error that may go away is sent again as it is (#1264).
+          if (e.kind != BackendErrorKind.server || !e.refused) rethrow;
           await backend.pushAnnotations(remote, create: false);
         }
       }
     } on BackendException catch (e) {
-      if (e.kind == BackendErrorKind.notAllowed ||
-          e.kind == BackendErrorKind.server) {
-        _log.warning('Annotations ${entry.recordId} not pushed: ${e.kind}');
-        await store.done(entry);
-        return PushResult.skipped;
-      }
-      rethrow;
+      if (!e.refused) rethrow; // sent again in the next sync
+      // No (longer) permission, or a validation error (e.g. too large):
+      // sending it again gets the same answer (#1264). The drawing is
+      // personal and stays on this device as it is (ADR-0006, ADR-0032),
+      // but is not sent again: its strokes count as synced.
+      _log.warning('Annotations ${entry.recordId} refused, kept here', e);
+      await _settle(rows);
+      await undone.keepLocal(entry, (
+        kind: RefusedRecord.keptAnnotations,
+        id: entry.recordId,
+        name: song.title,
+        songTitle: song.title,
+      ));
+      return PushResult.skipped;
     }
     await db.transaction(() async {
-      for (final r in rows) {
-        // Changed again while pushing: stays pending for the next push.
-        final same =
-            db.annotations.id.equals(r.id) &
-            db.annotations.pending.equals(r.pending);
-        if (r.stroke == null) {
-          await (db.delete(db.annotations)..where((_) => same)).go();
-        } else {
-          await (db.update(db.annotations)..where((_) => same)).write(
-            const AnnotationsCompanion(pending: Value(0)),
-          );
-        }
-      }
+      await _settle(rows);
       await store.done(entry);
     });
     return PushResult.done;
   }
+
+  /// Marks the strokes [rows] as pushed: erased ones go, the others are no
+  /// longer pending.
+  Future<void> _settle(List<AnnotationRow> rows) => db.transaction(() async {
+    for (final r in rows) {
+      // Changed again while pushing: stays pending for the next push.
+      final same =
+          db.annotations.id.equals(r.id) &
+          db.annotations.pending.equals(r.pending);
+      if (r.stroke == null) {
+        await (db.delete(db.annotations)..where((_) => same)).go();
+      } else {
+        await (db.update(db.annotations)..where((_) => same)).write(
+          const AnnotationsCompanion(pending: Value(0)),
+        );
+      }
+    }
+  });
 }
