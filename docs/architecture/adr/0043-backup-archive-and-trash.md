@@ -347,6 +347,8 @@ Deleted songs and sets can be **restored for 30 days**.
 - 2026-11-28: A single deleted attachment can be deleted permanently at once (ADR-0070, #1226): `attachments` joins `PURGEABLE` (#866), for organization admins and librarians (the right to delete it); its file is removed and the record stays as a tombstone, so its size no longer counts against the storage limit.
 - 2026-11-28: The songs trash of an organization's library lists the PDFs deleted
   on their own as well, to restore or delete permanently (ADR-0070, #1226).
+- 2026-11-28: Archives and backups skip attachments over the maximum size of their
+  type (1 MB for a PDF, ADR-0070, #1226); the import summary names them.
 
 ## Open points
 

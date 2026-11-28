@@ -226,6 +226,7 @@ class BackupImportResult {
     required this.keptExisting,
     required this.sets,
     required this.files,
+    this.skippedFiles = const [],
   });
 
   /// Songs imported as new songs (including [additional]).
@@ -243,6 +244,9 @@ class BackupImportResult {
 
   final int sets;
   final int files;
+
+  /// Attachments not imported because they are too large (ADR-0070).
+  final List<SkippedFile> skippedFiles;
 }
 
 /// Backup archive of a whole library (ADR-0043): export and import, always
@@ -932,6 +936,7 @@ class BackupService {
       keptExisting: songs.keptExisting,
       sets: setCount,
       files: songs.files,
+      skippedFiles: songs.skippedFiles,
     );
   }
 
@@ -1036,6 +1041,7 @@ class BackupService {
     final oldFiles = <String>{};
     final newFiles = <String>{};
     var songCount = 0, setCount = 0, fileCount = 0;
+    final skipped = <SkippedFile>[];
     await db.transaction(() async {
       // Remove -----------------------------------------------------------
       final songIds = [
@@ -1127,9 +1133,10 @@ class BackupService {
         await restoreReview(songs, id, song);
         for (final a in attachmentsOf(song)) {
           final bytes = contents.files[a['file'] as String? ?? ''];
+          if (bytes == null) continue;
           // Over the maximum size of its type (1 MB for a PDF, ADR-0070).
-          if (bytes == null ||
-              bytes.length > _maxBytesOf(a['file'] as String?)) {
+          if (_tooLarge(contents, song, a) case final tooLarge?) {
+            skipped.add(tooLarge);
             continue;
           }
           final attachmentId = await keep(
@@ -1250,6 +1257,7 @@ class BackupService {
       keptExisting: 0,
       sets: setCount,
       files: fileCount,
+      skippedFiles: skipped,
     );
   }
 
@@ -1291,6 +1299,10 @@ class BackupService {
         same ? result.identical++ : result.keptExisting++;
         if (attachments && (completeAttachments?.call(match) ?? false)) {
           for (final a in await missingAttachments(contents, song, match.id)) {
+            if (_tooLarge(contents, song, a) case final skipped?) {
+              result.skippedFiles.add(skipped);
+              continue;
+            }
             final id = await _addAttachment(songs, match.id, contents, a);
             if (id == null) continue;
             result.attachmentIds[a['id'] as String] = id;
@@ -1324,6 +1336,10 @@ class BackupService {
       }
       if (!attachments) continue;
       for (final a in attachmentsOf(song)) {
+        if (_tooLarge(contents, song, a) case final skipped?) {
+          result.skippedFiles.add(skipped);
+          continue;
+        }
         final added = await _addAttachment(songs, id, contents, a);
         if (added == null) continue;
         result.attachmentIds[a['id'] as String] = added;
@@ -1374,6 +1390,24 @@ class BackupService {
             present.add(key(a['name'] as String?)))
           a,
     ];
+  }
+
+  /// The attachment [a] of [song] in [contents] when its file is over the
+  /// maximum size of its type (ADR-0070), as it is reported; null otherwise.
+  static SkippedFile? _tooLarge(
+    BackupContents contents,
+    Map<String, dynamic> song,
+    Map<String, dynamic> a,
+  ) {
+    final bytes = contents.files[a['file'] as String? ?? ''];
+    final limit = _maxBytesOf(a['file'] as String?);
+    if (bytes == null || bytes.length <= limit) return null;
+    return (
+      song: (song['title'] as String?) ?? '',
+      name: (a['name'] as String?) ?? '',
+      sizeBytes: bytes.length,
+      limitBytes: limit,
+    );
   }
 
   /// Adds the attachment [a] of [contents] to [songId]; null if its file is
@@ -1481,7 +1515,20 @@ class SongImport {
 
   /// Of [files]: attachments added to existing songs (ADR-0043 §1c).
   int completed = 0;
+
+  /// Attachments not imported because they are over the maximum size of
+  /// their type (1 MB for a PDF, ADR-0070), in import order.
+  final skippedFiles = <SkippedFile>[];
 }
+
+/// An archived attachment that was not imported because it is larger than
+/// [limitBytes] (ADR-0070): its [name], its [song]'s title and its size.
+typedef SkippedFile = ({
+  String song,
+  String name,
+  int sizeBytes,
+  int limitBytes,
+});
 
 /// Songs of the target library, to find an archive's songs in it.
 class ExistingSongs {

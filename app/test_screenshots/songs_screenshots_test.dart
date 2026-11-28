@@ -35,6 +35,7 @@ import 'screenshot_support.dart';
 
 void main() {
   setUpScreenshots();
+  songImportSkippedScreenshots();
   songsTrashPdfScreenshots();
 
   // Songs with possible conversions (#798): the song list filtered from the
@@ -1154,6 +1155,100 @@ void songsTrashPdfScreenshots() {
       await tester.tap(find.byKey(ValueKey('trash-menu-$horns')));
       await tester.pumpAndSettle();
       await shot(tester, '${lang}_45c_songs_trash_pdf');
+      await app.dispose(tester);
+    });
+  }
+}
+
+/// The summary of a song archive import that skipped a PDF over 1 MB, with
+/// its song, its size and the limit (ADR-0070).
+void songImportSkippedScreenshots() {
+  for (final (lang, dark) in [('de', false), ('en', true)]) {
+    screenshotTest('song import skipped $lang', (tester) async {
+      useTabletSize(tester);
+      final app = await TestApp.create(
+        prefs: {'language': lang, 'themeMode': dark ? 'dark' : 'light'},
+      );
+      final zip = (await tester.runAsync(() async {
+        final song = await app.songs.createSong(
+          source: '{title: Morning Light}\n{artist: Ann Trainor}\n[G]Hello',
+        );
+        await app.songs.addAttachment(
+          song,
+          name: lang == 'de' ? 'Bläser' : 'Horns',
+          bytes: Uint8List.fromList('%PDF-1.4 horns'.codeUnits),
+          pages: 1,
+        );
+        final big = Uint8List(2516582)..setAll(0, '%PDF-1.4'.codeUnits);
+        await app.storage.write('scan.pdf', big);
+        await app.db
+            .into(app.db.attachments)
+            .insert(
+              AttachmentsCompanion.insert(
+                id: 'scan',
+                songId: song,
+                name: lang == 'de' ? 'Partitur (Scan)' : 'Full score (scan)',
+                fileName: 'scan.pdf',
+                sizeBytes: big.length,
+                updatedAt: DateTime.now(),
+              ),
+            );
+        final zip = await SongArchiveService(BackupService(app.db, app.storage))
+            .export([song]);
+        await app.songs.deleteSong(song);
+        return zip;
+      }))!;
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: UniqueKey(),
+          child: app.build(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => Center(
+                  child: TextButton(
+                    onPressed: () => showImportDialog(
+                      context,
+                      pick: ({extensions}) async => [
+                        ImportFile('songs.zip', zip),
+                      ],
+                    ),
+                    child: const Text('import'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('import'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text(lang == 'de' ? 'Dateien auswählen' : 'Choose files'),
+      );
+      Future<void> waitFor(Key key) async {
+        for (var i = 0; i < 500 && find.byKey(key).evaluate().isEmpty; i++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 20)),
+          );
+          await tester.pump(const Duration(milliseconds: 20));
+        }
+        expect(find.byKey(key), findsOneWidget);
+      }
+
+      await waitFor(const Key('song-import-start'));
+      // The preview is read outside the fake clock before the start works.
+      for (var i = 0; i < 25; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump(const Duration(milliseconds: 20));
+      }
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('song-import-start')));
+      await waitFor(const Key('song-import-result'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('import-skipped-files')), findsOneWidget);
+      await shot(tester, '${lang}_37c_song_import_skipped');
       await app.dispose(tester);
     });
   }

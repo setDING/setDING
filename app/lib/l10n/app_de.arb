@@ -4291,5 +4291,29 @@
         "type": "String"
       }
     }
+  },
+  "importSkippedFiles": "{count, plural, =1{1 Anhang wurde nicht importiert, weil er zu gross ist:} other{{count} Anhänge wurden nicht importiert, weil sie zu gross sind:}}",
+  "@importSkippedFiles": {
+    "description": "Import summary (ADR-0070): attachments left out because they are over the maximum size; a list follows.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importSkippedFile": "«{song}» · {size} (höchstens {limit})",
+  "@importSkippedFile": {
+    "description": "One attachment left out by an import (ADR-0070): its song, its size and the maximum size.",
+    "placeholders": {
+      "song": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
   }
 }

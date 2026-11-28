@@ -15,6 +15,9 @@ import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/outbox.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
+import 'package:setding/data/attachment_storage.dart';
+
+import 'test_attachments.dart';
 
 /// Backup archive of ADR-0043.
 void main() {
@@ -187,6 +190,28 @@ void main() {
       ['Hello', 'Break'],
     );
     expect(items.first.item.played, const PlayedValues(key: 'D'));
+  });
+
+  test('a PDF over 1 MB is skipped and named (ADR-0070)', () async {
+    final ids = await fill();
+    await addOldPdf(db, storage, ids.song, name: 'Big');
+    final zip = await service().export(localBandId, libraryName: 'Mine');
+    final other = AppDatabase(NativeDatabase.memory());
+    addTearDown(other.close);
+    final result = await service(other).import(
+      await BackupService.read(zip),
+      libraryId: localBandId,
+      bands: {localBandId: localBandId},
+    );
+    expect(result.files, 2);
+    expect(result.skippedFiles, [
+      (
+        song: 'Hello',
+        name: 'Big',
+        sizeBytes: 2 * 1024 * 1024,
+        limitBytes: maxPdfBytes,
+      ),
+    ]);
   });
 
   test('the language versions come along (ADR-0053)', () async {

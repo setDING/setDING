@@ -13,6 +13,7 @@ import '../widgets/dialogs.dart';
 import '../widgets/export_file.dart';
 import 'auto_backup_tiles.dart' show formatBackupTime;
 import 'full_backup.dart' show backupReminderProvider;
+import 'skipped_files.dart';
 
 // Restoring by replacing the local library (ADR-0054 section 2): a preview
 // of what is replaced, a safety backup of the current library first (into
@@ -114,20 +115,45 @@ Future<BackupImportResult?> replaceLocalLibrary(
       ),
     ),
   );
+  final BackupImportResult result;
   try {
-    final result = await ref.read(backupServiceProvider).replaceLocal(contents);
+    result = await ref.read(backupServiceProvider).replaceLocal(contents);
     ref.invalidate(backupReminderProvider);
     showMessageOn(
       messenger,
       l10n.backupReplaceDone(result.imported, result.sets),
     );
-    return result;
   } catch (e) {
     showMessageOn(messenger, l10n.errorGeneric('$e'));
     return null;
   } finally {
     navigator.pop();
   }
+  // Attachments left out for their size are named (ADR-0070).
+  if (result.skippedFiles.isNotEmpty && navigator.mounted) {
+    unawaited(
+      showDialog<void>(
+        context: navigator.context,
+        builder: (context) => AlertDialog(
+          key: const Key('backup-replace-skipped'),
+          title: Text(l10n.backupImportDone),
+          content: SizedBox(
+            width: 480,
+            child: SingleChildScrollView(
+              child: SkippedFilesReport(result.skippedFiles),
+            ),
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.close),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  return result;
 }
 
 /// The preview: the backup, what is replaced, the safety backup. Pops with

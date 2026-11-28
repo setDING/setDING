@@ -22,6 +22,7 @@ import '../widgets/file_actions.dart';
 import 'backup_actions.dart';
 import '../routes.dart';
 import 'replace_local.dart' show confirmLocalReplace;
+import 'skipped_files.dart';
 
 export '../../data/auto_backup.dart' show lastBackupKey;
 
@@ -548,6 +549,9 @@ class _FullRestoreDialogState extends ConsumerState<_FullRestoreDialog> {
                     onTap: () => context.push<void>(AppPaths.song(song.id)),
                   ),
               ],
+              SkippedFilesReport([
+                for (final r in result.libraries) ...r.skippedFiles,
+              ]),
             ],
           ),
         ),

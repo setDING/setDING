@@ -15,6 +15,7 @@ import importDialog from '../../../../../../docs/screenshots/import_dialog.png';
 import songsSelected from '../../../../../../docs/screenshots/songs_selected.png';
 import songExport from '../../../../../../docs/screenshots/song_export.png';
 import songImport from '../../../../../../docs/screenshots/song_import.png';
+import songImportSkipped from '../../../../../../docs/screenshots/song_import_skipped.png';
 import songsConversions from '../../../../../../docs/screenshots/songs_conversions.png';
 import songsTags from '../../../../../../docs/screenshots/songs_tags.png';
 import songsLanguages from '../../../../../../docs/screenshots/songs_languages.png';
@@ -231,6 +232,14 @@ it is **added**, provided you may edit the song; existing attachments with the s
 name stay as they are. This also applies when you import a set.
 
 <Image src={songImport} alt="The Import songs preview: one song already here, one new song and one attachment added to an existing song" />
+
+A PDF larger than 1 MB is **not imported**, the limit of the server (see
+[Storage of the organization](/en/songs/personal/#storage-of-the-organization)): its
+song is imported without it, and the summary after the import names each such PDF
+with its song, its size and the limit. This applies to song and set archives and to
+backups; a ZIP of ChordPro files never attaches PDFs.
+
+<Image src={songImportSkipped} alt="The summary Songs imported: one song and one attachment imported; the PDF Full score (scan) of “Morning Light”, 2.4 MB, was not imported because it is larger than 1 MB" />
 
 ## Trash
 

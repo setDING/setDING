@@ -10420,6 +10420,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'PDF in «{song}» · {size}'**
   String trashAttachmentOf(String song, String size);
+
+  /// Import summary (ADR-0070): attachments left out because they are over the maximum size; a list follows.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Anhang wurde nicht importiert, weil er zu gross ist:} other{{count} Anhänge wurden nicht importiert, weil sie zu gross sind:}}'**
+  String importSkippedFiles(int count);
+
+  /// One attachment left out by an import (ADR-0070): its song, its size and the maximum size.
+  ///
+  /// In de, this message translates to:
+  /// **'«{song}» · {size} (höchstens {limit})'**
+  String importSkippedFile(String song, String size, String limit);
 }
 
 class _AppLocalizationsDelegate

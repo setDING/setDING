@@ -6846,4 +6846,21 @@ class AppLocalizationsFr extends AppLocalizations {
   String trashAttachmentOf(String song, String size) {
     return 'PDF dans « $song » · $size';
   }
+
+  @override
+  String importSkippedFiles(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count pièces jointes n\'ont pas été importées, car elles sont trop volumineuses :',
+      one: '1 pièce jointe n\'a pas été importée, car elle est trop volumineuse :',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importSkippedFile(String song, String size, String limit) {
+    return '« $song » · $size ($limit au maximum)';
+  }
 }

@@ -21,6 +21,7 @@ import '../widgets/file_actions.dart';
 import '../widgets/loading_indicator.dart';
 import '../widgets/section_header.dart';
 import '../routes.dart';
+import '../backup/skipped_files.dart';
 
 /// Exports [set]: as the printable set list ([exportPdf], if given) or as a
 /// setDING archive with options (ADR-0043 §1b, issue #870).
@@ -667,6 +668,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
                     onTap: () => context.push<void>(AppPaths.song(song.id)),
                   ),
               ],
+              SkippedFilesReport(songs.skippedFiles),
             ],
           ),
         ),
