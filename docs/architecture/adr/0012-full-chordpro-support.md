@@ -205,6 +205,11 @@ Each phase is a separate branch and merge (ADR-0010).
   their string count matches.
 - 2026-11-26: setDING custom directive `{x_ccli_footer: …}` for the SongSelect terms-of-use line. `{footer}` is not defined by the ChordPro specification (only `footerfont/size/colour`), so it is no longer known metadata or offered by autocompletion; on import and with the editor's SongSelect hint it is renamed to `{x_ccli_footer}` like `{ccli}` (ADR-0011).
 - 2026-11-26: Autocompletion suggests only the specification's spelling `…colour` of the colour directives; the American `…color` (e.g. `textcolor`) is not defined by the ChordPro specification and is no longer suggested. The parser still reads it, so existing songs keep their colours.
+- 2026-11-28: Images for `{image}` are synced like PDF attachments (owner, #1227,
+  ADR-0009): the server accepts PNG, JPEG, GIF, WebP and SVG (by content), at most 1 MB
+  each and counted toward the organization's storage (ADR-0070), so `{image}` finds the
+  image on every device of the band. SVG is drawn only with `flutter_svg` (no scripts,
+  no web view); the server serves an SVG as a protected download in a sandbox.
 
 ## Open points
 

@@ -3,8 +3,9 @@
 // Storage limit per organization (ADR-0070). PocketBase runs every hook
 // handler in its own context, so handlers load this module with require().
 
-/// The organization's PDF attachments that are still on the disk (ADR-0070
-/// §3): live ones, deleted ones in the trash and those of deleted songs.
+/// The organization's attachments that are still on the disk (ADR-0070 §3),
+/// PDFs and images for `{image}` (#1227): live ones, deleted ones in the
+/// trash and those of deleted songs.
 /// `used` is all of them, `live` those of songs in the library.
 function usage(app, orgId) {
   const result = new DynamicModel({ used: 0, live: 0 });

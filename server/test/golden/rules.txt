@@ -214,7 +214,7 @@ fields:
   organization relation cascadeDelete=true collectionId=organizations maxSelect=1 required=true
   song relation cascadeDelete=true collectionId=songs maxSelect=1 required=true
   name text max=500 required=true
-  file file maxSelect=1 maxSize=1048576 mimeTypes=[application/pdf] protected=true
+  file file maxSelect=1 maxSize=1048576 mimeTypes=[application/pdf, image/png, image/jpeg, image/gif, image/webp, image/svg+xml] protected=true
   pages number onlyInt=true
   size_bytes number onlyInt=true
   revision number onlyInt=true

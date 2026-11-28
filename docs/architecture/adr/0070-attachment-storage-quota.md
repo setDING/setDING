@@ -297,6 +297,12 @@ limit, and that deleting does not free space until the purge. Therefore:
   (`SongImport.skippedFiles`, `BackupImportResult.skippedFiles`). A ZIP of
   ChordPro files never attaches PDFs (they are listed as files that were not
   imported, as before), so it needs no size check of its own; a test covers it.
+- 2026-11-28: Images for `{image}` are synced like PDFs (#1227, ADR-0009) and
+  fall under the same limits: at most 1 MB per image (the `maxSize` of `file`,
+  shared with PDFs), and their size counts toward the organization's storage
+  limit like a PDF's (the sum of section 3 counts every attachment with a file,
+  whatever its type). Wherever this ADR says "PDF" for the limit, it now means
+  any synced attachment.
 
 ## Open points
 
