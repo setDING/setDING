@@ -125,7 +125,7 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get attachmentsTooltip => 'Tem anexos PDF';
+  String get attachmentsTooltip => 'Tem anexos (PDF, imagens)';
 
   @override
   String get keyOriginal => 'Original';
@@ -4920,10 +4920,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get changeSongText => 'Texto alterado';
 
   @override
-  String get changeSongPdf => 'PDF alterado';
+  String get changeSongAttachment => 'Anexo alterado';
 
   @override
-  String get changeSongTextAndPdf => 'Texto e PDF alterados';
+  String get changeSongTextAndAttachment => 'Texto e anexo alterados';
 
   @override
   String changeSetAdded(int count) {

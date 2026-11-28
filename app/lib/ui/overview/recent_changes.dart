@@ -94,9 +94,9 @@ String describeChange(AppLocalizations l10n, RecentChange change) {
     ChangeKind.songAdded => l10n.changeSongAdded,
     ChangeKind.songChanged =>
       d.text && d.pdf
-          ? l10n.changeSongTextAndPdf
+          ? l10n.changeSongTextAndAttachment
           : d.pdf
-          ? l10n.changeSongPdf
+          ? l10n.changeSongAttachment
           : l10n.changeSongText,
     ChangeKind.setAdded => l10n.changeNewSet,
     ChangeKind.setChanged => [

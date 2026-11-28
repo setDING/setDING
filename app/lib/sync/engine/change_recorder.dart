@@ -172,8 +172,9 @@ class ChangeRecorder {
     );
   }
 
-  /// An attachment from the server replaces [local]: a PDF added, replaced
-  /// or removed counts as a change of its song (a new name does not).
+  /// An attachment from the server replaces [local]: a PDF or image added,
+  /// replaced or removed counts as a change of its song (a new name does
+  /// not).
   Future<void> attachment(
     AttachmentEntry? local,
     RemoteAttachment remote,

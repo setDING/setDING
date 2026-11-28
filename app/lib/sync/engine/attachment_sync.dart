@@ -75,15 +75,44 @@ class AttachmentSync {
   /// refused in this run, so that they are undone at once and not only
   /// with the next sync (#1229). Undone changes are not recorded as
   /// changes of others (ADR-0045).
+  ///
+  /// An undone attachment the server does not send back is not visible to
+  /// the person any more (the server answered 404, e.g. its song was moved
+  /// out of reach): it is removed from this device at once, so that the
+  /// device agrees with the "undone" message and not only after the next
+  /// band refresh (#1248).
   Future<int> pullUndone({String? logChangesFor}) async {
     final orgs = _undoneOrgs.toList();
     _undoneOrgs.clear();
     final quiet = {for (final c in _undone) c.attachmentId};
-    var pulled = 0;
+    final pulled = <String>{};
     for (final org in orgs) {
-      pulled += await pull(org, logChangesFor: logChangesFor, quiet: quiet);
+      pulled.addAll(
+        await _pull(org, logChangesFor: logChangesFor, quiet: quiet),
+      );
     }
-    return pulled;
+    await _removeInvisible(quiet.difference(pulled));
+    return pulled.length;
+  }
+
+  /// Removes the attachments [ids] from this device, with their files: the
+  /// server does not show them to the person any more (#1248). Personal
+  /// annotations on them stay (ADR-0006).
+  Future<void> _removeInvisible(Set<String> ids) async {
+    if (ids.isEmpty) return;
+    final gone = await db.transaction(() async {
+      final rows = await (db.select(
+        db.attachments,
+      )..where((a) => a.id.isIn(ids))).get();
+      await (db.update(db.personalOverlays)..where((o) => o.liveView.isIn(ids)))
+          .write(const PersonalOverlaysCompanion(liveView: Value(null)));
+      await (db.delete(db.attachments)..where((a) => a.id.isIn(ids))).go();
+      return [for (final a in rows) a.fileName];
+    });
+    _log.info('Removed ${gone.length} attachments the server no longer shows');
+    for (final f in gone) {
+      await storage?.delete(f);
+    }
   }
 
   /// Why the server refused an upload with [e] ([BackendException.refused]).
@@ -171,10 +200,18 @@ class AttachmentSync {
     String orgId, {
     String? logChangesFor,
     Set<String> quiet = const {},
+  }) async =>
+      (await _pull(orgId, logChangesFor: logChangesFor, quiet: quiet)).length;
+
+  /// [pull]; returns the IDs of the attachments the server sent.
+  Future<Set<String>> _pull(
+    String orgId, {
+    String? logChangesFor,
+    Set<String> quiet = const {},
   }) async {
     final since = await store.cursor(orgId, SyncCollection.attachments);
     final remote = await backend.pullAttachments(orgId, since);
-    if (remote.isEmpty) return 0;
+    if (remote.isEmpty) return const {};
     final removedFiles = <String>[];
     await db.transaction(() async {
       final ids = [for (final a in remote) a.id];
@@ -211,7 +248,7 @@ class AttachmentSync {
     for (final f in removedFiles) {
       await storage?.delete(f);
     }
-    return remote.length;
+    return {for (final a in remote) a.id};
   }
 
   /// Applies server metadata; returns a local file to delete, if any.

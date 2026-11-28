@@ -63,7 +63,7 @@
       }
     }
   },
-  "attachmentsTooltip": "Hat PDF-Anhänge",
+  "attachmentsTooltip": "Hat Anhänge (PDFs, Bilder)",
   "keyOriginal": "Original",
   "capo": "Kapo",
   "capoValue": "Kapo {fret}",
@@ -2929,8 +2929,8 @@
   "changeSongAdded": "Neuer Song",
   "changeNewSet": "Neues Set",
   "changeSongText": "Text geändert",
-  "changeSongPdf": "PDF geändert",
-  "changeSongTextAndPdf": "Text und PDF geändert",
+  "changeSongAttachment": "Anhang geändert",
+  "changeSongTextAndAttachment": "Text und Anhang geändert",
   "changeSetAdded": "{count, plural, =1{1 Song hinzugefügt} other{{count} Songs hinzugefügt}}",
   "@changeSetAdded": {
     "placeholders": {

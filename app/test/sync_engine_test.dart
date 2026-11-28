@@ -928,6 +928,33 @@ void main() {
         expect((after.deleted, after.purged), (true, false));
       });
 
+      // The server answered 404 because the attachment is not visible to
+      // the person any more: the device kept the local change until the
+      // next band refresh although the message said it was undone (#1248).
+      test('an attachment the server no longer shows is removed at once '
+          '(#1248)', () async {
+        final (id, a) = await uploaded();
+        final file = (await local(id)).fileName;
+        await songs.renameAttachment(a, 'Horns');
+        server.attachments.remove(a); // out of reach: 404 on the update
+
+        final report = await engine.sync();
+        expect(report.error, isNull);
+        expect(report.undoneChanges, [
+          (attachmentId: a, name: 'Horns', songTitle: 'Song'),
+        ]);
+        expect(
+          await (db.select(
+            db.attachments,
+          )..where((x) => x.songId.equals(id))).get(),
+          isEmpty,
+          reason: 'not kept with the undone change',
+        );
+        expect(await storage.exists(file), isFalse);
+        expect(await outbox(), isEmpty);
+        expect(await db.select(db.changeLog).get(), isEmpty);
+      });
+
       test('a server error is sent again in the next sync', () async {
         final (id, a) = await uploaded();
         await songs.renameAttachment(a, 'Horns');

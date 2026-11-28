@@ -50,7 +50,8 @@ class ChangeDetails {
   /// A song: its ChordPro text changed.
   final bool text;
 
-  /// A song: a PDF attachment was added, replaced or removed.
+  /// A song: an attachment (PDF or image) was added, replaced or removed
+  /// (stored as `pdf` for older entries).
   final bool pdf;
 
   /// A set: songs added and removed.

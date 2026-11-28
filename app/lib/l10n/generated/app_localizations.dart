@@ -301,7 +301,7 @@ abstract class AppLocalizations {
   /// No description provided for @attachmentsTooltip.
   ///
   /// In de, this message translates to:
-  /// **'Hat PDF-Anhänge'**
+  /// **'Hat Anhänge (PDFs, Bilder)'**
   String get attachmentsTooltip;
 
   /// No description provided for @keyOriginal.
@@ -7809,17 +7809,17 @@ abstract class AppLocalizations {
   /// **'Text geändert'**
   String get changeSongText;
 
-  /// No description provided for @changeSongPdf.
+  /// No description provided for @changeSongAttachment.
   ///
   /// In de, this message translates to:
-  /// **'PDF geändert'**
-  String get changeSongPdf;
+  /// **'Anhang geändert'**
+  String get changeSongAttachment;
 
-  /// No description provided for @changeSongTextAndPdf.
+  /// No description provided for @changeSongTextAndAttachment.
   ///
   /// In de, this message translates to:
-  /// **'Text und PDF geändert'**
-  String get changeSongTextAndPdf;
+  /// **'Text und Anhang geändert'**
+  String get changeSongTextAndAttachment;
 
   /// No description provided for @changeSetAdded.
   ///

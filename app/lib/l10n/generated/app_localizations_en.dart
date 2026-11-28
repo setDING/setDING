@@ -125,7 +125,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get attachmentsTooltip => 'Has PDF attachments';
+  String get attachmentsTooltip => 'Has attachments (PDFs, images)';
 
   @override
   String get keyOriginal => 'Original';
@@ -4902,10 +4902,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get changeSongText => 'Text changed';
 
   @override
-  String get changeSongPdf => 'PDF changed';
+  String get changeSongAttachment => 'Attachment changed';
 
   @override
-  String get changeSongTextAndPdf => 'Text and PDF changed';
+  String get changeSongTextAndAttachment => 'Text and attachment changed';
 
   @override
   String changeSetAdded(int count) {
