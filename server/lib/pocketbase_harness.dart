@@ -215,7 +215,10 @@ class PocketBase {
       'migrate',
       'down',
       '$later',
-      ..._without(_flags, ['--publicDir', '--http']),
+      // Other tests write into the shared hooks directory; a watching
+      // command restarts and cancels itself (issue #1240).
+      '--hooksWatch=false',
+      ..._without(_flags, ['--publicDir', '--http', '--hooksWatch']),
     ], workingDirectory: _workingDirectory);
     down.stdin.writeln('y');
     await down.stdin.close();
@@ -376,7 +379,9 @@ class PocketBase {
       _binaryPath,
       [
         ...args,
-        ..._without(_flags, ['--publicDir', '--http']),
+        // As for `migrate down`: never restart on a hooks change (#1240).
+        '--hooksWatch=false',
+        ..._without(_flags, ['--publicDir', '--http', '--hooksWatch']),
       ],
       environment: environment,
       workingDirectory: _workingDirectory,

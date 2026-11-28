@@ -61,6 +61,7 @@ docs/chordpro/
 
 # Version stamp written by deploys and the server tests (tool/server/deploy.sh)
 server/pb_hooks/setding-version.txt
+server/pb_hooks/harness-probe-*.txt
 
 # Python bytecode (tool/release/changelog.py tests)
 __pycache__/
