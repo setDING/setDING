@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:pocketbase/pocketbase.dart';
 
+import '../data/attachment_storage.dart' show attachmentMimeType;
 import '../midi/midi_message.dart';
 import '../platform/http_client.dart';
 import '../platform/network_error.dart';
@@ -1219,8 +1220,13 @@ class PocketBaseBackend implements SyncBackend {
                 http.MultipartFile.fromBytes(
                   'file',
                   bytes ?? const [],
-                  filename: '${attachment.id}.pdf',
-                  contentType: MediaType('application', 'pdf'),
+                  // The local file's name (`<id>.png`, …) keeps the type
+                  // for the other devices (#1227); the server checks the
+                  // content.
+                  filename: attachment.file ?? '${attachment.id}.pdf',
+                  contentType: MediaType.parse(
+                    attachmentMimeType(attachment.file ?? 'file.pdf'),
+                  ),
                 ),
               ],
             );

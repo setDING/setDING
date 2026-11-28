@@ -9,6 +9,7 @@ import 'package:drift/drift.dart'
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:setding/data/annotation_repository.dart';
+import 'package:setding/data/attachment_lookup.dart';
 import 'package:setding/data/arrangement_repository.dart';
 import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/attachment_storage.dart';
@@ -515,10 +516,19 @@ void main() {
   group('attachments (ADR-0009)', () {
     late AttachmentStorage storage;
     final pdf = Uint8List.fromList('%PDF-1.4 test'.codeUnits);
+    final png = Uint8List.fromList([
+      0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 1, 2, //
+    ]);
+    final jpeg = Uint8List.fromList([0xFF, 0xD8, 0xFF, 0xE0, 1, 2]);
+    final gif = Uint8List.fromList('GIF89a....'.codeUnits);
+    final svg = Uint8List.fromList(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"/>'
+          .codeUnits,
+    );
 
     setUp(() => storage = FileAttachmentStorage(dir));
 
-    test('uploads PDFs after their song; images stay on the device', () async {
+    test('uploads PDFs and images after their song (#1227)', () async {
       final id = await songs.createSong(source: '{title: With score}');
       final a = await songs.addAttachment(
         id,
@@ -526,14 +536,14 @@ void main() {
         bytes: pdf,
         pages: 2,
       );
-      await songs.addAttachment(
+      final image = await songs.addAttachment(
         id,
         name: 'cover.png',
-        bytes: Uint8List.fromList([1, 2]),
+        bytes: png,
         extension: 'png',
       );
       await engine.sync();
-      expect(server.attachments.keys, [a]);
+      expect(server.attachments.keys, unorderedEquals([a, image]));
       final remote = server.attachments[a]!;
       expect(remote.name, 'Score');
       expect(remote.pages, 2);
@@ -542,7 +552,155 @@ void main() {
           .firstWhere((x) => x.id == a);
       expect(local.remoteFile, remote.file);
       expect(local.revision, remote.revision);
+      // The image keeps its type on the server.
+      final remoteImage = server.attachments[image]!;
+      expect(remoteImage.file, endsWith('.png'));
+      expect(server.files[remoteImage.file], png);
       expect(await outbox(), isEmpty);
+    });
+
+    // Images for {image} were never synced: bandmates did not see them
+    // (#1227).
+    group('images for {image} (#1227)', () {
+      test('are found by {image} on a second device', () async {
+        final id = await songs.createSong(
+          source: '{title: Logo}\n{image: src="img/logo.svg"}',
+        );
+        await songs.addAttachment(
+          id,
+          name: 'logo.svg',
+          bytes: svg,
+          extension: 'svg',
+        );
+        await songs.addAttachment(
+          id,
+          name: 'band.png',
+          bytes: png,
+          extension: 'png',
+        );
+        await engine.sync();
+
+        final db2 = AppDatabase(NativeDatabase.memory());
+        addTearDown(db2.close);
+        final dir2 = Directory.systemTemp.createTempSync('setding_sync2');
+        addTearDown(() => dir2.deleteSync(recursive: true));
+        final storage2 = FileAttachmentStorage(dir2);
+        final bands2 = BandService(db2, server);
+        await bands2.refresh();
+        final engine2 = SyncEngine(
+          db2,
+          server,
+          bands2,
+          copies: BandCopyService(db2, storage2),
+        );
+        final report = await engine2.sync();
+        expect(report.downloaded, 2);
+        final there = await SongRepository(
+          db2,
+          storage2,
+          libraryId: 'o1',
+        ).getAttachments(id);
+        final logo = imageAttachmentFor(there, 'img/logo.svg');
+        expect(logo, isNotNull);
+        expect(logo!.fileName, endsWith('.svg'));
+        expect(await storage2.file(logo.fileName).readAsBytes(), svg);
+        final band = imageAttachmentFor(there, 'band');
+        expect(band!.fileName, endsWith('.png'));
+        expect(await storage2.file(band.fileName).readAsBytes(), png);
+
+        // Renamed on the second device, the first one follows; deleted
+        // there, it is removed here too.
+        final repo2 = SongRepository(db2, storage2, libraryId: 'o1');
+        await repo2.renameAttachment(band.id, 'group.png');
+        await engine2.sync();
+        await engine.sync();
+        final here = await songs.getAttachments(id);
+        expect(imageAttachmentFor(here, 'group.png')?.id, band.id);
+        await repo2.deleteAttachment(
+          (await repo2.getAttachments(id)).firstWhere((a) => a.id == band.id),
+        );
+        await engine2.sync();
+        await engine.sync();
+        expect(
+          imageAttachmentFor(await songs.getAttachments(id), 'group'),
+          isNull,
+        );
+        expect(server.attachments[band.id]!.deleted, isTrue);
+      });
+
+      test('images attached before they were synced are uploaded', () async {
+        final id = await songs.createSong(source: '{title: Old}');
+        await engine.sync();
+        // As added by an app from before #1227: no outbox entry.
+        final a = await songs.addAttachment(
+          id,
+          name: 'old.jpg',
+          bytes: jpeg,
+          extension: 'jpg',
+        );
+        await db.delete(db.syncOutbox).go();
+        final report = await engine.sync();
+        expect(report.error, isNull);
+        expect(server.attachments[a]!.file, endsWith('.jpg'));
+        expect(server.files[server.attachments[a]!.file], jpeg);
+        // A deleted one is not.
+        final gone = await songs.addAttachment(
+          id,
+          name: 'gone.gif',
+          bytes: gif,
+          extension: 'gif',
+        );
+        await db.delete(db.syncOutbox).go();
+        await (db.update(db.attachments)..where((x) => x.id.equals(gone)))
+            .write(const AttachmentsCompanion(deleted: Value(true)));
+        await engine.sync();
+        expect(server.attachments.containsKey(gone), isFalse);
+      });
+
+      test('without upload rights they are marked once (#1225)', () async {
+        final id = await songs.createSong(source: '{title: Old}');
+        await engine.sync();
+        final a = await songs.addAttachment(
+          id,
+          name: 'old.png',
+          bytes: png,
+          extension: 'png',
+        );
+        await db.delete(db.syncOutbox).go();
+        // Ann may not upload any more.
+        server.members.single.role = BandRole.member;
+        server.orgMembers.single.role = OrgRole.member;
+        server.attachmentUploadError = const BackendException(
+          BackendErrorKind.notAllowed,
+          null,
+          403,
+        );
+        final report = await engine.sync();
+        expect(report.refusedUploads.single.attachmentId, a);
+        final local = (await songs.getAttachments(id)).single;
+        expect(local.uploadRefused, UploadRefusal.notAllowed);
+        // Not sent again on the next sync.
+        final uploads = server.attachmentUploads;
+        await engine.sync();
+        expect(server.attachmentUploads, uploads);
+      });
+
+      test('the local library keeps its images on the device', () async {
+        final local = SongRepository(
+          db,
+          FileAttachmentStorage(dir),
+          libraryId: localBandId,
+        );
+        final id = await local.createSong(source: '{title: Mine}');
+        await local.addAttachment(
+          id,
+          name: 'mine.png',
+          bytes: png,
+          extension: 'png',
+        );
+        await engine.sync();
+        expect(server.attachments, isEmpty);
+      });
     });
 
     // A refused upload was dropped silently: marked as pushed, never

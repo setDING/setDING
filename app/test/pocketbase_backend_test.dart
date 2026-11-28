@@ -299,6 +299,54 @@ void main() {
     expect(jsonDecode(requests.last.body), isNot(contains('purged')));
   });
 
+  // An image was uploaded as `<id>.pdf`, so other devices took it for a PDF
+  // and `{image}` did not find it (#1227).
+  test('a new file is uploaded under its name and media type', () async {
+    final b = backend(
+      MemorySessionStore(_storedSession()),
+      (r) async => _json(200, {
+        'id': 'a1',
+        'collectionId': 'c',
+        'collectionName': 'attachments',
+        'organization': 'o1',
+        'song': 's1',
+        'name': 'logo.svg',
+        'file': 'a1_x7k.svg',
+        'revision': 1,
+      }),
+    );
+    final stored = await b.pushAttachment(
+      const RemoteAttachment(
+        id: 'a1',
+        organizationId: 'o1',
+        songId: 's1',
+        name: 'logo.svg',
+        file: 'a1.svg',
+      ),
+      create: true,
+      bytes: utf8.encode('<svg/>'),
+    );
+    expect(stored.file, 'a1_x7k.svg');
+    final body = latin1.decode(requests.last.bodyBytes);
+    expect(body, contains('filename="a1.svg"'));
+    expect(body, contains('content-type: image/svg+xml'));
+
+    // Without a local name (older callers): a PDF, as before.
+    await b.pushAttachment(
+      const RemoteAttachment(
+        id: 'a2',
+        organizationId: 'o1',
+        songId: 's1',
+        name: 'Score',
+      ),
+      create: true,
+      bytes: utf8.encode('%PDF-1.4'),
+    );
+    final pdf = latin1.decode(requests.last.bodyBytes);
+    expect(pdf, contains('filename="a2.pdf"'));
+    expect(pdf, contains('content-type: application/pdf'));
+  });
+
   test('clears a session the server rejects', () async {
     final store = MemorySessionStore(_storedSession());
     final b = backend(

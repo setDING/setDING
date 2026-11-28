@@ -12,6 +12,7 @@ import '../../data/song_archive.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../settings/settings.dart';
 import '../backup/full_backup.dart';
+import '../backup/skipped_files.dart';
 import '../sets/set_archive_dialogs.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/file_actions.dart';
@@ -329,6 +330,7 @@ class _ImportDialogState extends ConsumerState<_ImportDialog> {
                     l10n.importSkipped(result.skipped.join(', ')),
                 ].join('\n'),
               ),
+              SkippedFilesReport(result.skippedFiles),
               if (problems.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Text(l10n.importProblemsMessage(problems.length)),

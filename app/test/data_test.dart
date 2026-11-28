@@ -128,12 +128,13 @@ void main() {
         () => songs.addAttachment(
           id,
           name: 'Big',
-          bytes: Uint8List(maxAttachmentBytes + 1),
+          bytes: Uint8List(maxImageBytes + 1),
           extension: 'png',
         ),
         throwsA(isA<AttachmentTooLargeException>()),
       );
-      // A PDF at most 1 MB, the server's limit (ADR-0070); an image more.
+      // A PDF at most 1 MB, the server's limit (ADR-0070); an image too
+      // (#1227).
       expect(
         () => songs.addAttachment(
           id,
@@ -148,15 +149,18 @@ void main() {
           ),
         ),
       );
-      final image = await songs.addAttachment(
-        id,
-        name: 'photo.png',
-        bytes: Uint8List(maxPdfBytes + 1),
-        extension: 'png',
+      // An image whose content is not its type is refused: the server
+      // would refuse it (#1227).
+      expect(
+        () => songs.addAttachment(
+          id,
+          name: 'photo.png',
+          bytes: Uint8List(16),
+          extension: 'png',
+        ),
+        throwsA(isA<AttachmentTypeMismatchException>()),
       );
-      await songs.deleteAttachment(
-        (await songs.getAttachments(id)).firstWhere((a) => a.id == image),
-      );
+      expect((await songs.getAttachments(id)).map((a) => a.id), [attId]);
 
       await songs.deleteAttachment(list.single);
       expect(await songs.getAttachments(id), isEmpty);

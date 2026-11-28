@@ -1134,8 +1134,8 @@ class BackupService {
         for (final a in attachmentsOf(song)) {
           final bytes = contents.files[a['file'] as String? ?? ''];
           if (bytes == null) continue;
-          // Over the maximum size of its type (1 MB for a PDF, ADR-0070).
-          if (_tooLarge(contents, song, a) case final tooLarge?) {
+          // Over the maximum size of its type (ADR-0070) or not its type.
+          if (_skippedFile(contents, song, a) case final tooLarge?) {
             skipped.add(tooLarge);
             continue;
           }
@@ -1299,7 +1299,7 @@ class BackupService {
         same ? result.identical++ : result.keptExisting++;
         if (attachments && (completeAttachments?.call(match) ?? false)) {
           for (final a in await missingAttachments(contents, song, match.id)) {
-            if (_tooLarge(contents, song, a) case final skipped?) {
+            if (_skippedFile(contents, song, a) case final skipped?) {
               result.skippedFiles.add(skipped);
               continue;
             }
@@ -1336,7 +1336,7 @@ class BackupService {
       }
       if (!attachments) continue;
       for (final a in attachmentsOf(song)) {
-        if (_tooLarge(contents, song, a) case final skipped?) {
+        if (_skippedFile(contents, song, a) case final skipped?) {
           result.skippedFiles.add(skipped);
           continue;
         }
@@ -1392,21 +1392,28 @@ class BackupService {
     ];
   }
 
-  /// The attachment [a] of [song] in [contents] when its file is over the
-  /// maximum size of its type (ADR-0070), as it is reported; null otherwise.
-  static SkippedFile? _tooLarge(
+  /// The attachment [a] of [song] in [contents] as it is reported when it
+  /// is not imported: its file is over the maximum size of its type
+  /// (ADR-0070), or it is an image whose content is not its type (the
+  /// server would refuse it, #1227); null otherwise.
+  static SkippedFile? _skippedFile(
     BackupContents contents,
     Map<String, dynamic> song,
     Map<String, dynamic> a,
   ) {
-    final bytes = contents.files[a['file'] as String? ?? ''];
-    final limit = _maxBytesOf(a['file'] as String?);
-    if (bytes == null || bytes.length <= limit) return null;
+    final file = a['file'] as String?;
+    final bytes = contents.files[file ?? ''];
+    if (bytes == null) return null;
+    final limit = _maxBytesOf(file);
+    final tooLarge = bytes.length > limit;
+    final wrongType = isImageFile(file!) && !contentMatchesType(file, bytes);
+    if (!tooLarge && !wrongType) return null;
     return (
       song: (song['title'] as String?) ?? '',
       name: (a['name'] as String?) ?? '',
       sizeBytes: bytes.length,
       limitBytes: limit,
+      wrongType: !tooLarge,
     );
   }
 
@@ -1419,8 +1426,8 @@ class BackupService {
     Map<String, dynamic> a,
   ) async {
     final bytes = contents.files[a['file'] as String? ?? ''];
-    // Over the maximum size of its type (1 MB for a PDF, ADR-0070).
-    if (bytes == null || bytes.length > _maxBytesOf(a['file'] as String?)) {
+    // Over the maximum size of its type (ADR-0070) or not its type (#1227).
+    if (bytes == null || _skippedFile(contents, const {}, a) != null) {
       return null;
     }
     final ext = p
@@ -1517,17 +1524,21 @@ class SongImport {
   int completed = 0;
 
   /// Attachments not imported because they are over the maximum size of
-  /// their type (1 MB for a PDF, ADR-0070), in import order.
+  /// their type (1 MB for a PDF or an image, ADR-0070), or images whose
+  /// content is not their type (#1227), in import order.
   final skippedFiles = <SkippedFile>[];
 }
 
 /// An archived attachment that was not imported because it is larger than
-/// [limitBytes] (ADR-0070): its [name], its [song]'s title and its size.
+/// [limitBytes] (ADR-0070), or, with [wrongType], because it is an image
+/// whose content is not the type its name says (#1227): its [name], its
+/// [song]'s title and its size.
 typedef SkippedFile = ({
   String song,
   String name,
   int sizeBytes,
   int limitBytes,
+  bool wrongType,
 });
 
 /// Songs of the target library, to find an archive's songs in it.
@@ -1584,8 +1595,8 @@ Map<String, Uint8List> _unzipPaths(Uint8List zip) => {
       entry.name.replaceAll(r'\', '/'): Uint8List.fromList(entry.content),
 };
 
-/// The maximum size of the archived attachment file [file] (1 MB for a PDF,
-/// ADR-0070); a file without an extension is stored as a PDF.
+/// The maximum size of the archived attachment file [file] (1 MB for a PDF
+/// or an image, ADR-0070); a file without an extension is stored as a PDF.
 int _maxBytesOf(String? file) {
   final ext = p.extension(file ?? '').replaceFirst('.', '').toLowerCase();
   return maxAttachmentBytesFor('file.${ext.isEmpty ? 'pdf' : ext}');

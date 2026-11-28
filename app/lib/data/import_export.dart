@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart' show compute;
 import 'package:path/path.dart' as p;
 
 import 'attachment_storage.dart';
+import 'backup.dart' show SkippedFile;
 import 'database.dart';
 import 'set_repository.dart';
 import 'song_repository.dart';
@@ -52,6 +53,7 @@ class ImportResult {
     this.legacyLabels = const [],
     this.keySuggestions = const [],
     this.songIds = const [],
+    this.skippedFiles = const [],
   ]);
 
   final int imported;
@@ -71,6 +73,11 @@ class ImportResult {
   /// Ids of all imported songs, in import order (#1027).
   final List<String> songIds;
 
+  /// Images of a ZIP that `{image}` refers to but that were not attached:
+  /// over 1 MB (ADR-0070) or not the type their name says (#1227), in
+  /// import order.
+  final List<SkippedFile> skippedFiles;
+
   /// The id of the only imported song; null for none or several.
   String? get singleSongId => songIds.length == 1 ? songIds.single : null;
 
@@ -78,7 +85,8 @@ class ImportResult {
   bool get needsReview =>
       problems.isNotEmpty ||
       legacyLabels.isNotEmpty ||
-      keySuggestions.isNotEmpty;
+      keySuggestions.isNotEmpty ||
+      skippedFiles.isNotEmpty;
 
   /// Whether the report still offers something to do: fix problems,
   /// convert labels or pick a key.
@@ -98,6 +106,7 @@ class ImportResult {
     legacyLabels ?? this.legacyLabels,
     keySuggestions ?? this.keySuggestions,
     songIds,
+    skippedFiles,
   );
 }
 
@@ -152,6 +161,7 @@ class ImportExportService {
     final legacyLabels = <String>[];
     final keySuggestions = <ImportKeySuggestion>[];
     final songIds = <String>[];
+    final skippedFiles = <SkippedFile>[];
 
     Future<void> importOne(
       String name,
@@ -198,7 +208,11 @@ class ImportExportService {
           ));
         }
         // Attach images from the same archive that {image} refers to.
-        if (images.isNotEmpty) await _attachImages(id, parts[i], images);
+        if (images.isNotEmpty) {
+          skippedFiles.addAll(
+            await _attachImages(id, song.title ?? title, parts[i], images),
+          );
+        }
       }
     }
 
@@ -225,6 +239,7 @@ class ImportExportService {
       legacyLabels,
       keySuggestions,
       songIds,
+      skippedFiles,
     );
   }
 
@@ -291,13 +306,18 @@ class ImportExportService {
     return true;
   }
 
-  Future<void> _attachImages(
+  /// Attaches the images of [images] that [source] refers to with
+  /// `{image}`; returns those left out: over 1 MB (ADR-0070) or not the
+  /// type their name says (#1227).
+  Future<List<SkippedFile>> _attachImages(
     String songId,
+    String songTitle,
     String source,
     Map<String, (String, Uint8List)> images,
   ) async {
     final song = cp.parseChordPro(source);
     final attached = <String>{};
+    final skipped = <SkippedFile>[];
     for (final line in song.sections.expand((s) => s.lines)) {
       if (line is! cp.ImageLine) continue;
       final key = p
@@ -305,14 +325,26 @@ class ImportExportService {
           .toLowerCase();
       final image = images[key];
       if (image == null || !attached.add(key)) continue;
-      if (image.$2.length > maxAttachmentBytes) continue;
+      final (name, bytes) = image;
+      final tooLarge = bytes.length > maxAttachmentBytesFor(name);
+      if (tooLarge || !contentMatchesType(name, bytes)) {
+        skipped.add((
+          song: songTitle,
+          name: p.basename(name),
+          sizeBytes: bytes.length,
+          limitBytes: maxAttachmentBytesFor(name),
+          wrongType: !tooLarge,
+        ));
+        continue;
+      }
       await songs.addAttachment(
         songId,
-        name: image.$1,
-        bytes: image.$2,
-        extension: p.extension(image.$1).replaceFirst('.', ''),
+        name: name,
+        bytes: bytes,
+        extension: p.extension(name).replaceFirst('.', ''),
       );
     }
+    return skipped;
   }
 
   /// A ChordPro file for a single song.

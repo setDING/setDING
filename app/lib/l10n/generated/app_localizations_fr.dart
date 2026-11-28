@@ -2775,8 +2775,8 @@ class AppLocalizationsFr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count PDF sont encore en cours de téléchargement.',
-      one: '1 PDF est encore en cours de téléchargement.',
+      other: '$count pièces jointes sont encore en cours de téléchargement.',
+      one: '1 pièce jointe est encore en cours de téléchargement.',
     );
     return '$_temp0';
   }
@@ -6803,7 +6803,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String attachmentPdfLimit(String limit) {
-    return 'PDF, $limit au maximum';
+    return 'PDF ou image, $limit au maximum';
   }
 
   @override
@@ -6826,7 +6826,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get storageTrashCounts =>
-      'Les PDF supprimés comptent jusqu\'à leur suppression définitive.';
+      'Les pièces jointes supprimées comptent jusqu\'à leur suppression définitive.';
 
   @override
   String get storageNearlyFull =>
@@ -6839,12 +6839,12 @@ class AppLocalizationsFr extends AppLocalizations {
     String used,
     String limit,
   ) {
-    return '« $name » ($size) ne tient plus dans l\'espace de stockage de l\'organisation : $used sur $limit utilisés. Les PDF supprimés comptent jusqu\'à leur suppression définitive.';
+    return '« $name » ($size) ne tient plus dans l\'espace de stockage de l\'organisation : $used sur $limit utilisés. Les pièces jointes supprimées comptent jusqu\'à leur suppression définitive.';
   }
 
   @override
   String trashAttachmentOf(String song, String size) {
-    return 'PDF dans « $song » · $size';
+    return 'Pièce jointe dans « $song » · $size';
   }
 
   @override
@@ -6862,5 +6862,22 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String importSkippedFile(String song, String size, String limit) {
     return '« $song » · $size ($limit au maximum)';
+  }
+
+  @override
+  String attachmentWrongType(String name, String type) {
+    return '« $name » n\'est pas un fichier $type valide et ne peut pas être joint.';
+  }
+
+  @override
+  String importSkippedWrongType(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count images n\'ont pas été importées, car leur contenu ne correspond pas à leur type de fichier :',
+      one: '1 image n\'a pas été importée, car son contenu ne correspond pas à son type de fichier :',
+    );
+    return '$_temp0';
   }
 }

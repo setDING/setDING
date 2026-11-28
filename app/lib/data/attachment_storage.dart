@@ -3,12 +3,16 @@ import 'dart:typed_data';
 
 import 'package:path/path.dart' as p;
 
-/// Maximum size of an attachment kept on the device (ADR-0009): images
-/// for `{image}`, which are not synced.
+/// Upper bound for reading an attachment kept on the device: files from
+/// before the limit of ADR-0070 (#1227) may be up to 20 MB.
 const maxAttachmentBytes = 20 * 1024 * 1024;
 
 /// Maximum size of a PDF attachment, the server's limit (ADR-0070).
 const maxPdfBytes = 1024 * 1024;
+
+/// Maximum size of an image attachment for `{image}`: synced like PDFs, so
+/// the server's limit applies too (ADR-0070, #1227).
+const maxImageBytes = maxPdfBytes;
 
 /// File extensions of image attachments for `{image}` (ADR-0012).
 const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'];
@@ -26,10 +30,88 @@ bool isImageFile(String fileName) =>
 /// Whether a stored attachment file is an SVG image.
 bool isSvgFile(String fileName) => _extension(fileName) == 'svg';
 
-/// The maximum size of the attachment file [fileName]: [maxPdfBytes] for a
-/// PDF, [maxAttachmentBytes] for an image.
-int maxAttachmentBytesFor(String fileName) =>
-    isPdfFile(fileName) ? maxPdfBytes : maxAttachmentBytes;
+/// Whether an attachment file of this type is synced with the server: PDFs
+/// (ADR-0009) and images for `{image}` (#1227).
+bool isSyncedFile(String fileName) =>
+    isPdfFile(fileName) || isImageFile(fileName);
+
+/// The maximum size of the attachment file [fileName]: 1 MB for a PDF or an
+/// image (ADR-0070), [maxAttachmentBytes] for anything else.
+int maxAttachmentBytesFor(String fileName) => isPdfFile(fileName)
+    ? maxPdfBytes
+    : isImageFile(fileName)
+    ? maxImageBytes
+    : maxAttachmentBytes;
+
+/// The type of an attachment file by its content (magic bytes), as an
+/// extension ('pdf', 'png', 'jpg', 'gif', 'webp', 'svg'); null for anything
+/// else. The server detects the type the same way and refuses other files
+/// (#1227), so the app checks it before a file is attached.
+String? attachmentTypeOf(List<int> bytes) {
+  bool starts(List<int> magic, [int offset = 0]) {
+    if (bytes.length < offset + magic.length) return false;
+    for (var i = 0; i < magic.length; i++) {
+      if (bytes[offset + i] != magic[i]) return false;
+    }
+    return true;
+  }
+
+  if (starts('%PDF-'.codeUnits)) return 'pdf';
+  if (starts(const [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])) {
+    return 'png';
+  }
+  if (starts(const [0xFF, 0xD8, 0xFF])) return 'jpg';
+  if (starts('GIF87a'.codeUnits) || starts('GIF89a'.codeUnits)) return 'gif';
+  if (starts('RIFF'.codeUnits) && starts('WEBP'.codeUnits, 8)) return 'webp';
+  if (_isSvg(bytes)) return 'svg';
+  return null;
+}
+
+/// Whether [bytes] are an SVG document: text whose first element, after an
+/// optional byte order mark, XML declaration, comments and doctype, is
+/// `<svg`.
+bool _isSvg(List<int> bytes) {
+  final head = bytes.length > 4096 ? bytes.sublist(0, 4096) : bytes;
+  // Binary content is never an SVG.
+  if (head.contains(0)) return false;
+  var text = String.fromCharCodes(head);
+  if (text.startsWith('\u00EF\u00BB\u00BF')) text = text.substring(3);
+  final prolog = RegExp(
+    r'^\s*(?:<\?xml[^>]*\?>\s*|<!--[\s\S]*?-->\s*|<!DOCTYPE[^>]*>\s*)*',
+    caseSensitive: false,
+  );
+  final rest = text.substring(prolog.firstMatch(text)?.end ?? 0);
+  return RegExp(r'^<svg[\s>/]', caseSensitive: false).hasMatch(rest);
+}
+
+/// Whether the content of [bytes] is the type that the extension of
+/// [fileName] says (`jpeg` and `jpg` are the same).
+bool contentMatchesType(String fileName, List<int> bytes) {
+  final ext = _extension(fileName);
+  final type = attachmentTypeOf(bytes);
+  return type != null && type == (ext == 'jpeg' ? 'jpg' : ext);
+}
+
+/// Thrown when the content of an attachment is not the type its extension
+/// says ([contentMatchesType]); the server would refuse it.
+class AttachmentTypeMismatchException implements Exception {
+  const AttachmentTypeMismatchException(this.extension);
+  final String extension;
+
+  @override
+  String toString() => 'Attachment content is not a $extension file';
+}
+
+/// The media type of an attachment file.
+String attachmentMimeType(String fileName) => switch (_extension(fileName)) {
+  'pdf' => 'application/pdf',
+  'png' => 'image/png',
+  'jpg' || 'jpeg' => 'image/jpeg',
+  'gif' => 'image/gif',
+  'webp' => 'image/webp',
+  'svg' => 'image/svg+xml',
+  _ => 'application/octet-stream',
+};
 
 /// Thrown when an attachment exceeds [maxAttachmentBytesFor] its type.
 class AttachmentTooLargeException implements Exception {

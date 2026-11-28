@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:setding/data/attachment_storage.dart';
 import 'package:setding/data/database.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/ui/bands/organization_screen.dart';
@@ -30,11 +29,26 @@ void main() {
         checkAttachment('a.PDF', _mb + 1, storage: storage),
         AttachmentCheck.tooLarge,
       );
-      // Images stay on the device (ADR-0012) and may be larger.
-      expect(checkAttachment('a.png', 2 * _mb), AttachmentCheck.ok);
+      // Images are synced like PDFs and have the same limit (#1227).
+      expect(checkAttachment('a.png', _mb), AttachmentCheck.ok);
+      expect(checkAttachment('a.png', _mb + 1), AttachmentCheck.tooLarge);
+      expect(checkAttachment('a.svg', 2 * _mb), AttachmentCheck.tooLarge);
+    });
+
+    test('an image whose content is not its type is refused (#1227)', () {
+      final png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
       expect(
-        checkAttachment('a.png', maxAttachmentBytes + 1),
-        AttachmentCheck.tooLarge,
+        checkAttachment('a.png', png.length, bytes: png),
+        AttachmentCheck.ok,
+      );
+      expect(
+        checkAttachment('a.svg', png.length, bytes: png),
+        AttachmentCheck.wrongType,
+      );
+      // PDFs are left to the server.
+      expect(
+        checkAttachment('a.pdf', png.length, bytes: png),
+        AttachmentCheck.ok,
       );
     });
 
@@ -47,10 +61,14 @@ void main() {
         checkAttachment('a.pdf', 900 * 1024, storage: storage, added: _mb ~/ 2),
         AttachmentCheck.doesNotFit,
       );
-      // Images do not count against the storage.
+      // Images count against the storage like PDFs (#1227).
       expect(
-        checkAttachment('a.png', 2 * _mb, storage: storage),
+        checkAttachment('a.png', 900 * 1024, storage: storage),
         AttachmentCheck.ok,
+      );
+      expect(
+        checkAttachment('a.png', 900 * 1024, storage: storage, added: _mb ~/ 2),
+        AttachmentCheck.doesNotFit,
       );
       // Without a limit, everything fits.
       expect(
@@ -124,7 +142,7 @@ void main() {
     await tester.tap(find.byKey(const Key('open-attachments')));
     await tester.pumpAndSettle();
     expect(
-      find.text('PDF, at most 1 MB · 24.4 MB of 25 MB free'),
+      find.text('PDF or image, at most 1 MB · 24.4 MB of 25 MB free'),
       findsOneWidget,
     );
     expect(find.textContaining('nearly full'), findsNothing);
@@ -165,7 +183,7 @@ void main() {
     expect(find.text('Storage: 950 KB of 1 MB'), findsOneWidget);
     expect(
       find.text(
-        'The organization\'s storage is nearly full. Deleted PDFs count '
+        'The organization\'s storage is nearly full. Deleted attachments count '
         'until they are deleted permanently.',
       ),
       findsOneWidget,

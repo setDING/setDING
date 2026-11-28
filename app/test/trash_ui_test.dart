@@ -236,8 +236,11 @@ void main() {
       app.build(home: const TrashScreen.songs(libraryId: 'o1')),
     );
     await tester.pumpAndSettle();
-    expect(find.textContaining('PDF in “Morning Light”'), findsOneWidget);
-    expect(find.textContaining('Deleted PDFs count'), findsOneWidget);
+    expect(
+      find.textContaining('Attachment in “Morning Light”'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Deleted attachments count'), findsOneWidget);
     await tester.tap(find.byKey(ValueKey('trash-menu-$id')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Delete permanently'));

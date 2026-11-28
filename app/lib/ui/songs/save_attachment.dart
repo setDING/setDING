@@ -23,18 +23,6 @@ String attachmentSaveName(AttachmentEntry a) {
   return '${safeFileName(base)}$ext';
 }
 
-/// The media type of an attachment file.
-String attachmentMimeType(String fileName) =>
-    switch (p.extension(fileName).toLowerCase()) {
-      '.pdf' => 'application/pdf',
-      '.png' => 'image/png',
-      '.jpg' || '.jpeg' => 'image/jpeg',
-      '.gif' => 'image/gif',
-      '.webp' => 'image/webp',
-      '.svg' => 'image/svg+xml',
-      _ => 'application/octet-stream',
-    };
-
 /// Saves attachment [a] of song [songTitle] as a file through the
 /// platform's save dialog (a download on web, #1025). The web client loads
 /// the file first (ADR-0018); a file that is not on the device is reported.

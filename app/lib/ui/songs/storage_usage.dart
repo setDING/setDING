@@ -26,22 +26,30 @@ enum AttachmentCheck {
   /// Over the maximum size of its type, also offline.
   tooLarge,
 
-  /// A PDF that does not fit into the organization's storage any more (only
-  /// known online, for those who see the storage).
+  /// An image whose content is not the type its name says ([bytes] given);
+  /// the server would refuse it (#1227).
+  wrongType,
+
+  /// A PDF or an image that does not fit into the organization's storage
+  /// any more (only known online, for those who see the storage).
   doesNotFit,
 }
 
 /// Checks a picked file [name] of [size] bytes before it is attached; with
-/// [storage] and the PDFs of [added] bytes attached before it in the same
-/// pick.
+/// [bytes], also that an image is the type its name says; with [storage]
+/// and the files of [added] bytes attached before it in the same pick.
 AttachmentCheck checkAttachment(
   String name,
   int size, {
+  List<int>? bytes,
   OrgStorage? storage,
   int added = 0,
 }) {
   if (size > maxAttachmentBytesFor(name)) return AttachmentCheck.tooLarge;
-  if (isPdfFile(name) && storage != null && !storage.fits(added + size)) {
+  if (bytes != null && isImageFile(name) && !contentMatchesType(name, bytes)) {
+    return AttachmentCheck.wrongType;
+  }
+  if (isSyncedFile(name) && storage != null && !storage.fits(added + size)) {
     return AttachmentCheck.doesNotFit;
   }
   return AttachmentCheck.ok;
@@ -63,7 +71,7 @@ OrgStorage? readOrgStorage(WidgetRef ref, String libraryId) {
 }
 
 /// The hint next to "Attach file" (ADR-0070 §2, §7): the maximum size of a
-/// PDF and, for those who may see it, the storage still free, in the
+/// PDF or an image (#1227) and, for those who may see it, the storage still free, in the
 /// warning colour from 90 %.
 class AttachmentLimitHint extends ConsumerWidget {
   const AttachmentLimitHint({super.key, required this.libraryId});

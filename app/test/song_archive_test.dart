@@ -18,7 +18,9 @@ import 'package:setding/data/song_repository.dart';
 /// Song archive of ADR-0043 §1c (#792).
 void main() {
   final pdf = Uint8List.fromList('%PDF-1.4 score'.codeUnits);
-  final png = Uint8List.fromList([0x89, 0x50, 0x4E, 0x47, 1, 2, 3]);
+  final png = Uint8List.fromList([
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 1, 2, 3, //
+  ]);
   late AppDatabase db;
   late Directory dir;
   late FileAttachmentStorage storage;
@@ -412,6 +414,7 @@ void main() {
         name: 'Big score',
         sizeBytes: 2 * 1024 * 1024,
         limitBytes: 1024 * 1024,
+        wrongType: false,
       ),
     ]);
     final imported = result.songs.songIds[id]!;

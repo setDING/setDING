@@ -19,8 +19,9 @@ typedef RefusedUpload = ({
   UploadRefusal reason,
 });
 
-/// Sync of PDF attachments (ADR-0009): metadata by delta pull and push,
-/// files uploaded with their record and downloaded to every device.
+/// Sync of attachments (ADR-0009): PDFs and images for `{image}` (#1227).
+/// Metadata by delta pull and push, files uploaded with their record and
+/// downloaded to every device.
 class AttachmentSync {
   AttachmentSync(
     this.db,
@@ -116,6 +117,18 @@ class AttachmentSync {
     return retried;
   }
 
+  /// The name of the local file of [remote], a new attachment from the
+  /// server: its ID with the extension of the server's file, so that an
+  /// image keeps its type and `{image}` finds it (#1227); `.pdf` when the
+  /// server's file has none of the synced types (e.g. a purged one).
+  static String localFileName(RemoteAttachment remote) {
+    final file = remote.file ?? '';
+    final dot = file.lastIndexOf('.');
+    final ext = dot < 0 ? '' : file.substring(dot + 1).toLowerCase();
+    final known = ext.isNotEmpty && isSyncedFile('file.$ext');
+    return '${remote.id}.${known ? ext : 'pdf'}';
+  }
+
   /// Changes by others than [logChangesFor] (the signed-in user) are
   /// recorded in the change log (ADR-0045); null records nothing, e.g. on
   /// the first sync of the library or band.
@@ -173,7 +186,7 @@ class AttachmentSync {
     if (local != null && dirty) return null;
     if (!songExists) return null; // the song is gone
     if (log) await changes?.attachment(local, remote);
-    final fileName = local?.fileName ?? '${remote.id}.pdf';
+    final fileName = local?.fileName ?? localFileName(remote);
     await db
         .into(db.attachments)
         .insertOnConflictUpdate(
@@ -283,7 +296,7 @@ class AttachmentSync {
     }
     final a = row.readTable(db.attachments);
     final song = row.readTable(db.songs);
-    if (song.libraryId == localBandId || !isPdfFile(a.fileName)) {
+    if (song.libraryId == localBandId || !isSyncedFile(a.fileName)) {
       await store.done(entry);
       return PushResult.skipped;
     }
@@ -309,6 +322,9 @@ class AttachmentSync {
       organizationId: song.libraryId,
       songId: a.songId,
       name: a.name,
+      // A new file is uploaded under the local file's name, which keeps
+      // its type (#1227).
+      file: create ? a.fileName : a.remoteFile,
       pages: a.pages,
       sizeBytes: a.sizeBytes,
       revision: a.revision,

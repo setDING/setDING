@@ -1161,7 +1161,7 @@
   "pdfLoadFailed": "The PDF could not be loaded from the server. Check the connection and open the song again.",
   "openAttachment": "Open",
   "imageMissing": "The image is not on this device.",
-  "syncMissingFiles": "{count, plural, =1{1 PDF is still being downloaded.} other{{count} PDFs are still being downloaded.}}",
+  "syncMissingFiles": "{count, plural, =1{1 attachment is still being downloaded.} other{{count} attachments are still being downloaded.}}",
   "@syncMissingFiles": {
     "placeholders": {
       "count": {
@@ -3576,7 +3576,7 @@
   },
   "retryUpload": "Upload again",
   "uploadRefusalStorageFull": "the organization's storage is full",
-  "attachmentPdfLimit": "PDF, at most {limit}",
+  "attachmentPdfLimit": "PDF or image, at most {limit}",
   "@attachmentPdfLimit": {
     "description": "Shown before a file is picked (ADR-0070); limit is e.g. \"1 MB\".",
     "placeholders": {
@@ -3619,9 +3619,9 @@
       }
     }
   },
-  "storageTrashCounts": "Deleted PDFs count until they are deleted permanently.",
+  "storageTrashCounts": "Deleted attachments count until they are deleted permanently.",
   "storageNearlyFull": "The organization's storage is nearly full.",
-  "attachmentDoesNotFit": "“{name}” ({size}) no longer fits into the organization's storage: {used} of {limit} used. Deleted PDFs count until they are deleted permanently.",
+  "attachmentDoesNotFit": "“{name}” ({size}) no longer fits into the organization's storage: {used} of {limit} used. Deleted attachments count until they are deleted permanently.",
   "@attachmentDoesNotFit": {
     "description": "A picked PDF does not fit into the organization's storage any more (ADR-0070).",
     "placeholders": {
@@ -3639,7 +3639,7 @@
       }
     }
   },
-  "trashAttachmentOf": "PDF in “{song}” · {size}",
+  "trashAttachmentOf": "Attachment in “{song}” · {size}",
   "@trashAttachmentOf": {
     "description": "A PDF deleted on its own in the trash (ADR-0070): its song and size.",
     "placeholders": {
@@ -3672,6 +3672,27 @@
       },
       "limit": {
         "type": "String"
+      }
+    }
+  },
+  "attachmentWrongType": "“{name}” is not a valid {type} file and cannot be attached.",
+  "@attachmentWrongType": {
+    "description": "An image whose content is not the type its extension says (#1227); type is e.g. \"PNG\".",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "importSkippedWrongType": "{count, plural, =1{1 image was not imported because its content does not match its file type:} other{{count} images were not imported because their content does not match their file type:}}",
+  "@importSkippedWrongType": {
+    "description": "Heading of the images an import left out because their content does not match their extension (#1227).",
+    "placeholders": {
+      "count": {
+        "type": "int"
       }
     }
   }

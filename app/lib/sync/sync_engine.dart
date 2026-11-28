@@ -340,6 +340,24 @@ class SyncEngine {
         libs,
       );
     }
+    // Images for {image} that were attached before images were synced
+    // (#1227), in every organization of the user: the server decides who
+    // may upload, and a refused one is marked once and not sent again
+    // (#1225), so it is not retried on every sync.
+    final orgs = orgIds.difference({localBandId}).toList();
+    if (orgs.isNotEmpty) {
+      final images = [
+        for (final ext in imageExtensions) "lower(a.file_name) LIKE '%.$ext'",
+      ].join(' OR ');
+      await enqueue(
+        SyncCollection.attachments,
+        'SELECT a.id FROM attachments a JOIN songs s ON s.id = a.song_id '
+        'WHERE a.revision = 0 AND a.deleted = 0 AND s.deleted = 0 '
+        'AND a.upload_refused IS NULL AND ($images) '
+        'AND s.library_id IN (${placeholders(orgs.length)})',
+        orgs,
+      );
+    }
     if (setBands.isNotEmpty) {
       final ids = setBands.toList();
       await enqueue(
