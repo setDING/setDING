@@ -337,9 +337,11 @@ class Attachments extends Table {
 }
 
 /// Why the server refused an attachment upload (#1225): the person may not
-/// add it (any more), the file is too large, or another reason the server
-/// gave. Each one is a lasting answer, unlike a network or server error.
-enum UploadRefusal { notAllowed, tooLarge, refused }
+/// add it (any more), the file is too large, another reason the server
+/// gave, or the organization's storage is full (ADR-0070). Each one is a
+/// lasting answer, unlike a network or server error. Stored by name, so new
+/// values go at the end.
+enum UploadRefusal { notAllowed, tooLarge, refused, storageFull }
 
 @TableIndex(name: 'setlists_band', columns: {#bandId, #deleted})
 @DataClassName('SetlistEntry')

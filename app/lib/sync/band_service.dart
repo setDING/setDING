@@ -477,6 +477,11 @@ class BandService {
   Future<List<DeletedBand>> deletedBands(String organizationId) =>
       backend.fetchDeletedBands(organizationId);
 
+  /// The storage [organizationId] uses on the server and its limit
+  /// (ADR-0070), for those who may upload PDFs; null otherwise.
+  Future<OrgStorage?> orgStorage(String organizationId) =>
+      backend.fetchOrgStorage(organizationId);
+
   /// Closes an organization; it stays 30 days in the trash (its admins,
   /// ADR-0044). Its data leaves this device with the refresh.
   Future<void> closeOrganization(String organizationId) =>

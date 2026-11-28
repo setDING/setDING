@@ -508,6 +508,29 @@ class PocketBaseBackend implements SyncBackend {
       });
 
   @override
+  Future<OrgStorage?> fetchOrgStorage(String organizationId) =>
+      _signedIn(() async {
+        try {
+          final result = await _pb.send<dynamic>(
+            '/api/setding/organizations/'
+            '${Uri.encodeComponent(organizationId)}/storage',
+          );
+          if (result is! Map) return null;
+          int bytes(Object? v) => (v as num?)?.toInt() ?? 0;
+          return OrgStorage(
+            usedBytes: bytes(result['used_bytes']),
+            limitBytes: (result['limit_bytes'] as num?)?.toInt(),
+            liveBytes: bytes(result['live_bytes']),
+            trashBytes: bytes(result['trash_bytes']),
+          );
+        } on ClientException catch (e) {
+          // Not allowed, or an older server without the route.
+          if (e.statusCode == 404) return null;
+          rethrow;
+        }
+      });
+
+  @override
   Future<List<DeletedBand>> fetchDeletedBands(String organizationId) async {
     try {
       final records = await _retrying(

@@ -6790,4 +6790,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get retryUpload => 'Volver a subir';
+
+  @override
+  String get uploadRefusalStorageFull =>
+      'el almacenamiento de la organización está lleno';
 }

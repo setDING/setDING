@@ -307,6 +307,54 @@ class DeletedBand {
   final DateTime deletedAt;
 }
 
+/// The file storage an organization uses on the server (ADR-0070): its
+/// PDF attachments still on the disk, the trash included.
+@immutable
+class OrgStorage {
+  const OrgStorage({
+    required this.usedBytes,
+    required this.limitBytes,
+    this.liveBytes = 0,
+    this.trashBytes = 0,
+  });
+
+  final int usedBytes;
+
+  /// Null when the server sets no limit.
+  final int? limitBytes;
+
+  /// Of [usedBytes]: attachments of songs in the library.
+  final int liveBytes;
+
+  /// Of [usedBytes]: deleted attachments and those of deleted songs, which
+  /// count until they are purged.
+  final int trashBytes;
+
+  /// What is still free; null without a limit, 0 when full or over it.
+  int? get freeBytes => switch (limitBytes) {
+    null => null,
+    final limit => usedBytes >= limit ? 0 : limit - usedBytes,
+  };
+
+  /// Whether a file of [bytes] still fits.
+  bool fits(int bytes) => freeBytes == null || bytes <= freeBytes!;
+
+  /// From 90 % of the limit the app warns (ADR-0070 §7).
+  bool get nearlyFull =>
+      limitBytes != null && limitBytes! > 0 && usedBytes >= limitBytes! * 0.9;
+
+  @override
+  bool operator ==(Object other) =>
+      other is OrgStorage &&
+      other.usedBytes == usedBytes &&
+      other.limitBytes == limitBytes &&
+      other.liveBytes == liveBytes &&
+      other.trashBytes == trashBytes;
+
+  @override
+  int get hashCode => Object.hash(usedBytes, limitBytes, liveBytes, trashBytes);
+}
+
 /// An organization of the signed-in user (ADR-0017) with its people and the
 /// bands the user can see.
 @immutable
@@ -1095,6 +1143,11 @@ abstract class SyncBackend {
   /// How often each band of [organizationId] played each song of its
   /// library (ADR-0046); members of the organization only.
   Future<List<RemoteOrgPlay>> fetchOrgPlays(String organizationId);
+
+  /// The storage [organizationId] uses on the server and its limit
+  /// (ADR-0070), for those who may upload PDFs in it; null for everyone
+  /// else and on servers without the route.
+  Future<OrgStorage?> fetchOrgStorage(String organizationId);
 
   /// Closes an organization with everything in it (organization admins,
   /// ADR-0044); it stays 30 days in the trash.

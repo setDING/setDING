@@ -6750,4 +6750,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retryUpload => 'Upload again';
+
+  @override
+  String get uploadRefusalStorageFull => 'the organization\'s storage is full';
 }

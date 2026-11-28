@@ -454,6 +454,54 @@ class FakeSyncBackend implements SyncBackend {
     band.deletedAt = null;
   }
 
+  /// The storage limit per organization (ADR-0070); null for none.
+  int? storageLimitBytes = 25 * 1024 * 1024;
+
+  /// Number of [fetchOrgStorage] calls.
+  int fetchOrgStorageCalls = 0;
+
+  /// Whether the signed-in user may upload PDFs in [orgId] (ADR-0023).
+  bool _mayUpload(String orgId) =>
+      orgMembers.any(
+        (m) =>
+            m.scopeId == orgId &&
+            m.user.id == user?.id &&
+            (m.role == OrgRole.admin || m.role == OrgRole.librarian),
+      ) ||
+      members.any(
+        (m) =>
+            bands[m.scopeId]?.organizationId == orgId &&
+            m.user.id == user?.id &&
+            m.role == BandRole.admin,
+      );
+
+  /// The bytes of [orgId]'s PDFs still on the server: `(used, live)`.
+  (int, int) _usage(String orgId) {
+    var used = 0;
+    var live = 0;
+    for (final a in attachments.values) {
+      if (a.organizationId != orgId || a.purged) continue;
+      used += a.sizeBytes;
+      final song = songs[a.songId];
+      if (!a.deleted && !(song?.deleted ?? false)) live += a.sizeBytes;
+    }
+    return (used, live);
+  }
+
+  @override
+  Future<OrgStorage?> fetchOrgStorage(String organizationId) async {
+    _requireUser();
+    fetchOrgStorageCalls++;
+    if (!_mayUpload(organizationId)) return null;
+    final (used, live) = _usage(organizationId);
+    return OrgStorage(
+      usedBytes: used,
+      limitBytes: storageLimitBytes,
+      liveBytes: live,
+      trashBytes: used - live,
+    );
+  }
+
   /// Number of [fetchOrgPlays] calls; set [orgPlaysFail] to answer them
   /// like a server without the route.
   int fetchOrgPlaysCalls = 0;
@@ -1623,13 +1671,38 @@ class FakeSyncBackend implements SyncBackend {
     }
     if (create) {
       if (attachmentUploadError case final e?) throw e;
-      if (bytes == null || bytes.length > 20 * 1024 * 1024) {
+      if (bytes == null || bytes.length > 1024 * 1024) {
         throw const BackendException(BackendErrorKind.server, {
           'data': {
             'file': {'code': 'validation_file_size_limit'},
           },
         }, 400);
       }
+      // The storage limit of the organization (ADR-0070).
+      final limit = storageLimitBytes;
+      if (limit != null &&
+          _usage(attachment.organizationId).$1 + bytes.length > limit) {
+        throw const BackendException(BackendErrorKind.server, {
+          'data': {
+            'file': {'code': 'storage_limit_reached'},
+          },
+        }, 400);
+      }
+      // The server sets the size from the file.
+      attachment = RemoteAttachment(
+        id: attachment.id,
+        organizationId: attachment.organizationId,
+        songId: attachment.songId,
+        name: attachment.name,
+        file: attachment.file,
+        pages: attachment.pages,
+        sizeBytes: bytes.length,
+        revision: attachment.revision,
+        deleted: attachment.deleted,
+        deletedAt: attachment.deletedAt,
+        purged: attachment.purged,
+        updatedBy: attachment.updatedBy,
+      );
       return putAttachment(attachment, bytes: bytes);
     }
     final existing = attachments[attachment.id];

@@ -6775,4 +6775,8 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get retryUpload => 'Carregar de novo';
+
+  @override
+  String get uploadRefusalStorageFull =>
+      'o armazenamento da organização está cheio';
 }

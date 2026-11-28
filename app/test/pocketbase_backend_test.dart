@@ -236,6 +236,36 @@ void main() {
     expect(store.current, contains('Ann B.'));
   });
 
+  // ADR-0070: the storage of an organization, for those who may upload PDFs.
+  test('reads the storage of an organization; 404 is none', () async {
+    final store = MemorySessionStore(_storedSession());
+    var status = 200;
+    final b = backend(
+      store,
+      (r) async => status == 200
+          ? _json(200, {
+              'used_bytes': 3000,
+              'limit_bytes': 26214400,
+              'live_bytes': 1000,
+              'trash_bytes': 2000,
+            })
+          : _json(404, {'message': 'not found', 'status': 404}),
+    );
+    final s = await b.fetchOrgStorage('o1');
+    expect(requests.single.url.path, '/api/setding/organizations/o1/storage');
+    expect(
+      s,
+      const OrgStorage(
+        usedBytes: 3000,
+        limitBytes: 26214400,
+        liveBytes: 1000,
+        trashBytes: 2000,
+      ),
+    );
+    status = 404;
+    expect(await b.fetchOrgStorage('o1'), isNull);
+  });
+
   test('clears a session the server rejects', () async {
     final store = MemorySessionStore(_storedSession());
     final b = backend(

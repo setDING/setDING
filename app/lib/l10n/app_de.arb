@@ -4207,5 +4207,6 @@
       }
     }
   },
-  "retryUpload": "Erneut hochladen"
+  "retryUpload": "Erneut hochladen",
+  "uploadRefusalStorageFull": "der Speicher der Organisation ist voll"
 }

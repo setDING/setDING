@@ -18,8 +18,9 @@ const maxReviewReasonLength = 200;
 /// Maximum length of the comment and the answer of a report (server limit).
 const maxReportTextLength = 1000;
 
-/// Maximum size of a report's screenshot (server limit, ADR-0060).
-const maxScreenshotBytes = 1024 * 1024;
+/// Maximum size of a report's screenshot (server limit, ADR-0060,
+/// ADR-0070); the app scales a screenshot down to fit before sending it.
+const maxScreenshotBytes = 300 * 1024;
 
 /// What a mistake report is about (ADR-0060).
 enum SongReportCategory {

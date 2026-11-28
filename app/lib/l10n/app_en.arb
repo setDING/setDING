@@ -3566,5 +3566,6 @@
       }
     }
   },
-  "retryUpload": "Upload again"
+  "retryUpload": "Upload again",
+  "uploadRefusalStorageFull": "the organization's storage is full"
 }
