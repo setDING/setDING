@@ -1,0 +1,14 @@
+---
+// Shows its content only while the app is (listed) or is not (listed={false})
+// on Google Play (google-play.ts, #1141). Keep headings outside: the table of
+// contents lists them either way.
+import { googlePlayListed } from '../google-play.ts';
+
+interface Props {
+  listed?: boolean;
+}
+
+const { listed = true } = Astro.props;
+---
+
+{googlePlayListed === listed && <slot />}
