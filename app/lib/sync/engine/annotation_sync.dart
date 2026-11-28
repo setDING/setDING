@@ -163,7 +163,7 @@ class AnnotationSync {
         } on BackendException catch (e) {
           // Created by another device of the same person meanwhile; an
           // error that may go away is sent again as it is (#1264).
-          if (e.kind != BackendErrorKind.server || !e.refused) rethrow;
+          if (!e.retryCreateAsUpdate) rethrow;
           await backend.pushAnnotations(remote, create: false);
         }
       }

@@ -190,8 +190,9 @@ class OverlaySync {
       try {
         stored = await backend.pushOverlay(remote, create: create);
       } on BackendException catch (e) {
-        // Created by another device of the same person (same record ID).
-        if (!create || e.kind != BackendErrorKind.server) rethrow;
+        // Created by another device of the same person (same record ID);
+        // an error that may go away is sent again as it is (#1268).
+        if (!create || !e.retryCreateAsUpdate) rethrow;
         stored = await backend.pushOverlay(remote, create: false);
       }
       await db.transaction(() async {

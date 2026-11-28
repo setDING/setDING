@@ -176,6 +176,15 @@ class BackendException implements Exception {
     _ => true,
   };
 
+  /// Whether a create that failed with this error is retried as an update:
+  /// the server refused it (a 4xx, e.g. PocketBase's 400 for an ID that
+  /// exists), so the record may have been created meanwhile by another
+  /// device or by a create whose response got lost. An error that may go
+  /// away (5xx, 408, 429, 426, no network) is not: the create stays in the
+  /// outbox and is sent again as it is in the next sync, and is never
+  /// turned into the update's refusal (#1264, #1268).
+  bool get retryCreateAsUpdate => kind == BackendErrorKind.server && refused;
+
   /// The error code the server gave for [field] of the record (a
   /// PocketBase validation error, e.g. `validation_file_size_limit`), or
   /// null.
