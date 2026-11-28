@@ -234,7 +234,7 @@ Notes:
 ### Preparing and distributing a set
 
 1. The band leader creates a set, adds songs and reorders them via drag & drop.
-2. Changes are written to the local DB immediately and synced according to the device's sync setting: at app start (default), automatically, or manually with "Sync now" or by pulling down the list of sets or songs (signed in only, #384). Requests the server rejects for its rate limits are retried after growing waits, so large imports sync completely (ADR-0004, #303).
+2. Changes are written to the local DB immediately and synced according to the device's sync setting: at app start (default), automatically, or manually with "Sync now" or by pulling down the list of sets or songs (signed in only, #384). Requests the server rejects for its rate limits are retried after growing waits, so large imports sync completely (ADR-0004, #303). An attachment upload the server refuses for good stays on the device marked "Only on this device" (#1225); a refused rename, deletion, restore or purge of an attachment already on the server is undone on the device, and the person is told once (ADR-0009, #1229).
 3. Member devices fetch changes the same way (at start, with "Sync now" or pull to refresh, or in automatic mode on realtime events).
 4. A set whose songs or PDF attachments are not all available locally is marked with the number of missing songs; offline ready sets show nothing. Above the sets, a warning says when the last successful sync is more than 24 hours ago or local changes did not reach the server (ADR-0001, #744).
 
@@ -353,7 +353,7 @@ song/set sync, PDF sync).
   triggers, paused in live mode; sync status and "Sync now" in the settings, pull to refresh on the lists of sets and songs (ADR-0004).
 - **PDF sync (#18):** attachments uploaded after their songs and downloaded on every
   device in the same run; missing files shown in live mode and the settings
-  (ADR-0009). Images for `{image}` are synced like PDFs (owner decision, #1227: server, app sync and import, web client loads them on demand and opens an SVG only as an image). **Phase 1 is complete.**
+  (ADR-0009). Images for `{image}` are synced like PDFs (owner decision, #1227: server, app sync and import, web client loads them on demand and opens an SVG only as an image). Refused attachment changes are no longer silent: uploads are marked (#1225), changes of attachments on the server are undone (#1229). **Phase 1 is complete.**
 
 ## 9. Open questions
 

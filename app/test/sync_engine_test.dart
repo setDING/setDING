@@ -18,6 +18,7 @@ import 'package:setding/data/database.dart';
 import 'package:setding/data/marker_icons.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
+import 'package:setding/data/trash.dart';
 import 'package:setding/data/outbox.dart';
 import 'package:setding/data/play_history.dart';
 import 'package:setding/sync/band_service.dart';
@@ -833,6 +834,116 @@ void main() {
         await engine.sync();
         expect(server.attachmentUploads, 1);
         expect(server.attachments, isEmpty);
+        expect(await outbox(), isEmpty);
+      });
+    });
+
+    // A refused rename or deletion of an attachment on the server stayed
+    // local silently: this device showed the change, the server and the
+    // other devices did not (#1229).
+    group('a refused change of an attachment on the server (#1229)', () {
+      const refusal = BackendException(BackendErrorKind.notAllowed, null, 403);
+
+      Future<(String, String)> uploaded({bool image = false}) async {
+        final id = await songs.createSong(source: '{title: Song}');
+        final a = await songs.addAttachment(
+          id,
+          name: 'Score',
+          bytes: image ? png : pdf,
+          extension: image ? 'png' : 'pdf',
+        );
+        await engine.sync();
+        expect(server.attachments[a], isNotNull);
+        return (id, a);
+      }
+
+      // Also deleted ones, which getAttachments leaves out.
+      Future<AttachmentEntry> local(String id) => (db.select(
+        db.attachments,
+      )..where((a) => a.songId.equals(id))).getSingle();
+
+      for (final image in [false, true]) {
+        test('a rename is undone and reported once '
+            '(${image ? 'image' : 'PDF'})', () async {
+          final (id, a) = await uploaded(image: image);
+          await songs.renameAttachment(a, 'Horns');
+          server.attachmentUpdateError = refusal;
+
+          final report = await engine.sync();
+          expect(report.error, isNull);
+          expect(server.attachments[a]!.name, 'Score');
+          expect((await local(id)).name, 'Score', reason: 'undone at once');
+          expect(report.undoneChanges, [
+            (attachmentId: a, name: 'Horns', songTitle: 'Song'),
+          ]);
+          expect(report.refusedUploads, isEmpty);
+          expect(await outbox(), isEmpty);
+          expect(
+            await db.select(db.changeLog).get(),
+            isEmpty,
+            reason: 'not a change of someone else',
+          );
+
+          // Not sent again, not reported again.
+          final again = await engine.sync();
+          expect(again.undoneChanges, isEmpty);
+          expect((await local(id)).name, 'Score');
+        });
+      }
+
+      test('a deletion is undone, with its file', () async {
+        final (id, a) = await uploaded();
+        final before = await local(id);
+        await songs.purgeFiles([
+          (await songs.deleteAttachment(before)).attachment,
+        ]);
+        server.attachmentUpdateError = refusal;
+
+        final report = await engine.sync();
+        expect(report.undoneChanges.single.attachmentId, a);
+        expect(server.attachments[a]!.deleted, isFalse);
+        final after = await local(id);
+        expect(after.deleted, isFalse);
+        expect(await storage.file(after.fileName).readAsBytes(), pdf);
+      });
+
+      test('a restore and a purge from the trash are undone', () async {
+        final (id, a) = await uploaded();
+        await songs.deleteAttachment(await local(id));
+        await engine.sync();
+        expect(server.attachments[a]!.deleted, isTrue);
+        final trash = TrashRepository(db, storage);
+        server.attachmentUpdateError = refusal;
+
+        await trash.restoreAttachments([a]);
+        final restore = await engine.sync();
+        expect(restore.undoneChanges.single.attachmentId, a);
+        expect((await local(id)).deleted, isTrue);
+
+        await trash.purgeAttachments([a]);
+        final purge = await engine.sync();
+        expect(purge.undoneChanges.single.attachmentId, a);
+        expect(server.attachments[a]!.purged, isFalse);
+        final after = await local(id);
+        expect((after.deleted, after.purged), (true, false));
+      });
+
+      test('a server error is sent again in the next sync', () async {
+        final (id, a) = await uploaded();
+        await songs.renameAttachment(a, 'Horns');
+        server.attachmentUpdateError = const BackendException(
+          BackendErrorKind.server,
+          null,
+          503,
+        );
+        final report = await engine.sync();
+        expect(report.undoneChanges, isEmpty);
+        expect((await local(id)).name, 'Horns');
+        expect(await outbox(), hasLength(1));
+
+        server.attachmentUpdateError = null;
+        await engine.sync();
+        expect(server.attachments[a]!.name, 'Horns');
         expect(await outbox(), isEmpty);
       });
     });

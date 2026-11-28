@@ -1656,6 +1656,11 @@ class FakeSyncBackend implements SyncBackend {
   /// Uploads of new attachments, also refused ones.
   int attachmentUploads = 0;
 
+  /// When set, changes of attachments already on the server (rename,
+  /// deletion, restore, purge) fail with it, e.g. a refusal (#1229) or a
+  /// server error.
+  BackendException? attachmentUpdateError;
+
   @override
   Future<RemoteAttachment> pushAttachment(
     RemoteAttachment attachment, {
@@ -1714,6 +1719,7 @@ class FakeSyncBackend implements SyncBackend {
     if (existing == null) {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
+    if (attachmentUpdateError case final e?) throw e;
     return putAttachment(
       RemoteAttachment(
         id: attachment.id,

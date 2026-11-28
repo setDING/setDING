@@ -19,6 +19,11 @@ typedef RefusedUpload = ({
   UploadRefusal reason,
 });
 
+/// A change of an attachment already on the server (rename, deletion,
+/// restore or purge) that the server refused in a sync run (#1229): it is
+/// undone on this device, which gets the server's version back.
+typedef RefusedChange = ({String attachmentId, String name, String songTitle});
+
 /// Sync of attachments (ADR-0009): PDFs and images for `{image}` (#1227).
 /// Metadata by delta pull and push, files uploaded with their record and
 /// downloaded to every device.
@@ -43,6 +48,11 @@ class AttachmentSync {
   final ChangeRecorder? changes;
 
   var _refused = <RefusedUpload>[];
+  var _undone = <RefusedChange>[];
+
+  /// Organizations with refused changes whose server version has not been
+  /// pulled again yet ([pullUndone]).
+  final _undoneOrgs = <String>{};
 
   /// The uploads refused since the last call, for the report of a sync run
   /// (#1225).
@@ -50,6 +60,30 @@ class AttachmentSync {
     final refused = _refused;
     _refused = [];
     return refused;
+  }
+
+  /// The changes refused and undone since the last call, for the report of
+  /// a sync run (#1229).
+  List<RefusedChange> takeUndone() {
+    final undone = _undone;
+    _undone = [];
+    _undoneOrgs.clear();
+    return undone;
+  }
+
+  /// Pulls the server's version of the attachments whose change the server
+  /// refused in this run, so that they are undone at once and not only
+  /// with the next sync (#1229). Undone changes are not recorded as
+  /// changes of others (ADR-0045).
+  Future<int> pullUndone({String? logChangesFor}) async {
+    final orgs = _undoneOrgs.toList();
+    _undoneOrgs.clear();
+    final quiet = {for (final c in _undone) c.attachmentId};
+    var pulled = 0;
+    for (final org in orgs) {
+      pulled += await pull(org, logChangesFor: logChangesFor, quiet: quiet);
+    }
+    return pulled;
   }
 
   /// Why the server refused an upload with [e] ([BackendException.refused]).
@@ -132,7 +166,12 @@ class AttachmentSync {
   /// Changes by others than [logChangesFor] (the signed-in user) are
   /// recorded in the change log (ADR-0045); null records nothing, e.g. on
   /// the first sync of the library or band.
-  Future<int> pull(String orgId, {String? logChangesFor}) async {
+  /// Attachments in [quiet] are never recorded.
+  Future<int> pull(
+    String orgId, {
+    String? logChangesFor,
+    Set<String> quiet = const {},
+  }) async {
     final since = await store.cursor(orgId, SyncCollection.attachments);
     final remote = await backend.pullAttachments(orgId, since);
     if (remote.isEmpty) return 0;
@@ -155,7 +194,9 @@ class AttachmentSync {
           local: locals[a.id],
           dirty: dirty.contains(a.id),
           songExists: songs.contains(a.songId),
-          log: ChangeRecorder.records(a.updatedBy, logChangesFor),
+          log:
+              !quiet.contains(a.id) &&
+              ChangeRecorder.records(a.updatedBy, logChangesFor),
         );
         if (file != null) removedFiles.add(file);
       }
@@ -363,24 +404,46 @@ class AttachmentSync {
       }
       // Not allowed, too large or refused otherwise: a lasting answer
       // (#1225). A new file stays on this device, marked, until the person
-      // retries or removes it; a refused rename or deletion stays local.
+      // retries or removes it.
       _log.warning('Attachment ${a.id} refused by the server', e);
-      final reason = refusalOf(e);
-      await db.transaction(() async {
-        if (create) {
+      if (create) {
+        final reason = refusalOf(e);
+        await db.transaction(() async {
           await (db.update(db.attachments)..where((x) => x.id.equals(a.id)))
               .write(AttachmentsCompanion(uploadRefused: Value(reason)));
-        }
-        await store.done(entry);
-      });
-      if (create) {
+          await store.done(entry);
+        });
         _refused.add((
           attachmentId: a.id,
           name: a.name,
           songTitle: song.title,
           reason: reason,
         ));
+        return PushResult.skipped;
       }
+      // A refused rename, deletion, restore or purge is undone (#1229): the
+      // server decides, and sending it again would get the same answer.
+      // This device's copy counts as older, so the server's version is
+      // pulled again ([pullUndone]).
+      await db.transaction(() async {
+        final before = a.revision - 1;
+        await (db.update(db.attachments)..where((x) => x.id.equals(a.id)))
+            .write(AttachmentsCompanion(revision: Value(before)));
+        final cursor = await store.cursor(
+          song.libraryId,
+          SyncCollection.attachments,
+        );
+        if (cursor > before) {
+          await store.setCursor(
+            song.libraryId,
+            SyncCollection.attachments,
+            before,
+          );
+        }
+        await store.done(entry);
+      });
+      _undoneOrgs.add(song.libraryId);
+      _undone.add((attachmentId: a.id, name: a.name, songTitle: song.title));
       return PushResult.skipped;
     }
   }

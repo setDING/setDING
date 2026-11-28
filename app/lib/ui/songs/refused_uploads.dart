@@ -4,7 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../data/database.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../sync/sync_controller.dart';
-import '../../sync/sync_engine.dart' show RefusedUpload;
+import '../../sync/sync_engine.dart' show RefusedChange, RefusedUpload;
 import '../theme.dart';
 import '../widgets/dialogs.dart';
 
@@ -52,26 +52,42 @@ class RefusedUploadMarker extends StatelessWidget {
 }
 
 /// After a sync: tells the person once which attachments the server
-/// refused (#1225). The sync does not send them again by itself, so each
+/// refused (#1225) and which changes of attachments it refused and were
+/// undone (#1229). The sync does not send them again by itself, so each
 /// refusal is told once. Call from the home screen's `build`.
 void listenForRefusedUploads(BuildContext context, WidgetRef ref) {
   ref.listen(syncControllerProvider.select((s) => s.lastReport), (_, report) {
     final refused = report?.refusedUploads ?? const <RefusedUpload>[];
-    if (refused.isEmpty) return;
+    final undone = report?.undoneChanges ?? const <RefusedChange>[];
     final l10n = AppLocalizations.of(context);
-    final message = switch (refused) {
-      [final r] => l10n.attachmentUploadRefused(
-        r.name,
-        r.songTitle,
-        uploadRefusalText(l10n, r.reason),
-      ),
-      _ => l10n.attachmentUploadsRefused(refused.length),
-    };
-    showMessageOn(
-      ScaffoldMessenger.maybeOf(context),
-      message,
-      key: const Key('attachment-upload-refused'),
-      duration: const Duration(seconds: 10),
-    );
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (refused.isNotEmpty) {
+      showMessageOn(
+        messenger,
+        switch (refused) {
+          [final r] => l10n.attachmentUploadRefused(
+            r.name,
+            r.songTitle,
+            uploadRefusalText(l10n, r.reason),
+          ),
+          _ => l10n.attachmentUploadsRefused(refused.length),
+        },
+        key: const Key('attachment-upload-refused'),
+        duration: const Duration(seconds: 10),
+      );
+    }
+    if (undone.isNotEmpty) {
+      showMessageOn(
+        messenger,
+        switch (undone) {
+          [final c] => l10n.attachmentChangeUndone(c.name, c.songTitle),
+          _ => l10n.attachmentChangesUndone(undone.length),
+        },
+        key: const Key('attachment-change-undone'),
+        duration: const Duration(seconds: 10),
+        // After the message about refused uploads of the same sync.
+        queue: refused.isNotEmpty,
+      );
+    }
   });
 }

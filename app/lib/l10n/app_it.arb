@@ -1707,6 +1707,8 @@
   "attachmentUploadsRefused": "{count, plural, =1{Il server non ha accettato 1 allegato. Resta solo su questo dispositivo.} other{Il server non ha accettato {count} allegati. Restano solo su questo dispositivo.}}",
   "retryUpload": "Carica di nuovo",
   "uploadRefusalStorageFull": "lo spazio di archiviazione dell'organizzazione è pieno",
+  "attachmentChangeUndone": "Il server non ha accettato la modifica di “{name}” di “{song}”. È stata annullata su questo dispositivo.",
+  "attachmentChangesUndone": "{count, plural, =1{Il server non ha accettato la modifica di 1 allegato. È stata annullata su questo dispositivo.} other{Il server non ha accettato le modifiche di {count} allegati. Sono state annullate su questo dispositivo.}}",
   "attachmentPdfLimit": "PDF o immagine, al massimo {limit}",
   "storageFree": "{free} liberi su {limit}",
   "storageTitle": "Spazio di archiviazione",

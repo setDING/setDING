@@ -55,6 +55,51 @@ void main() {
     await app.dispose(tester);
   });
 
+  // A refused rename or deletion stayed local silently (#1229): it is
+  // undone and the person is told once.
+  testWidgets('a refused rename is undone and told once', (tester) async {
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'currentBandId': 'b1'},
+      user: _ann,
+    );
+    app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    await syncNow(tester);
+    await tester.pumpAndSettle();
+    final songs = TestApp.songsIn(app, 'o1', userId: 'ann');
+    final id = await songs.createSong(source: '{title: Song}');
+    final a = (await tester.runAsync(
+      () => songs.addAttachment(id, name: 'Score', bytes: pdf),
+    ))!;
+    await syncNow(tester);
+    await tester.pump(const Duration(seconds: 11));
+    await tester.pumpAndSettle();
+    expect(app.backend.attachments[a], isNotNull);
+
+    await tester.runAsync(() => songs.renameAttachment(a, 'Horns'));
+    app.backend.attachmentUpdateError = const BackendException(
+      BackendErrorKind.notAllowed,
+    );
+    await syncNow(tester);
+    await tester.pump();
+    expect(
+      find.text(
+        'The server did not accept the change to “Horns” of “Song”. It was '
+        'undone on this device.',
+      ),
+      findsOneWidget,
+    );
+
+    // Not again at the next sync.
+    await tester.pump(const Duration(seconds: 11));
+    await tester.pumpAndSettle();
+    await syncNow(tester);
+    await tester.pump();
+    expect(find.byKey(const Key('attachment-change-undone')), findsNothing);
+    await app.dispose(tester);
+  });
+
   testWidgets('the marker shows why; the menu retries and removes', (
     tester,
   ) async {

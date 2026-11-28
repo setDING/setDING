@@ -6756,6 +6756,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get uploadRefusalStorageFull => 'the organization\'s storage is full';
 
   @override
+  String attachmentChangeUndone(String name, String song) {
+    return 'The server did not accept the change to “$name” of “$song”. It was undone on this device.';
+  }
+
+  @override
+  String attachmentChangesUndone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'The server did not accept the changes to $count attachments. They were undone on this device.',
+      one: 'The server did not accept the change to 1 attachment. It was undone on this device.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String attachmentPdfLimit(String limit) {
     return 'PDF or image, at most $limit';
   }

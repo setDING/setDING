@@ -1707,6 +1707,8 @@
   "attachmentUploadsRefused": "{count, plural, =1{Le serveur n'a pas accepté 1 pièce jointe. Elle reste seulement sur cet appareil.} other{Le serveur n'a pas accepté {count} pièces jointes. Elles restent seulement sur cet appareil.}}",
   "retryUpload": "Envoyer à nouveau",
   "uploadRefusalStorageFull": "l'espace de stockage de l'organisation est plein",
+  "attachmentChangeUndone": "Le serveur n'a pas accepté la modification de « {name} » de « {song} ». Elle a été annulée sur cet appareil.",
+  "attachmentChangesUndone": "{count, plural, =1{Le serveur n'a pas accepté la modification d'une pièce jointe. Elle a été annulée sur cet appareil.} other{Le serveur n'a pas accepté les modifications de {count} pièces jointes. Elles ont été annulées sur cet appareil.}}",
   "attachmentPdfLimit": "PDF ou image, {limit} au maximum",
   "storageFree": "{free} libres sur {limit}",
   "storageTitle": "Stockage",
