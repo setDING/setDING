@@ -1714,6 +1714,8 @@
   "setChangeUndone": "Le serveur n'a pas accepté la modification du set « {set} ». Elle a été annulée sur cet appareil.",
   "adjustmentChangeUndone": "Le serveur n'a pas accepté tes ajustements personnels de « {song} ». Ils ont été annulés sur cet appareil.",
   "syncChangesUndone": "{count, plural, =1{Le serveur n'a pas accepté 1 modification. Elle a été annulée sur cet appareil.} other{Le serveur n'a pas accepté {count} modifications. Elles ont été annulées sur cet appareil.}}",
+  "songKeptOnDevice": "Le serveur n'a pas accepté le nouveau morceau « {song} ». Il a été conservé dans « Sur cet appareil ».",
+  "songsKeptOnDevice": "{count, plural, =1{Le serveur n'a pas accepté 1 nouveau morceau. Il a été conservé dans « Sur cet appareil ».} other{Le serveur n'a pas accepté {count} nouveaux morceaux. Ils ont été conservés dans « Sur cet appareil ».}}",
   "attachmentPdfLimit": "PDF ou image, {limit} au maximum",
   "storageFree": "{free} libres sur {limit}",
   "storageTitle": "Stockage",

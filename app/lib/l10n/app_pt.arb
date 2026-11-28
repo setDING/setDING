@@ -1714,6 +1714,8 @@
   "setChangeUndone": "O servidor não aceitou a alteração do set “{set}”. Foi desfeita neste dispositivo.",
   "adjustmentChangeUndone": "O servidor não aceitou os teus ajustes pessoais de “{song}”. Foram desfeitos neste dispositivo.",
   "syncChangesUndone": "{count, plural, =1{O servidor não aceitou 1 alteração. Foi desfeita neste dispositivo.} other{O servidor não aceitou {count} alterações. Foram desfeitas neste dispositivo.}}",
+  "songKeptOnDevice": "O servidor não aceitou a música nova “{song}”. Foi guardada em “Neste dispositivo”.",
+  "songsKeptOnDevice": "{count, plural, =1{O servidor não aceitou 1 música nova. Foi guardada em “Neste dispositivo”.} other{O servidor não aceitou {count} músicas novas. Foram guardadas em “Neste dispositivo”.}}",
   "attachmentPdfLimit": "PDF ou imagem, no máximo {limit}",
   "storageFree": "{free} livres de {limit}",
   "storageTitle": "Armazenamento",

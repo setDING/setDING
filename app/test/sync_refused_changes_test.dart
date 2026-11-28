@@ -2,13 +2,16 @@
 // good is undone on this device and reported once, as attachment changes
 // are (#1260). Before, a 403/404 dropped it from the outbox and kept it on
 // this device in silence, and a 400 (validation error) stopped every later
-// sync at the same outbox entry.
+// sync at the same outbox entry. A new song the server refuses is kept in
+// the local library instead, so its text is never lost (#1263).
 
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:setding/data/annotation_repository.dart';
 import 'package:setding/data/attachment_storage_io.dart';
 import 'package:setding/data/band_copy.dart';
 import 'package:setding/data/database.dart';
@@ -37,12 +40,13 @@ void main() {
   late SyncEngine engine;
   late SongRepository songs;
   late SetRepository sets;
+  late FileAttachmentStorage storage;
 
   setUp(() async {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
     db = AppDatabase(NativeDatabase.memory());
     dir = Directory.systemTemp.createTempSync('setding_refused');
-    final storage = FileAttachmentStorage(dir);
+    storage = FileAttachmentStorage(dir);
     server = FakeSyncBackend(user: _ann);
     server.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
     final bands = BandService(db, server);
@@ -51,7 +55,7 @@ void main() {
       db,
       server,
       bands,
-      copies: BandCopyService(db, storage),
+      copies: BandCopyService(db, storage, userId: 'ann'),
     );
     songs = SongRepository(db, storage, libraryId: 'o1', userId: 'ann');
     sets = SetRepository(db, storage, bandId: 'b1');
@@ -150,21 +154,6 @@ void main() {
       ));
     });
 
-    test('a new song the server refuses is removed', () async {
-      final id = await songs.createSong(source: '{title: New}');
-      server.songPushError = _forbidden;
-
-      final report = await engine.sync();
-      expect(await song(id), isNull);
-      expect(server.songs[id], isNull);
-      await reportedOnce(report, (
-        kind: RefusedRecord.song,
-        id: id,
-        name: 'New',
-        songTitle: 'New',
-      ));
-    });
-
     test('a refused link field undoes the song', () async {
       final id = await syncedSong();
       await songs.setLanguage(id, 'pt');
@@ -193,6 +182,88 @@ void main() {
       await engine.sync();
       expect(server.songs[id]!.title, 'Mine');
       expect(await outbox(), isEmpty);
+    });
+  });
+
+  group('a refused new song (#1263)', () {
+    final pdf = Uint8List.fromList('%PDF-1.4 test'.codeUnits);
+    const stroke = AnnotationStroke(
+      id: 'x',
+      tool: AnnotationTool.pen,
+      width: 0.004,
+      points: [0.1, 0.1, 0.2, 0.2],
+    );
+    Future<List<SongEntry>> localSongs() => (db.select(
+      db.songs,
+    )..where((s) => s.libraryId.equals(localBandId))).get();
+
+    for (final (label, refusal) in [('403', _forbidden), ('400', _invalid)]) {
+      test('is kept in the local library with its text ($label)', () async {
+        final id = await songs.createSong(source: '{title: New}\n[C]mine');
+        final a = await songs.addAttachment(id, name: 'Score', bytes: pdf);
+        await songs.saveOverlay(
+          (await songs.getOverlay(id)).copyWith(transpose: 2),
+        );
+        await AnnotationRepository(db, userId: 'ann').apply(id, put: [stroke]);
+        server.songPushError = refusal;
+
+        final report = await engine.sync();
+        expect(await song(id), isNull, reason: 'moved out of the library');
+        expect(server.songs[id], isNull);
+        final kept = (await localSongs()).single;
+        expect(kept.chordproSource, '{title: New}\n[C]mine');
+        final local = SongRepository(db, storage, userId: 'ann');
+        expect((await local.getOverlay(kept.id)).transpose, 2);
+        final attachment = (await (db.select(
+          db.attachments,
+        )..where((x) => x.songId.equals(kept.id))).get()).single;
+        expect(attachment.name, 'Score');
+        expect(attachment.id, isNot(a));
+        expect(
+          await storage.file(attachment.fileName).readAsBytes(),
+          pdf,
+          reason: 'its file is kept too',
+        );
+        expect(
+          (await AnnotationRepository(
+            db,
+            userId: 'ann',
+          ).watch(kept.id).first).single.points,
+          stroke.points,
+        );
+        expect(server.attachments, isEmpty);
+        await reportedOnce(report, (
+          kind: RefusedRecord.keptSong,
+          id: id,
+          name: 'New',
+          songTitle: 'New',
+        ));
+        expect(await localSongs(), hasLength(1), reason: 'kept once');
+      });
+    }
+
+    test('stays in a set pushed in the same sync as "song missing"', () async {
+      final id = await songs.createSong(source: '{title: New}');
+      final setId = await sets.createSet(name: 'Gig');
+      await sets.addSongs(setId, [id]);
+      server.songPushError = _forbidden;
+
+      await engine.sync();
+      expect(server.sets[setId], isNotNull, reason: 'the set is pushed');
+      final [item] = await sets.getItems(setId);
+      expect(item.item.songId, isNull, reason: 'names no missing song');
+      expect((await localSongs()).single.title, 'New');
+      expect(await outbox(), isEmpty);
+    });
+
+    test('a refused change of a song the server had is not kept', () async {
+      final id = await syncedSong();
+      await songs.updateSource(id, '{title: Mine}');
+      server.songs.remove(id); // 404 on the update
+
+      await engine.sync();
+      expect(await song(id), isNull);
+      expect(await localSongs(), isEmpty, reason: 'undone as before (#1260)');
     });
   });
 

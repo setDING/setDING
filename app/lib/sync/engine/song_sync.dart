@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../../data/attachment_storage.dart';
+import '../../data/attachment_storage_memory.dart';
 import '../../data/band_copy.dart';
 import '../../data/database.dart';
 import '../../data/outbox.dart';
@@ -48,6 +49,10 @@ class SongSync {
 
   /// Changes of songs the server refused for good (#1260).
   final RefusedChanges undone;
+
+  /// New songs the server refused for good in this run: kept in the local
+  /// library if the server does not show them (#1263).
+  final _refusedCreates = <String>{};
 
   /// Changes by others than [logChangesFor] (the signed-in user) are
   /// recorded in the change log (ADR-0045); null records nothing, e.g. on
@@ -123,16 +128,45 @@ class SongSync {
   /// Pulls the server's version of the songs whose change the server
   /// refused in this run (#1260), so that they are undone at once; a song
   /// the server does not send back is not visible to the person any more
-  /// (or never reached the server) and is removed from this device, as
-  /// attachments are (#1248). Undone songs are not recorded as changes of
-  /// others (ADR-0045).
-  Future<int> pullUndone({String? logChangesFor}) => undone.pullAgain(
-    SyncCollection.songs,
-    RefusedRecord.song,
-    pull: (org, quiet) async =>
-        (await _pull(org, logChangesFor: logChangesFor, quiet: quiet)).$1,
-    remove: _removeInvisible,
-  );
+  /// and is removed from this device, as attachments are (#1248). A new
+  /// song the server never had is kept in the local library instead, so
+  /// its text is never lost (#1263). Undone songs are not recorded as
+  /// changes of others (ADR-0045).
+  Future<int> pullUndone({String? logChangesFor}) async {
+    final creates = {..._refusedCreates};
+    _refusedCreates.clear();
+    return undone.pullAgain(
+      SyncCollection.songs,
+      RefusedRecord.song,
+      pull: (org, quiet) async =>
+          (await _pull(org, logChangesFor: logChangesFor, quiet: quiet)).$1,
+      remove: (ids) async {
+        final kept = ids.intersection(creates);
+        if (kept.isNotEmpty) await _keepOnDevice(kept);
+        await _removeInvisible(ids);
+      },
+    );
+  }
+
+  /// Copies the new songs [ids] the server refused into the local library
+  /// "On this device" with their attachments, the person's adjustments and
+  /// annotations, as a copy between libraries does (#1263); the originals
+  /// are removed by [_removeInvisible] afterwards. Their set items stay as
+  /// "song missing" (#1261): a set of the organization never names a song
+  /// of the local library (ADR-0017), and the other devices show an item
+  /// whose song the server does not have the same way.
+  Future<void> _keepOnDevice(Set<String> ids) async {
+    final list = ids.toList();
+    await (copies ?? BandCopyService(db, storage ?? MemoryAttachmentStorage()))
+        .copySongs(list, localBandId);
+    await (db.update(db.setItems)..where((i) => i.songId.isIn(list))).write(
+      const SetItemsCompanion(songId: Value(null)),
+    );
+    for (final id in list) {
+      undone.keep(id);
+    }
+    _log.info('Kept ${list.length} refused new songs on this device');
+  }
 
   /// Undoes the refused [entry] of [song] (#1260): its change, its link
   /// fields or its review status. The server's version is pulled again.
@@ -469,6 +503,7 @@ class SongSync {
         // No (longer) permission, or a validation error: sending it again
         // gets the same answer, so the change is undone (#1260).
         _log.warning('Song ${song.id} refused by the server, undone', e);
+        if (create) _refusedCreates.add(song.id);
         await _undo(entry, song);
         return PushResult.skipped;
       }
