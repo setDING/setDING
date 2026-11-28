@@ -420,6 +420,7 @@ See "Open points" in the individual ADRs. The most important:
 61. Should the Android app be on Google Play? → ADR-0067 (accepted, #1137): yes, next to the Obtainium APK from the GitHub Releases; Play App Signing with the existing release key so both channels share one signature; CI uploads an AAB to the internal track, the owner promotes it. Open: the closed test (personal account), then production; the Google Play install section of the website (#1141)
 62. How can a band project the lyrics at small gigs and worship sessions without extra software? → ADR-0068 (accepted, #1164): a local web server in the native app, started from live mode, serves a read-only page with the lyrics as slides that follows live mode; access by a random token in a QR code, private networks only; `{copyright}` is shown, CCLI fields are not; automatic follow with manual override, a second language side by side and a lower third for OBS in the first version. Open: a control page in the browser, audience phones, the Android foreground service
 63. How can a version be tried on devices before Google Play and production? → ADR-0069 (accepted, #1178): pre-release tags become GitHub pre-releases for Obtainium, are never uploaded to Google Play, default to the staging server and are deployed to staging only. Open: pre-releases on the website
+64. How much file storage may one organization use on the server? → ADR-0070 (proposed, #1198): recommended a limit per organization from `SETDING_ORG_STORAGE_LIMIT_MB` (default 2 GB, `off` for none), counting every attachment and report screenshot still on the disk (trash included) with sizes set by the server, enforced atomically in the create hook (HTTP 400 `storage_limit_reached`), data over the limit kept; a refused upload stays on the device and is marked *Only on this device* with *Try again*. Open: the option and the default, a per-organization override, many organizations on `open` servers, what counts, purging a single attachment, who sees the usage, per-upload limits
 
 ## 10. ADR index
 
@@ -493,5 +494,6 @@ See "Open points" in the individual ADRs. The most important:
 | [0067](adr/0067-google-play-distribution.md) | Google Play next to Obtainium for Android | Accepted |
 | [0068](adr/0068-lyrics-projection-local-server.md) | Projecting lyrics to a browser from live mode | Accepted |
 | [0069](adr/0069-pre-release-channel.md) | Pre-releases through Obtainium and the staging server | Accepted |
+| [0070](adr/0070-attachment-storage-quota.md) | Storage quota for attachments per organization | Proposed |
 
 New ADRs are based on the template [`adr/template.md`](adr/template.md). Documentation and ADRs are written in English.
