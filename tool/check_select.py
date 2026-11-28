@@ -75,6 +75,8 @@ RULES = [
     ('tool/upgrade_guard.py', ['tools']),
     ('tool/test_upgrade_guard.py', ['tools']),
     ('tool/test_server_targets.py', ['tools']),
+    ('tool/systemd_verify_filter.py', ['ops', 'tools']),
+    ('tool/test_systemd_verify_filter.py', ['tools']),
     ('tool/', []),  # other tools (perf, branding, integration test runners)
     ('website/', ['website']),
     ('docs/screenshots/', ['website']),

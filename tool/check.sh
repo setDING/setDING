@@ -57,6 +57,8 @@ job_tools() {
   python3 -m unittest -q test_upgrade_guard
   # Which server the make server-* targets work on (#1055).
   python3 -m unittest -q test_server_targets
+  # The systemd check of check-ops.sh ignores other units' problems (#1254).
+  python3 -m unittest -q test_systemd_verify_filter
   # The test summary of the nightly CI run (#1249).
   cd "$ROOT/tool/ci"
   python3 -m unittest -q test_test_report

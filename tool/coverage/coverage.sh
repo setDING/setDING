@@ -37,9 +37,11 @@ echo
 echo "lcov reports: $PACKAGE/coverage/lcov.info, $APP/coverage/lcov.info"
 if command -v genhtml >/dev/null 2>&1; then
   for dir in "$PACKAGE" "$APP"; do
-    genhtml --quiet --ignore-errors unused,inconsistent \
+    # In the package's folder: the app's lcov has paths relative to it
+    # (lib/...), which genhtml resolves against its working directory (#1254).
+    (cd "$dir" && genhtml --quiet --ignore-errors unused,inconsistent \
       --exclude '*.g.dart' --exclude '*/l10n/generated/*' \
-      --output-directory "$dir/coverage/html" "$dir/coverage/lcov.info"
+      --output-directory coverage/html coverage/lcov.info)
     echo "HTML report: $dir/coverage/html/index.html"
   done
 else
