@@ -304,6 +304,7 @@ web client excepted).
   no header is trusted, since all clients behind a proxy would share one rate-limit
   bucket. The self-hosting examples set `X-Forwarded-For`; `install.sh` sets
   `CF-Connecting-IP` on the owner's hosts.
+- 2026-11-28: `SETDING_ORG_STORAGE_LIMIT_MB` (ADR-0070, #1226) joins the configuration: the most PDF storage one organization may use, default 25, `0` or `off` for no limit; an invalid value stops the start, and the effective limit is logged at every start. The self-hosting page explains it with the disk sizing (limit × organizations × (1 + `SETDING_BACKUP_KEEP`)).
 
 ## Open points
 

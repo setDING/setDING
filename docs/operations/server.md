@@ -370,6 +370,13 @@ the tunnel creates its own CNAME records.
   They are ZIP files of `pb_data` (database and files, without the backups
   themselves) in `/var/lib/setding/pb_data/backups/`. An invalid value stops the
   start with a message.
+- **Disk size** (ADR-0070): each organization may keep at most
+  `SETDING_ORG_STORAGE_LIMIT_MB` of PDF attachments (default 25; `0` or `off` for no
+  limit; deleted PDFs count until purged; an invalid value stops the start, the
+  effective limit is logged at every start). PDFs are at most 1 MB, report
+  screenshots at most 300 KB. Size the disk for the worst case of
+  limit × organizations × (1 + `SETDING_BACKUP_KEEP`), plus the database and the
+  screenshots.
 - **Now and before updates:** `make server-backup` (and `install.sh` before every
   version change) runs `setding-backup-now`: SQLite's online backup of `data.db`
   (integrity checked) plus `storage/`, as a ZIP in the same format and folder, so

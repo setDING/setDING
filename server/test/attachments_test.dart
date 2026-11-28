@@ -81,12 +81,16 @@ void main() {
     expect(r.status, 400);
   });
 
-  test('files larger than 20 MB are refused', () async {
+  test('files larger than 1 MB are refused (ADR-0070)', () async {
     final f = await BandFixture.create(pb);
     final song = await f.createSong(f.admin);
-    final big = [..._pdf, ...List<int>.filled(20 * 1024 * 1024, 32)];
+    final big = [..._pdf, ...List<int>.filled(1024 * 1024, 32)];
     final r = await upload(f.admin, f.orgId, song['id'], bytes: big);
     expect(r.status, 400);
+    final data = r.json['data'] as Map<String, dynamic>;
+    expect((data['file'] as Map)['code'], 'validation_file_size_limit');
+    final fits = [..._pdf, ...List<int>.filled(1024 * 1024 - _pdf.length, 32)];
+    (await upload(f.admin, f.orgId, song['id'], bytes: fits)).expectStatus(200);
   });
 
   test('the song must belong to the same organization', () async {

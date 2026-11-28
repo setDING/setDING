@@ -8,6 +8,7 @@
 // uploaded later from a device that reported offline) and never replaced.
 
 onRecordCreateRequest((e) => {
+  require(`${__hooks}/lib/storage.js`).dropOversizedScreenshot(e);
   const sync = require(`${__hooks}/lib/sync.js`);
   const userId = sync.requestUserId(e);
   if (userId) e.record.set("author", userId);
@@ -24,6 +25,7 @@ onRecordCreateRequest((e) => {
 }, "song_reports");
 
 onRecordUpdateRequest((e) => {
+  require(`${__hooks}/lib/storage.js`).dropOversizedScreenshot(e);
   const original = e.record.original();
   const status = e.record.getString("status");
   if (status !== original.getString("status")) {

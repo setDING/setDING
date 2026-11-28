@@ -202,7 +202,8 @@ updateRule:
         && @collection.memberships:r12.role ?= "admin"
         && @collection.memberships:r12.band.organization ?= organization
         && @collection.memberships:r12.band.deleted ?= false)
-      && @request.body.deleted:changed = false))
+      && @request.body.deleted:changed = false
+      && @request.body.purged:changed = false))
   && organization.deleted = false
 
 deleteRule:
@@ -213,7 +214,7 @@ fields:
   organization relation cascadeDelete=true collectionId=organizations maxSelect=1 required=true
   song relation cascadeDelete=true collectionId=songs maxSelect=1 required=true
   name text max=500 required=true
-  file file maxSelect=1 maxSize=20971520 mimeTypes=[application/pdf] protected=true
+  file file maxSelect=1 maxSize=1048576 mimeTypes=[application/pdf] protected=true
   pages number onlyInt=true
   size_bytes number onlyInt=true
   revision number onlyInt=true
@@ -983,7 +984,7 @@ fields:
   category select maxSelect=1 required=true values=[chords, lyrics, key, sequence, tempo, formatting, sheet_music, other]
   comment text max=1000
   location json maxSize=2000
-  screenshot file maxSelect=1 maxSize=1048576 mimeTypes=[image/webp, image/jpeg, image/png] protected=true
+  screenshot file maxSelect=1 maxSize=307200 mimeTypes=[image/webp, image/jpeg, image/png] protected=true
   status select maxSelect=1 required=true values=[open, resolved, withdrawn]
   resolution text max=1000
   resolved_by relation collectionId=users maxSelect=1
