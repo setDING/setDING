@@ -59,6 +59,7 @@ import 'language_versions.dart';
 import 'song_language.dart';
 import 'song_links_panel.dart';
 import 'refused_uploads.dart';
+import 'storage_usage.dart';
 import '../widgets/menu_action.dart';
 import '../routes.dart';
 import '../share_link.dart';
@@ -129,16 +130,53 @@ class _SongScreenState extends ConsumerState<SongScreen> {
   Future<void> _updateOverlay(SongOverlay Function(SongOverlay) change) =>
       _repo.updateOverlay(widget.songId, change);
 
+  /// Attaches picked files. A file over its maximum size (1 MB for a PDF,
+  /// ADR-0070) is refused at once, also offline; a PDF that does not fit
+  /// into the organization's storage any more (when it is known) too, with
+  /// the usage and the way to the trash.
   Future<void> _addAttachment() async {
     final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final song = await _repo.getSong(widget.songId);
+    if (!mounted) return;
+    final storage = song == null ? null : readOrgStorage(ref, song.libraryId);
     final files = await pickFiles(extensions: ['pdf', ...imageExtensions]);
+    var added = 0;
     for (final file in files) {
-      if (file.bytes.length > maxAttachmentBytes) {
-        if (mounted) showMessage(context, l10n.attachmentTooLarge);
+      final check = checkAttachment(
+        file.name,
+        file.bytes.length,
+        storage: storage,
+        added: added,
+      );
+      if (check == AttachmentCheck.tooLarge) {
+        final limit = formatLimit(maxAttachmentBytesFor(file.name));
+        showMessageOn(messenger, l10n.attachmentTooLarge(limit));
         continue;
       }
-      final extension = p.extension(file.name).replaceFirst('.', '');
+      if (check == AttachmentCheck.doesNotFit) {
+        showMessageOn(
+          messenger,
+          l10n.attachmentDoesNotFit(
+            file.name,
+            formatBytes(file.bytes.length),
+            formatBytes(storage!.usedBytes + added),
+            formatLimit(storage.limitBytes!),
+          ),
+          key: const Key('attachment-does-not-fit'),
+          action: (
+            label: l10n.trash,
+            key: const Key('attachment-open-trash'),
+            onPressed: () {
+              if (!mounted) return;
+              context.push<void>(AppPaths.songsTrash(song!.libraryId));
+            },
+          ),
+        );
+        continue;
+      }
       final pdf = isPdfFile(file.name);
+      final extension = p.extension(file.name).replaceFirst('.', '');
       await _repo.addAttachment(
         widget.songId,
         // Images keep their file name so {image: src="…"} finds them.
@@ -147,6 +185,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
         pages: pdf ? await countPdfPages(file.bytes) : null,
         extension: extension,
       );
+      if (pdf) added += file.bytes.length;
     }
   }
 
@@ -334,6 +373,7 @@ class _SongScreenState extends ConsumerState<SongScreen> {
               ? LiveScreen.openSong(context, song.id, attachmentId: a.id)
               : showImageAttachment(context, a),
           onSave: (a) => saveAttachment(context, ref, a, songTitle: song.title),
+          libraryId: song.libraryId,
         );
 
         void transpose(int delta) => _updateOverlay(
@@ -1287,11 +1327,15 @@ class _AttachmentsCard extends ConsumerWidget {
     required this.onLiveView,
     required this.onOpen,
     required this.onSave,
+    required this.libraryId,
     this.canRename = true,
     this.canDelete = true,
   });
 
   final List<AttachmentEntry> attachments;
+
+  /// The song's library, for the storage hint (ADR-0070).
+  final String libraryId;
   final SongOverlay overlay;
   final bool hasChordPro;
   final bool inPanel;
@@ -1343,6 +1387,11 @@ class _AttachmentsCard extends ConsumerWidget {
             icon: const Icon(Icons.add),
             label: Text(l10n.addAttachment),
           );
+    // The maximum size and the free storage, before a file is picked
+    // (ADR-0070).
+    final limitHint = onAdd == null
+        ? null
+        : AttachmentLimitHint(libraryId: libraryId);
     final tiles = [
       if (hasChordPro && pdfs.isNotEmpty)
         RadioListTile<String?>(
@@ -1381,6 +1430,11 @@ class _AttachmentsCard extends ConsumerWidget {
         children: inPanel
             ? [
                 ?addButton,
+                if (limitHint != null)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(start: 12),
+                    child: limitHint,
+                  ),
                 if (attachments.isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -1408,6 +1462,14 @@ class _AttachmentsCard extends ConsumerWidget {
                   subtitle: liveViewLabel,
                   trailing: addButton,
                 ),
+                if (limitHint != null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                    child: Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: limitHint,
+                    ),
+                  ),
                 ...tiles,
               ],
       ),

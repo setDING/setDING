@@ -131,7 +131,15 @@
   "attachments": "Anhänge",
   "addAttachment": "Datei anhängen",
   "noAttachments": "Noch keine Anhänge.",
-  "attachmentTooLarge": "Die Datei ist grösser als 20 MB und kann nicht angehängt werden.",
+  "attachmentTooLarge": "Die Datei ist grösser als {limit} und kann nicht angehängt werden.",
+  "@attachmentTooLarge": {
+    "description": "A picked file is over the maximum size (ADR-0070); limit is e.g. \"1 MB\".",
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
   "songLinks": "Quellen",
   "noSongLinks": "Noch keine Quellen. Füge Aufnahmen auf YouTube, Spotify usw. hinzu.",
   "addSongLink": "Link hinzufügen",
@@ -4208,5 +4216,68 @@
     }
   },
   "retryUpload": "Erneut hochladen",
-  "uploadRefusalStorageFull": "der Speicher der Organisation ist voll"
+  "uploadRefusalStorageFull": "der Speicher der Organisation ist voll",
+  "attachmentPdfLimit": "PDF, höchstens {limit}",
+  "@attachmentPdfLimit": {
+    "description": "Shown before a file is picked (ADR-0070); limit is e.g. \"1 MB\".",
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "storageFree": "{free} von {limit} frei",
+  "@storageFree": {
+    "description": "Free storage of the organization (ADR-0070), after attachmentPdfLimit.",
+    "placeholders": {
+      "free": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "storageTitle": "Speicher",
+  "storageUsage": "Speicher: {used} von {limit}",
+  "@storageUsage": {
+    "description": "Storage the organization's PDFs use on the server, the trash included (ADR-0070).",
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "storageUsageUnlimited": "Speicher: {used}",
+  "@storageUsageUnlimited": {
+    "description": "Storage usage on a server without a limit (ADR-0070).",
+    "placeholders": {
+      "used": {
+        "type": "String"
+      }
+    }
+  },
+  "storageTrashCounts": "Gelöschte PDFs zählen mit, bis sie endgültig gelöscht sind.",
+  "storageNearlyFull": "Der Speicher der Organisation ist fast voll.",
+  "attachmentDoesNotFit": "«{name}» ({size}) passt nicht mehr in den Speicher der Organisation: {used} von {limit} belegt. Gelöschte PDFs zählen mit, bis sie endgültig gelöscht sind.",
+  "@attachmentDoesNotFit": {
+    "description": "A picked PDF does not fit into the organization's storage any more (ADR-0070).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      },
+      "used": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  }
 }

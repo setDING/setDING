@@ -10,6 +10,7 @@ import ExampleSong from '../../../components/ExampleSong.astro';
 import song from '../../../../../docs/screenshots/song_de.png';
 import attachmentMenu from '../../../../../docs/screenshots/song_attachment_menu_de.png';
 import attachmentRefused from '../../../../../docs/screenshots/song_attachment_refused_de.png';
+import attachmentStorage from '../../../../../docs/screenshots/song_attachment_storage_de.png';
 import adjustmentOffer from '../../../../../docs/screenshots/adjustment_offer_de.png';
 import phoneMenu from '../../../../../docs/screenshots/song_phone_menu_de.png';
 import stackedChoruses from '../../../../../docs/screenshots/live_stacked_choruses_de.png';
@@ -106,8 +107,10 @@ An jeden Song lassen sich PDF-Noten hängen, z. B. die Partitur für die Bläser
 werden mit dem Song synchronisiert und sind auf jedem Gerät offline verfügbar.
 
 1. Öffne den Song und tippe auf **Anhänge**.
-2. Tippe auf **Datei anhängen** und wähle ein PDF oder ein Bild. Eine Datei darf
-   höchstens 20 MB gross sein.
+2. Tippe auf **Datei anhängen** und wähle ein PDF oder ein Bild. Ein PDF darf
+   höchstens 1 MB gross sein (ein Bild, das auf deinem Gerät bleibt, 20 MB). Unter
+   dem Knopf zeigt setDING diese Grenze und, für Admins, Bibliothek und
+   Bandleitungen, wie viel Speicher der Organisation noch frei ist.
 3. Im Menü des Anhangs kannst du ihn **Umbenennen** oder **Löschen**.
 
 Anhängen und löschen dürfen alle, die den Song bearbeiten dürfen. Alle, die den Song
@@ -116,13 +119,26 @@ drucken oder weiterzugeben; im Browser wird er heruntergeladen.
 
 <Image src={attachmentMenu} alt="Das Panel «Anhänge» mit zwei PDFs; das Menü des PDFs «Bläser» zeigt Umbenennen, Speichern und Löschen" />
 
+### Speicher der Organisation
+
+Alle PDFs einer Organisation zusammen dürfen auf dem Server höchstens 25 MB belegen,
+ausser der Server setzt eine andere Grenze. Gelöschte PDFs zählen mit, bis sie im
+Papierkorb endgültig gelöscht sind. Ein grösseres PDF oder eines, das nicht mehr
+Platz hat, lehnt setDING sofort mit dem Grund ab; bei vollem Speicher bietet die
+Meldung den **Papierkorb** an. Ab 90 % warnt der Hinweis unter **Datei anhängen**.
+Die Belegung steht auch in der Organisation unter **Speicher**.
+
+<Image src={attachmentStorage} alt="Das Panel «Anhänge»: unter «Datei anhängen» «PDF, höchstens 1 MB · 424 KB von 25 MB frei» und die Warnung, dass der Speicher fast voll ist; das PDF «Bläser» ist markiert «Nur auf diesem Gerät: der Speicher der Organisation ist voll»" />
+
 ### Nur auf diesem Gerät
 
 Nimmt der Server einen neuen Anhang nicht an, z. B. weil du in dieser Bibliothek
-keine Anhänge hinzufügen darfst oder die Datei für den Server zu gross ist, sagt
+keine Anhänge hinzufügen darfst, die Datei für den Server zu gross ist oder der
+Speicher der Organisation voll ist (etwa wenn du ihn offline angehängt hast), sagt
 dir setDING das einmal nach dem Synchronisieren. Der Anhang bleibt dann **nur auf
 diesem Gerät**: Er ist in den Anhängen markiert, mit dem Grund, und deine
-Bandkollegen bekommen ihn nicht. setDING versucht es nicht von selbst wieder. Im
+Bandkollegen bekommen ihn nicht. setDING versucht es nicht von selbst wieder,
+ausser bei vollem Speicher, sobald wieder Platz ist. Im
 Menü des Anhangs kannst du ihn **Erneut hochladen**, z. B. wenn du die Berechtigung
 inzwischen hast, oder ihn **Löschen**.
 

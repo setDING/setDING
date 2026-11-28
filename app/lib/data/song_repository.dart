@@ -1073,7 +1073,8 @@ class SongRepository {
   }
 
   /// Adds a PDF or image attachment ([extension] without dot). Throws
-  /// [AttachmentTooLargeException] above 20 MB. [id]: kept when the local
+  /// [AttachmentTooLargeException] above [maxAttachmentBytesFor] its type
+  /// (1 MB for a PDF, ADR-0070; 20 MB for an image). [id]: kept when the local
   /// library is restored (ADR-0054); default a new one.
   Future<String> addAttachment(
     String songId, {
@@ -1083,11 +1084,12 @@ class SongRepository {
     String extension = 'pdf',
     String? id,
   }) async {
-    if (bytes.length > maxAttachmentBytes) {
-      throw AttachmentTooLargeException(bytes.length);
+    final ext = extension.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+    final limit = maxAttachmentBytesFor('file.$ext');
+    if (bytes.length > limit) {
+      throw AttachmentTooLargeException(bytes.length, limitBytes: limit);
     }
     final newId = id ?? _uuid.v4();
-    final ext = extension.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
     final fileName = '$newId.${ext.isEmpty ? 'bin' : ext}';
     await storage.write(fileName, bytes);
     try {

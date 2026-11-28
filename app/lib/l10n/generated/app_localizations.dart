@@ -412,11 +412,11 @@ abstract class AppLocalizations {
   /// **'Noch keine Anhänge.'**
   String get noAttachments;
 
-  /// No description provided for @attachmentTooLarge.
+  /// A picked file is over the maximum size (ADR-0070); limit is e.g. "1 MB".
   ///
   /// In de, this message translates to:
-  /// **'Die Datei ist grösser als 20 MB und kann nicht angehängt werden.'**
-  String get attachmentTooLarge;
+  /// **'Die Datei ist grösser als {limit} und kann nicht angehängt werden.'**
+  String attachmentTooLarge(String limit);
 
   /// No description provided for @songLinks.
   ///
@@ -10361,6 +10361,59 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'der Speicher der Organisation ist voll'**
   String get uploadRefusalStorageFull;
+
+  /// Shown before a file is picked (ADR-0070); limit is e.g. "1 MB".
+  ///
+  /// In de, this message translates to:
+  /// **'PDF, höchstens {limit}'**
+  String attachmentPdfLimit(String limit);
+
+  /// Free storage of the organization (ADR-0070), after attachmentPdfLimit.
+  ///
+  /// In de, this message translates to:
+  /// **'{free} von {limit} frei'**
+  String storageFree(String free, String limit);
+
+  /// No description provided for @storageTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Speicher'**
+  String get storageTitle;
+
+  /// Storage the organization's PDFs use on the server, the trash included (ADR-0070).
+  ///
+  /// In de, this message translates to:
+  /// **'Speicher: {used} von {limit}'**
+  String storageUsage(String used, String limit);
+
+  /// Storage usage on a server without a limit (ADR-0070).
+  ///
+  /// In de, this message translates to:
+  /// **'Speicher: {used}'**
+  String storageUsageUnlimited(String used);
+
+  /// No description provided for @storageTrashCounts.
+  ///
+  /// In de, this message translates to:
+  /// **'Gelöschte PDFs zählen mit, bis sie endgültig gelöscht sind.'**
+  String get storageTrashCounts;
+
+  /// No description provided for @storageNearlyFull.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Speicher der Organisation ist fast voll.'**
+  String get storageNearlyFull;
+
+  /// A picked PDF does not fit into the organization's storage any more (ADR-0070).
+  ///
+  /// In de, this message translates to:
+  /// **'«{name}» ({size}) passt nicht mehr in den Speicher der Organisation: {used} von {limit} belegt. Gelöschte PDFs zählen mit, bis sie endgültig gelöscht sind.'**
+  String attachmentDoesNotFit(
+    String name,
+    String size,
+    String used,
+    String limit,
+  );
 }
 
 class _AppLocalizationsDelegate

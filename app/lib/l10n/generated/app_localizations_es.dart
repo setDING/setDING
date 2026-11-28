@@ -195,8 +195,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noAttachments => 'Aún no hay adjuntos.';
 
   @override
-  String get attachmentTooLarge =>
-      'El archivo supera los 20 MB y no se puede adjuntar.';
+  String attachmentTooLarge(String limit) {
+    return 'El archivo supera $limit y no se puede adjuntar.';
+  }
 
   @override
   String get songLinks => 'Fuentes';
@@ -6794,4 +6795,45 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get uploadRefusalStorageFull =>
       'el almacenamiento de la organización está lleno';
+
+  @override
+  String attachmentPdfLimit(String limit) {
+    return 'PDF, como máximo $limit';
+  }
+
+  @override
+  String storageFree(String free, String limit) {
+    return '$free libres de $limit';
+  }
+
+  @override
+  String get storageTitle => 'Almacenamiento';
+
+  @override
+  String storageUsage(String used, String limit) {
+    return 'Almacenamiento: $used de $limit';
+  }
+
+  @override
+  String storageUsageUnlimited(String used) {
+    return 'Almacenamiento: $used';
+  }
+
+  @override
+  String get storageTrashCounts =>
+      'Los PDF eliminados cuentan hasta que se eliminan definitivamente.';
+
+  @override
+  String get storageNearlyFull =>
+      'El almacenamiento de la organización está casi lleno.';
+
+  @override
+  String attachmentDoesNotFit(
+    String name,
+    String size,
+    String used,
+    String limit,
+  ) {
+    return '«$name» ($size) ya no cabe en el almacenamiento de la organización: $used de $limit ocupados. Los PDF eliminados cuentan hasta que se eliminan definitivamente.';
+  }
 }

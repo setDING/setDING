@@ -128,8 +128,33 @@ void main() {
           id,
           name: 'Big',
           bytes: Uint8List(maxAttachmentBytes + 1),
+          extension: 'png',
         ),
         throwsA(isA<AttachmentTooLargeException>()),
+      );
+      // A PDF at most 1 MB, the server's limit (ADR-0070); an image more.
+      expect(
+        () => songs.addAttachment(
+          id,
+          name: 'Big',
+          bytes: Uint8List(maxPdfBytes + 1),
+        ),
+        throwsA(
+          isA<AttachmentTooLargeException>().having(
+            (e) => e.limitBytes,
+            'limitBytes',
+            maxPdfBytes,
+          ),
+        ),
+      );
+      final image = await songs.addAttachment(
+        id,
+        name: 'photo.png',
+        bytes: Uint8List(maxPdfBytes + 1),
+        extension: 'png',
+      );
+      await songs.deleteAttachment(
+        (await songs.getAttachments(id)).firstWhere((a) => a.id == image),
       );
 
       await songs.deleteAttachment(list.single);
