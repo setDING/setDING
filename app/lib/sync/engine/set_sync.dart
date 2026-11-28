@@ -81,7 +81,17 @@ class SetSync {
   }) async {
     if (local != null && remote.revision <= local.revision) return;
     // Last writer wins: a pending local change is pushed afterwards.
-    if (local != null && dirty) return;
+    if (local != null && dirty) {
+      if (local.revision == 0) {
+        // A set of this device that reached the server, whose answer got
+        // lost (#1245): the local change is pushed on top of it as a
+        // change, not as a new set, which would be dropped once the set is
+        // deleted here.
+        await (db.update(db.setlists)..where((s) => s.id.equals(remote.id)))
+            .write(SetlistsCompanion(revision: Value(remote.revision)));
+      }
+      return;
+    }
     if (log && changes != null) {
       final before = local == null
           ? const <SetItemEntry>[]

@@ -353,7 +353,7 @@ song/set sync, PDF sync).
   triggers, paused in live mode; sync status and "Sync now" in the settings, pull to refresh on the lists of sets and songs (ADR-0004).
 - **PDF sync (#18):** attachments uploaded after their songs and downloaded on every
   device in the same run; missing files shown in live mode and the settings
-  (ADR-0009). Images for `{image}` are synced like PDFs (owner decision, #1227: server, app sync and import, web client loads them on demand and opens an SVG only as an image). Refused attachment changes are no longer silent: uploads are marked (#1225), changes of attachments on the server are undone (#1229). **Phase 1 is complete.**
+  (ADR-0009). Images for `{image}` are synced like PDFs (owner decision, #1227: server, app sync and import, web client loads them on demand and opens an SVG only as an image). Refused attachment changes are no longer silent: uploads are marked (#1225), changes of attachments on the server are undone (#1229). A randomized multi-device test checks that every device converges with the server (#1245). **Phase 1 is complete.**
 
 ## 9. Open questions
 

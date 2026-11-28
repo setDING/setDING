@@ -67,6 +67,36 @@ void main() {
     expect(denied.status, isNot(200));
   });
 
+  // The app sends an upload whose answer got lost again with the same ID
+  // and takes this answer for "already on the server" (#1245).
+  test(
+    'a second upload with the same ID is refused as a duplicate ID',
+    () async {
+      final f = await BandFixture.create(pb);
+      final song = await f.createSong(f.admin);
+      final id = uuid();
+      Future<Response> send() => f.admin.postMultipart(
+        'attachments',
+        {
+          'id': id,
+          'organization': f.orgId,
+          'song': song['id'],
+          'name': 'Score',
+          'pages': '1',
+          'size_bytes': '${_pdf.length}',
+        },
+        fileField: 'file',
+        bytes: _pdf,
+        filename: 'score.pdf',
+        contentType: 'application/pdf',
+      );
+      (await send()).expectStatus(200);
+      final again = await send();
+      expect(again.status, 400);
+      expect(again.field('data.id.code'), 'validation_pk_invalid');
+    },
+  );
+
   test('only PDF files are accepted', () async {
     final f = await BandFixture.create(pb);
     final song = await f.createSong(f.admin);

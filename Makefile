@@ -263,9 +263,9 @@ coverage: ## Measure the test coverage of the app and the ChordPro package, repo
 
 FUZZ_ITERATIONS ?= 10000
 
-fuzz: ## Run the fuzz tests of the ChordPro parser, the archive import and the attachment type detection longer (FUZZ_ITERATIONS=<n> inputs per test, default 10000; docs/development/fuzz-tests.md)
+fuzz: ## Run the fuzz tests of the ChordPro parser, the archive import, the attachment type detection and the sync convergence longer (FUZZ_ITERATIONS=<n> inputs per test, default 10000; docs/development/fuzz-tests.md)
 	cd $(PACKAGE) && FUZZ_ITERATIONS=$(FUZZ_ITERATIONS) $(DART) test test/fuzz_test.dart
-	cd $(APP) && FUZZ_ITERATIONS=$(FUZZ_ITERATIONS) $(FLUTTER) test test/archive_fuzz_test.dart test/attachment_storage_test.dart
+	cd $(APP) && FUZZ_ITERATIONS=$(FUZZ_ITERATIONS) $(FLUTTER) test test/archive_fuzz_test.dart test/attachment_storage_test.dart test/sync_convergence_test.dart
 
 codegen: ## Regenerate the drift database code
 	cd $(APP) && $(DART) run build_runner build

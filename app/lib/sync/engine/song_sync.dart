@@ -139,7 +139,7 @@ class SongSync {
       return !knownConflict;
     }
     if (log) await changes?.song(local, remote, meta.title ?? remote.title);
-    await writeSong(remote, meta: meta);
+    await writeSong(remote, meta: meta, before: local);
     await _writeLinks(remote, pendingLinks);
     return false;
   }
@@ -174,8 +174,13 @@ class SongSync {
 
   /// Stores the server state of a song locally (no outbox entry); [meta]
   /// is extracted from its source unless given. The link fields stay as
-  /// they are (see [_writeLinks]).
-  Future<void> writeSong(RemoteSong remote, {SongMeta? meta}) async {
+  /// they are (see [_writeLinks]). [before] is the song on this device
+  /// before, if known.
+  Future<void> writeSong(
+    RemoteSong remote, {
+    SongMeta? meta,
+    SongEntry? before,
+  }) async {
     meta ??= SongMeta.fromSource(remote.chordpro);
     await db
         .into(db.songs)
@@ -212,6 +217,48 @@ class SongSync {
       await (db.delete(
         db.setItems,
       )..where((i) => i.songId.equals(remote.id))).go();
+    } else if (before != null && before.deleted) {
+      await _restoreAttachmentsDeletedWith(before);
+    }
+  }
+
+  /// Makes the next attachment pull of [song]'s organization send its
+  /// deleted attachments again when the server's song is not deleted any
+  /// more, e.g. restored or kept in a conflict on another device (#1245):
+  /// deleting a song deletes its attachments on this device but never
+  /// pushes them, so on the server they may still be there, while one
+  /// deleted on its own stays deleted. The server's version decides;
+  /// attachments with a change still to push stay as they are.
+  Future<void> _restoreAttachmentsDeletedWith(SongEntry song) async {
+    final candidates =
+        await (db.select(db.attachments)..where(
+              (a) =>
+                  a.songId.equals(song.id) &
+                  a.deleted.equals(true) &
+                  a.purged.equals(false) &
+                  a.revision.isBiggerThanValue(0),
+            ))
+            .get();
+    if (candidates.isEmpty) return;
+    final dirty = await store.dirty(SyncCollection.attachments, [
+      for (final a in candidates) a.id,
+    ]);
+    var lowest = -1;
+    for (final a in candidates) {
+      if (dirty.contains(a.id)) continue;
+      final before = a.revision - 1;
+      await (db.update(db.attachments)..where((x) => x.id.equals(a.id))).write(
+        AttachmentsCompanion(revision: Value(before)),
+      );
+      if (lowest < 0 || before < lowest) lowest = before;
+    }
+    if (lowest < 0) return;
+    final cursor = await store.cursor(
+      song.libraryId,
+      SyncCollection.attachments,
+    );
+    if (cursor > lowest) {
+      await store.setCursor(song.libraryId, SyncCollection.attachments, lowest);
     }
   }
 
@@ -466,6 +513,7 @@ class SongSync {
         revision: conflict.revision,
         deleted: conflict.deleted,
       ),
+      before: song,
     );
     await (db.delete(
       db.songConflicts,

@@ -486,6 +486,26 @@ void main() {
       },
     );
 
+    test('a set whose answer got lost and that is pulled before it is sent '
+        'again keeps later changes (#1245)', () async {
+      final setId = await sets.createSet(name: 'Gig');
+      // Stored by the server, the answer lost.
+      server.putSet(
+        RemoteSet(id: setId, bandId: 'b1', name: 'Gig', items: const []),
+        by: 'ann',
+      );
+      // Pulled, but the push fails: offline after the pull.
+      server.setPushError = const BackendException(BackendErrorKind.network);
+      await engine.sync();
+      server.setPushError = null;
+
+      await sets.deleteSet(setId);
+      final report = await engine.sync();
+      expect(report.error, isNull);
+      expect(server.sets[setId]!.deleted, isTrue);
+      expect(await outbox(), isEmpty);
+    });
+
     test('a set deleted on the server disappears', () async {
       server.putSet(const RemoteSet(id: 'set1', bandId: 'b1', name: 'Gig'));
       await engine.sync();
@@ -1001,6 +1021,69 @@ void main() {
       expect(await outbox(), isEmpty);
     });
 
+    test('an upload whose answer got lost is not refused when it is sent '
+        'again (#1245)', () async {
+      final id = await songs.createSong(source: '{title: Song}');
+      await engine.sync();
+      final a = await songs.addAttachment(id, name: 'Score', bytes: pdf);
+      // The server stored the upload, but its answer never arrived: the
+      // attachment is still new here and sent again, with the same ID.
+      server.putAttachment(
+        RemoteAttachment(
+          id: a,
+          organizationId: 'o1',
+          songId: id,
+          name: 'Score',
+          file: '${a}_abc.pdf',
+          sizeBytes: pdf.length,
+        ),
+        bytes: pdf,
+        by: 'ann',
+      );
+      final report = await engine.sync();
+      expect(report.error, isNull);
+      expect(report.refusedUploads, isEmpty);
+      final local = (await songs.getAttachments(id)).single;
+      expect(local.uploadRefused, isNull);
+      expect(local.revision, server.attachments[a]!.revision);
+      expect(local.remoteFile, '${a}_abc.pdf');
+      expect(await outbox(), isEmpty);
+    });
+
+    test('an upload whose answer got lost and that is pulled before it is '
+        'sent again keeps later changes (#1245)', () async {
+      final id = await songs.createSong(source: '{title: Song}');
+      await engine.sync();
+      final a = await songs.addAttachment(id, name: 'Score', bytes: pdf);
+      // Stored by the server, the answer lost.
+      server.putAttachment(
+        RemoteAttachment(
+          id: a,
+          organizationId: 'o1',
+          songId: id,
+          name: 'Score',
+          file: '${a}_abc.pdf',
+          sizeBytes: pdf.length,
+        ),
+        bytes: pdf,
+        by: 'ann',
+      );
+      // The next run pulls it, then fails to send it again.
+      const unavailable = BackendException(BackendErrorKind.server, null, 503);
+      server.attachmentUploadError = unavailable;
+      server.attachmentUpdateError = unavailable;
+      await engine.sync();
+      expect(server.attachments[a]!.revision, greaterThan(0));
+      server.attachmentUploadError = null;
+      server.attachmentUpdateError = null;
+
+      await songs.deleteAttachment((await songs.getAttachments(id)).single);
+      final report = await engine.sync();
+      expect(report.error, isNull);
+      expect(server.attachments[a]!.deleted, isTrue);
+      expect(await outbox(), isEmpty);
+    });
+
     test('without network, the upload is sent in the next sync', () async {
       final id = await songs.createSong(source: '{title: Song}');
       final a = await songs.addAttachment(id, name: 'Score', bytes: pdf);
@@ -1209,6 +1292,66 @@ void main() {
       expect((await songs.getSong(id))!.title, 'Back');
       expect((await songs.getAttachments(id)).single.name, 'Score');
       expect(server.attachments.values.single.deleted, isFalse);
+    });
+
+    test('a song restored elsewhere brings back the attachments deleted '
+        'with it here (#1245)', () async {
+      final id = await songs.createSong(source: '{title: Back}');
+      await songs.addAttachment(id, name: 'Score', bytes: pdf);
+      await engine.sync();
+      final a = (await songs.getAttachments(id)).single;
+      await songs.deleteSong(id);
+      await engine.sync();
+      // The undo is no longer offered: the file is gone here.
+      await songs.purgeFiles([a]);
+      final storage = FileAttachmentStorage(dir);
+      expect(await storage.exists(a.fileName), isFalse);
+      // The server keeps the attachment as it is when its song is deleted.
+      expect(server.attachments[a.id]!.deleted, isFalse);
+
+      // Restored on another device (or kept there in a conflict).
+      final s = server.songs[id]!;
+      server.putSong(
+        RemoteSong(
+          id: id,
+          organizationId: 'o1',
+          title: s.title,
+          chordpro: s.chordpro,
+        ),
+        by: 'bob',
+      );
+      final report = await engine.sync();
+      expect(report.error, isNull);
+      expect((await songs.getSong(id))!.deleted, isFalse);
+      expect((await songs.getAttachments(id)).single.id, a.id);
+      expect(await storage.exists(a.fileName), isTrue);
+      expect(await outbox(), isEmpty);
+    });
+
+    test('a song restored elsewhere keeps an attachment deleted on its '
+        'own before (#1245)', () async {
+      final id = await songs.createSong(source: '{title: Back}');
+      await songs.addAttachment(id, name: 'Old', bytes: pdf);
+      await engine.sync();
+      await songs.deleteAttachment((await songs.getAttachments(id)).single);
+      await engine.sync();
+      // In the same second: the deletion time does not tell them apart.
+      await songs.deleteSong(id);
+      await engine.sync();
+
+      final s = server.songs[id]!;
+      server.putSong(
+        RemoteSong(
+          id: id,
+          organizationId: 'o1',
+          title: s.title,
+          chordpro: s.chordpro,
+        ),
+        by: 'bob',
+      );
+      await engine.sync();
+      expect((await songs.getSong(id))!.deleted, isFalse);
+      expect(await songs.getAttachments(id), isEmpty);
     });
 
     test('an undo before the sync leaves the server unchanged', () async {
@@ -1792,6 +1935,24 @@ void main() {
         expect((await outbox()).single.recordId, 'bob:s1');
       },
     );
+
+    test('an adjustment of a song deleted here is pushed when the deletion '
+        'does not reach the server (#1245)', () async {
+      await adjust(mine, (o) => o.copyWith(transpose: 1));
+      await engine.sync();
+      await adjust(mine, (o) => o.copyWith(transpose: 3));
+      await mine.deleteSong('s1');
+      // Changed on the server meanwhile: the deletion becomes a conflict.
+      server.putSong(remoteSong('s1', '{title: Song}\n{key: A}'), by: 'bob');
+      var report = await engine.sync();
+      expect(report.conflicts, 1);
+      await engine.takeServer('s1');
+      report = await engine.sync();
+      expect(report.error, isNull);
+      final remote = server.overlays[SyncEngine.overlayServerId('ann', 's1')];
+      expect(remote?.data['transpose'], 3);
+      expect(await outbox(), isEmpty);
+    });
 
     test('taken-over and local-library adjustments', () async {
       // Taken over after the upgrade: never on the server yet.
