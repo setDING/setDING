@@ -2050,6 +2050,7 @@
     }
   },
   "backupInvalid": "This file is not a setDING backup.",
+  "archiveTooLarge": "This file contains too many or too large files and is not imported.",
   "backupNewer": "This backup was made with a newer version of setDING. Update the app to import it.",
   "backupImportTitle": "Import backup",
   "backupImportSummary": "Backup of \"{library}\": {songs, plural, =1{1 song} other{{songs} songs}}, {sets, plural, =1{1 set} other{{sets} sets}}.",

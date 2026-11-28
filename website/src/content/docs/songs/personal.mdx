@@ -112,7 +112,10 @@ Bandkollegen sehen sie im Song auf ihren Geräten und im Browser.
 2. Tippe auf **Datei anhängen** und wähle ein PDF oder ein Bild. Ein PDF darf
    höchstens 1 MB gross sein, ein Bild (PNG, JPEG, GIF, WebP oder SVG) ebenso. Ein
    Bild, dessen Inhalt nicht zu seiner Dateiendung passt (z. B. ein PNG namens
-   `logo.svg`), lehnt setDING sofort ab, weil der Server es nicht annähme. Unter
+   `logo.svg`), lehnt setDING sofort ab, weil der Server es nicht annähme. Ebenso
+   ein SVG, das der Server nicht als solches erkennt: Es beginnt mit
+   `<svg xmlns="http://www.w3.org/2000/svg"` oder mit einer XML-Deklaration
+   (`<?xml version="1.0"?>`), kleingeschrieben und ohne Byte-Order-Mark. Unter
    dem Knopf zeigt setDING diese Grenze und, für Admins, Bibliothek und
    Bandleitungen, wie viel Speicher der Organisation noch frei ist.
 3. Im Menü des Anhangs kannst du ihn **Umbenennen** oder **Löschen**.

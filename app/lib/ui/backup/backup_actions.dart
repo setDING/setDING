@@ -190,6 +190,12 @@ Future<void> importBackup(BuildContext context, Uint8List zip) async {
       e.newerVersion == null ? l10n.backupInvalid : l10n.backupNewer,
     );
     return;
+  } on ArchiveTooLargeException {
+    // A ZIP bomb is not unpacked (#1244).
+    if (context.mounted) {
+      showMessage(context, AppLocalizations.of(context).archiveTooLarge);
+    }
+    return;
   }
   if (!context.mounted) return;
   final replace = await showDialog<bool>(

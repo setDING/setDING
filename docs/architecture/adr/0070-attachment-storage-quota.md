@@ -303,6 +303,15 @@ limit, and that deleting does not free space until the purge. Therefore:
   limit like a PDF's (the sum of section 3 counts every attachment with a file,
   whatever its type). Wherever this ADR says "PDF" for the limit, it now means
   any synced attachment.
+- 2026-11-28: The app detects an SVG exactly as strictly as the server's
+  PocketBase type detection, probed case by case (#1244): with an XML
+  declaration (with `version`) any prolog may come before `<svg` (comments,
+  processing instructions, a doctype also with an internal subset, as Adobe
+  Illustrator writes it); without one only whitespace and comments right before
+  `<svg`, which must carry the SVG namespace. A byte order mark, upper-case
+  tags, control characters and an `<svg` past the first 4 KB are refused like
+  on the server, so the app no longer attaches an SVG that never syncs.
+  `server/test/image_attachments_test.dart` pins the server's side.
 
 ## Open points
 

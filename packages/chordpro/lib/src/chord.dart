@@ -316,10 +316,19 @@ class Chord {
     return [
       ChordPart(rootText),
       ...?styled,
-      if (styled == null && suffix.isNotEmpty) ChordPart(suffix),
+      if (styled == null && suffix.isNotEmpty)
+        ChordPart(_absorbs(rootText) ? '($suffix)' : suffix),
       if (bassText != null) ChordPart('/$bassText'),
     ];
   }
+
+  /// Whether the root [rootText] would read the start of the suffix as its
+  /// own accidental: a suffix that starts with a flat or a sharp behind a
+  /// root without one (`C#b5` one semitone down is `C(b5)`, not the `Cb5`
+  /// that reads as C flat, #1244).
+  bool _absorbs(String rootText) =>
+      RegExp(r'^[A-H]$').hasMatch(rootText) &&
+      RegExp(r'^[b#♭♯]').hasMatch(suffix);
 
   static const _degrees = [
     '1',

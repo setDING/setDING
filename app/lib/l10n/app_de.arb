@@ -2401,6 +2401,10 @@
     }
   },
   "backupInvalid": "Diese Datei ist keine setDING-Sicherung.",
+  "archiveTooLarge": "Diese Datei enthält zu viele oder zu grosse Dateien und wird nicht importiert.",
+  "@archiveTooLarge": {
+    "description": "Shown when an archive to import has too many or too large files, e.g. a ZIP bomb (#1244)."
+  },
   "backupNewer": "Diese Sicherung stammt von einer neueren setDING-Version. Aktualisiere die App, um sie zu importieren.",
   "backupImportTitle": "Sicherung importieren",
   "backupImportSummary": "Sicherung von «{library}»: {songs, plural, =1{1 Song} other{{songs} Songs}}, {sets, plural, =1{1 Set} other{{sets} Sets}}.",

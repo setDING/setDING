@@ -7143,6 +7143,12 @@ abstract class AppLocalizations {
   /// **'Diese Datei ist keine setDING-Sicherung.'**
   String get backupInvalid;
 
+  /// Shown when an archive to import has too many or too large files, e.g. a ZIP bomb (#1244).
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Datei enthält zu viele oder zu grosse Dateien und wird nicht importiert.'**
+  String get archiveTooLarge;
+
   /// No description provided for @backupNewer.
   ///
   /// In de, this message translates to:

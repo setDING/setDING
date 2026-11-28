@@ -107,7 +107,10 @@ song on their devices and in the browser.
 2. Tap **Attach file** and choose a PDF or an image. A PDF may be at most 1 MB,
    and so may an image (PNG, JPEG, GIF, WebP or SVG). An image whose content does
    not match its file extension (e.g. a PNG named `logo.svg`) is refused at once,
-   because the server would not accept it. Below the button, setDING shows
+   because the server would not accept it. The same goes for an SVG the server
+   does not recognise as one: it starts with `<svg xmlns="http://www.w3.org/2000/svg"`
+   or with an XML declaration (`<?xml version="1.0"?>`), in lower case and
+   without a byte order mark. Below the button, setDING shows
    this limit and, for admins, librarians and band leaders, how much of the
    organization's storage is still free.
 3. In the attachment's menu you can **Rename** or **Delete** it.

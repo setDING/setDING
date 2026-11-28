@@ -19,6 +19,9 @@ import 'outbox.dart';
 import 'set_repository.dart';
 import 'song_repository.dart';
 import 'song_review.dart' show SongReviewRepository, songToReview;
+import 'zip_reader.dart';
+
+export 'zip_reader.dart' show ArchiveTooLargeException;
 
 const _uuid = Uuid();
 
@@ -704,16 +707,32 @@ class BackupService {
   /// Reads a backup archive, of one library (version 1) or a full backup
   /// (version 2); throws [BackupFormatException] if it is none or a newer
   /// one.
+  ///
+  /// Throws [ArchiveTooLargeException] for an archive with too many or too
+  /// large files (a ZIP bomb); a damaged archive or a manifest of the wrong
+  /// shape is [BackupFormatException] too (#1244).
   static Future<FullBackup> readFull(Uint8List zip) async {
-    final files = await compute(_unzipPaths, zip);
+    final Map<String, Uint8List> files;
+    try {
+      files = await compute(_unzipPaths, zip);
+    } on ArchiveTooLargeException {
+      rethrow;
+    } catch (_) {
+      throw const BackupFormatException();
+    }
     final manifest = _manifest(files[backupManifestName]);
     final version = manifest['formatVersion'] as int;
     if (version == backupLibraryFormatVersion) {
       return FullBackup(manifest, [BackupContents(manifest, files)]);
     }
     final libraries = <BackupContents>[];
-    for (final entry in (manifest['libraries'] as List?) ?? const []) {
-      final folder = ((entry as Map)['path'] as String?) ?? '';
+    final listed = manifest['libraries'];
+    if (listed != null && listed is! List) throw const BackupFormatException();
+    for (final entry in (listed as List?) ?? const []) {
+      if (entry is! Map || entry['path'] is! String?) {
+        throw const BackupFormatException();
+      }
+      final folder = (entry['path'] as String?) ?? '';
       if (folder.isEmpty) continue;
       final inner = {
         for (final MapEntry(:key, :value) in files.entries)
@@ -751,7 +770,94 @@ class BackupService {
     if (version > maxVersion) {
       throw BackupFormatException(newerVersion: version);
     }
+    // The import reads its fields with type casts: a manifest with a
+    // field of another type is refused here, not halfway through an import
+    // or in the build of its dialog (#1244).
+    if (!_wellTyped(manifest)) throw const BackupFormatException();
     return manifest.cast<String, dynamic>();
+  }
+
+  /// Fields of an archive manifest whose value is a list of objects.
+  static const _objectLists = {
+    'songs',
+    'bands',
+    'sets',
+    'arrangements',
+    'overlays',
+    'annotations',
+    'personal',
+    'attachments',
+    'items',
+    'libraries',
+  };
+
+  /// Fields of an archive manifest whose value is text.
+  static const _texts = {
+    'id',
+    'title',
+    'artist',
+    'file',
+    'name',
+    'bandId',
+    'clickGrouping',
+    'createdAt',
+    'device',
+    'gigDate',
+    'language',
+    'liveView',
+    'notes',
+    'note',
+    'path',
+    'reviewReason',
+    'sequence',
+    'songId',
+    'stroke',
+    'target',
+    'venue',
+    'workId',
+    'kind',
+  };
+
+  /// Fields of an archive manifest whose value is a whole number.
+  static const _ints = {
+    'capoFret',
+    'pages',
+    'tempo',
+    'transpose',
+    'updatedAt',
+    'formatVersion',
+  };
+
+  /// Lists whose objects need an `id`: the import keys them by it.
+  static const _withId = {'songs', 'bands', 'attachments'};
+
+  /// Whether every known field of [json] (and of the objects in it) has the
+  /// type the import reads it with; settings and export options are read
+  /// leniently and not checked.
+  static bool _wellTyped(Object? json, [String? list]) {
+    if (json is List) return json.every((e) => _wellTyped(e, list));
+    if (json is! Map) return true;
+    if (_withId.contains(list) && json['id'] is! String) return false;
+    for (final MapEntry(:key, :value) in json.entries) {
+      if (key == 'settings' || key == 'options') {
+        if (value != null && value is! Map) return false;
+        continue;
+      }
+      if (value == null) continue;
+      final ok = switch (key) {
+        _ when _objectLists.contains(key) =>
+          value is List && value.every((e) => e is Map),
+        _ when _texts.contains(key) => value is String,
+        _ when _ints.contains(key) => value is int,
+        'fontScale' => value is num,
+        'hideAnnotations' => value is bool,
+        'band' || 'source' => value is Map,
+        _ => true,
+      };
+      if (!ok) return false;
+      if (!_wellTyped(value, key is String ? key : null)) return false;
+    }
+    return true;
   }
 
   /// Restores the person's adjustments and annotations of [personal] on
@@ -1089,10 +1195,14 @@ class BackupService {
       )..where((s) => s.libraryId.equals(localBandId))).go();
 
       // Write ------------------------------------------------------------
+      // An ID from the archive is kept only if it is one: an attachment's
+      // file is named after its ID, so `../x` would be written outside the
+      // attachment folder (#1244).
       Future<String> keep(
         String? id,
         Future<bool> Function(String id) used,
-      ) async => id == null || id.isEmpty || await used(id) ? _uuid.v4() : id;
+      ) async =>
+          id == null || !isArchiveId(id) || await used(id) ? _uuid.v4() : id;
       final songMap = <String, String>{};
       final attachmentMap = <String, String>{};
       for (final song in contents.songs) {
@@ -1583,16 +1693,21 @@ Uint8List _zip(Map<String, Uint8List> files) {
 Future<Uint8List> zipArchive(Map<String, Uint8List> files) =>
     compute(_zip, files);
 
+/// Whether [id] from an archive can be kept as a record ID: the UUIDs of
+/// the app and the IDs of PocketBase, never a path (#1244).
+bool isArchiveId(String id) => _archiveId.hasMatch(id);
+
+final _archiveId = RegExp(r'^[A-Za-z0-9_-]{1,64}$');
+
 /// The files of a ZIP archive by their path, outside the UI isolate.
 Future<Map<String, Uint8List>> unzipArchive(Uint8List zip) =>
     compute(_unzipPaths, zip);
 
 /// The files of a ZIP archive by their path (with folders), without macOS
-/// metadata.
+/// metadata; throws [ArchiveTooLargeException] for a ZIP bomb (#1244).
 Map<String, Uint8List> _unzipPaths(Uint8List zip) => {
-  for (final entry in ZipDecoder().decodeBytes(zip).files)
-    if (entry.isFile && !entry.name.contains('__MACOSX'))
-      entry.name.replaceAll(r'\', '/'): Uint8List.fromList(entry.content),
+  for (final (name, bytes) in readZipFiles(zip))
+    if (!name.contains('__MACOSX')) name.replaceAll(r'\', '/'): bytes,
 };
 
 /// The maximum size of the archived attachment file [file] (1 MB for a PDF

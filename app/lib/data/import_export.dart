@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:archive/archive.dart';
 import 'package:chordpro/chordpro.dart' as cp;
 import 'package:flutter/foundation.dart' show compute;
 import 'package:path/path.dart' as p;
@@ -12,6 +11,7 @@ import 'database.dart';
 import 'set_repository.dart';
 import 'song_repository.dart';
 import 'song_review.dart' show SongReviewRepository;
+import 'zip_reader.dart';
 
 /// File extensions recognised as ChordPro files.
 const chordProExtensions = ['cho', 'chordpro', 'chopro', 'crd', 'pro', 'txt'];
@@ -218,7 +218,15 @@ class ImportExportService {
 
     for (final file in files) {
       if (p.extension(file.name).toLowerCase() == '.zip') {
-        final entries = await unzipFiles(file.bytes);
+        final List<(String, Uint8List)> entries;
+        try {
+          entries = await unzipFiles(file.bytes);
+        } catch (_) {
+          // A damaged archive or a ZIP bomb is reported as skipped; the
+          // other files are still imported (#1244).
+          skipped.add(file.name);
+          continue;
+        }
         final images = <String, (String, Uint8List)>{
           for (final (name, bytes) in entries)
             if (isImageFile(name))
@@ -370,16 +378,19 @@ String sourceWithMeta(String source, String title, String? artist) {
 }
 
 /// The files of a ZIP archive as (base name, bytes), without folders, hidden
-/// files and macOS metadata; decoded outside the UI isolate.
+/// files and macOS metadata; decoded outside the UI isolate. Throws
+/// [ArchiveTooLargeException] for a ZIP bomb (#1244).
 Future<List<(String, Uint8List)>> unzipFiles(Uint8List zip) =>
     compute(_unzip, zip);
 
 List<(String, Uint8List)> _unzip(Uint8List zip) => [
-  for (final entry in ZipDecoder().decodeBytes(zip).files)
-    if (entry.isFile &&
-        !p.basename(entry.name).startsWith('.') &&
-        !entry.name.contains('__MACOSX'))
-      (p.basename(entry.name), Uint8List.fromList(entry.content)),
+  for (final (name, bytes) in readZipFiles(zip))
+    // A name from Windows separates its folders with backslashes (#1244).
+    if (p.posix.basename(name.replaceAll(r'\', '/')) case final base
+        when base.isNotEmpty &&
+            !base.startsWith('.') &&
+            !name.contains('__MACOSX'))
+      (base, bytes),
 ];
 
 /// The extension of the archives setDING writes (songs, sets, backups):

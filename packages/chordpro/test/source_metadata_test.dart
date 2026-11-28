@@ -29,6 +29,15 @@ void main() {
   });
 
   group('setSourceMetadata', () {
+    // #1244: a first song of only directives got the new directive at the
+    // end of the last song, so it never read back.
+    test('adds to a first song of only directives, not the last song', () {
+      const source = '{title: A}\n{new_song}\n{title: B}\n\nText\n';
+      final changed = setSourceMetadata(source, 'key', 'D');
+      expect(changed, '{title: A}\n{key: D}\n{new_song}\n{title: B}\n\nText\n');
+      expect(sourceMetadata(changed, 'key'), 'D');
+    });
+
     test('replaces the value in place, keeping the form', () {
       expect(
         setSourceMetadata('{t: Old}\n{key: G}\nla', 'title', 'New'),

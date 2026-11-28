@@ -1172,6 +1172,7 @@
   "backupMissingFiles": "Non tutti gli allegati sono ancora scaricati. Attendi il download e riprova.",
   "backupFileMissing": "Impossibile caricare l'allegato \"{name}\" di \"{song}\".",
   "backupInvalid": "Questo file non è un backup di setDING.",
+  "archiveTooLarge": "Questo file contiene troppi file o file troppo grandi e non viene importato.",
   "backupNewer": "Questo backup è stato creato con una versione più recente di setDING. Aggiorna l'app per importarlo.",
   "backupImportTitle": "Importa backup",
   "backupImportSummary": "Backup di \"{library}\": {songs, plural, =1{1 brano} other{{songs} brani}}, {sets, plural, =1{1 set} other{{sets} set}}.",

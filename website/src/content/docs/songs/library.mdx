@@ -133,7 +133,10 @@ Version; wiederhergestellt, ist er wieder verknüpft.
    Lizenznummer deiner Kirche (`{ccli_license}`) wird nicht in den Song übernommen.
    Der CCLI-Footer nach dem Song (Liednummer, Copyright, Nutzungsbedingungen,
    Lizenznummer) wird entfernt; Liednummer und Copyright kommen in die
-   Songdetails.
+   Songdetails. Ein beschädigtes ZIP oder eines mit viel zu vielen oder zu
+   grossen Dateien wird nicht entpackt; die Zusammenfassung führt es als nicht
+   importiert auf, und eine Sicherung, die sich nicht lesen lässt, meldet
+   setDING. Ein ZIP im ZIP wird ebenfalls nicht entpackt.
 3. Schreiben die Dateien H statt B, wähle **Dateien verwenden deutsche Notation
    (H/B)**. Die Akkorde werden dann beim Import umgewandelt.
 4. **Nach dem Import öffnen** öffnet den Song gleich, wenn genau ein Song

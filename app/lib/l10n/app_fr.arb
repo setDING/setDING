@@ -1172,6 +1172,7 @@
   "backupMissingFiles": "Toutes les pièces jointes ne sont pas encore téléchargées. Attends le téléchargement et réessaie.",
   "backupFileMissing": "La pièce jointe « {name} » de « {song} » n'a pas pu être chargée.",
   "backupInvalid": "Ce fichier n'est pas une sauvegarde setDING.",
+  "archiveTooLarge": "Ce fichier contient trop de fichiers ou des fichiers trop volumineux et n'est pas importé.",
   "backupNewer": "Cette sauvegarde a été créée avec une version plus récente de setDING. Mets l'app à jour pour l'importer.",
   "backupImportTitle": "Importer une sauvegarde",
   "backupImportSummary": "Sauvegarde de « {library} » : {songs, plural, =1{1 morceau} other{{songs} morceaux}}, {sets, plural, =1{1 set} other{{sets} sets}}.",

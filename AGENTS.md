@@ -138,6 +138,6 @@ document before using a target of its area:
 - [`server.md`](docs/operations/server.md): `make server-*` (ADR-0014); after a release, `make server-release` deploys from the tag once the release build passed (ADR-0029)
 - [`operations-tests.md`](docs/development/operations-tests.md): shell, Caddyfile, systemd and backup restore checks in `make check`
 - [`web.md`](docs/development/web.md) `make web` (ADR-0018) · [`website.md`](docs/development/website.md) `make site` (ADR-0030) · [`branding.md`](docs/development/branding.md) `make branding`
-- [`coverage.md`](docs/development/coverage.md) `make coverage` · [`performance.md`](docs/development/performance.md) `make perf`
+- [`coverage.md`](docs/development/coverage.md) `make coverage` · [`performance.md`](docs/development/performance.md) `make perf` · [`fuzz-tests.md`](docs/development/fuzz-tests.md) `make fuzz`
 - [`e2e-tests.md`](docs/development/e2e-tests.md): `make e2e` (the Linux desktop app and the web client at the same time against one local PocketBase)
 - [`android-tests.md`](docs/development/android-tests.md): `make android-test` (integration tests on an own emulator or `DEVICE=<id>`, as the separate app `app.setding.itest`) · [`web-tests.md`](docs/development/web-tests.md): `make web-test` (web client in headless Chrome or `BROWSER=firefox`, served by a local PocketBase)
