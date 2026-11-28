@@ -658,6 +658,20 @@ class _Scenario {
           reason: '${d.name}: the refused change of $r was reported',
         );
       }
+      // Only what the server refused for good was undone: a create that
+      // failed for a while (5xx, 429, no network) is sent again, never
+      // turned into the refusal of an update (#1268).
+      final refused = server.refusedRecords[d.name] ?? const <String>{};
+      for (final r in d.reportedUndone) {
+        final given = r.startsWith('keptSong:') ? 'song:${r.substring(9)}' : r;
+        expect(
+          refused.contains(given),
+          isTrue,
+          reason:
+              '${d.name}: $r was undone although the server never '
+              'refused it',
+        );
+      }
       await _checkKept(d);
     }
   }

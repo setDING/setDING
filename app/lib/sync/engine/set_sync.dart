@@ -236,7 +236,9 @@ class SetSync {
       try {
         stored = await backend.pushSet(remote, create: create);
       } on BackendException catch (e) {
-        if (!create || e.kind != BackendErrorKind.server) rethrow;
+        // Created on another device meanwhile (same record ID); an error
+        // that may go away is sent again as it is (#1268).
+        if (!create || !e.retryCreateAsUpdate) rethrow;
         stored = await backend.pushSet(remote, create: false);
       }
       await db.transaction(() async {

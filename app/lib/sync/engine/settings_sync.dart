@@ -110,9 +110,7 @@ class SettingsSync {
         // Created by another device of the same person (same record ID):
         // send the changed keys only. An error that may go away is sent
         // again as it is (#1264).
-        if (!create || e.kind != BackendErrorKind.server || !e.refused) {
-          rethrow;
-        }
+        if (!create || !e.retryCreateAsUpdate) rethrow;
         sent
           ..clear()
           ..addAll({for (final k in current.dirty) k: current.data[k]});

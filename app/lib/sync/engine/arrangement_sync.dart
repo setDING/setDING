@@ -171,9 +171,7 @@ class ArrangementSync {
       } on BackendException catch (e) {
         // Created on another device meanwhile (same record ID); an error
         // that may go away is sent again as it is (#1264).
-        if (!create || e.kind != BackendErrorKind.server || !e.refused) {
-          rethrow;
-        }
+        if (!create || !e.retryCreateAsUpdate) rethrow;
         stored = await backend.pushArrangement(remote, create: false);
       }
       await db.transaction(() async {

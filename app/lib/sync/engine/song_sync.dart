@@ -623,7 +623,8 @@ class SongSync {
     try {
       return await backend.pushSong(song, create: create);
     } on BackendException catch (e) {
-      if (!create || e.kind != BackendErrorKind.server) rethrow;
+      // An error that may go away is sent again as it is (#1268).
+      if (!create || !e.retryCreateAsUpdate) rethrow;
       final existing = await backend.fetchSong(song.id);
       if (existing == null) rethrow;
       return backend.pushSong(

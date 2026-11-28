@@ -1361,6 +1361,7 @@ class FakeSyncBackend implements SyncBackend {
     _requireUser();
     pushCount++;
     if (overlayPushError case final e?) throw e;
+    _failCreate(create);
     final song = songs[overlay.songId];
     if (overlay.userId != user!.id ||
         song == null ||
@@ -1613,6 +1614,19 @@ class FakeSyncBackend implements SyncBackend {
     return songs[id];
   }
 
+  /// When set, the next create of a song, set or personal adjustment fails
+  /// with it, once, and stores nothing: e.g. a server error that goes away
+  /// by itself (#1268).
+  BackendException? nextCreateError;
+
+  void _failCreate(bool create) {
+    if (!create) return;
+    if (nextCreateError case final e?) {
+      nextCreateError = null;
+      throw e;
+    }
+  }
+
   /// When set, pushes of songs fail with it, e.g. a refusal (#1260).
   BackendException? songPushError;
 
@@ -1621,6 +1635,7 @@ class FakeSyncBackend implements SyncBackend {
     _requireUser();
     pushCount++;
     if (songPushError case final e?) throw e;
+    _failCreate(create);
     final existing = songs[song.id];
     if (create && existing != null) throw duplicateId;
     if (!create) {
@@ -1657,6 +1672,7 @@ class FakeSyncBackend implements SyncBackend {
     _requireUser();
     pushCount++;
     if (setPushError case final e?) throw e;
+    _failCreate(create);
     if (!bands.containsKey(set.bandId) || !_canManageBand(set.bandId)) {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
