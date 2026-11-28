@@ -143,7 +143,14 @@ class OverlaySync {
     final overlay = row.readTable(db.personalOverlays);
     final song = row.readTable(db.songs);
     if (song.deleted) {
-      await store.done(entry); // the server deletes it with the song
+      // A deletion of this device still to push may not reach the server
+      // (a conflict the person resolves with the server's version): the
+      // change waits for it (#1245). Otherwise the server deletes the
+      // adjustment with the song.
+      if ((await store.dirty(SyncCollection.songs, [songId])).isNotEmpty) {
+        return PushResult.skipped;
+      }
+      await store.done(entry);
       return PushResult.skipped;
     }
     if (song.revision == 0) return PushResult.skipped; // the song comes first

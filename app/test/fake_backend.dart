@@ -843,6 +843,16 @@ class FakeSyncBackend implements SyncBackend {
   final changes = StreamController<String>.broadcast();
   int pushCount = 0;
 
+  /// PocketBase's answer to a create with the ID of a record that exists
+  /// (checked against PocketBase 0.42.3, #1245): HTTP 400 with
+  /// `validation_pk_invalid` on `id`, also when the record is not visible
+  /// to the person.
+  static const duplicateId = BackendException(BackendErrorKind.server, {
+    'data': {
+      'id': {'code': 'validation_pk_invalid'},
+    },
+  }, 400);
+
   /// Simulates a change by someone else.
   ///
   /// [by] (or [RemoteSong.updatedBy]) is recorded as the last editor, and as
@@ -882,6 +892,29 @@ class FakeSyncBackend implements SyncBackend {
           : existing.reviewedAt,
     );
     songs[song.id] = stored;
+    // As the server (pb_hooks/songs.pb.js): deleting a song deletes the
+    // personal adjustments for it, restoring it restores those its deletion
+    // deleted (#1245).
+    if (existing != null && existing.deleted != song.deleted) {
+      for (final o in overlays.values.toList()) {
+        if (o.songId != song.id) continue;
+        final restores =
+            !song.deleted && o.deleted && o.revision > existing.revision;
+        if ((song.deleted && !o.deleted) || restores) {
+          putOverlay(
+            RemoteOverlay(
+              id: o.id,
+              userId: o.userId,
+              songId: o.songId,
+              data: o.data,
+              midi: o.midi,
+              midiPrograms: o.midiPrograms,
+              deleted: song.deleted,
+            ),
+          );
+        }
+      }
+    }
     return stored;
   }
 
@@ -1209,9 +1242,7 @@ class FakeSyncBackend implements SyncBackend {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
     final existing = arrangements[arrangement.id];
-    if (create && existing != null) {
-      throw const BackendException(BackendErrorKind.server);
-    }
+    if (create && existing != null) throw duplicateId;
     return putArrangement(arrangement, by: user!.id);
   }
 
@@ -1249,9 +1280,7 @@ class FakeSyncBackend implements SyncBackend {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
     final existing = userSettings[settings.userId];
-    if (create && existing != null) {
-      throw const BackendException(BackendErrorKind.server);
-    }
+    if (create && existing != null) throw duplicateId;
     if (!create && existing == null) {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
@@ -1283,9 +1312,7 @@ class FakeSyncBackend implements SyncBackend {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
     final existing = annotations[a.id];
-    if (create && existing != null) {
-      throw const BackendException(BackendErrorKind.server);
-    }
+    if (create && existing != null) throw duplicateId;
     if (!create && existing == null) {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
@@ -1317,9 +1344,7 @@ class FakeSyncBackend implements SyncBackend {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
     final existing = overlays[overlay.id];
-    if (create && existing != null) {
-      throw const BackendException(BackendErrorKind.server);
-    }
+    if (create && existing != null) throw duplicateId;
     if (!create && existing == null) {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
@@ -1562,9 +1587,7 @@ class FakeSyncBackend implements SyncBackend {
     _requireUser();
     pushCount++;
     final existing = songs[song.id];
-    if (create && existing != null) {
-      throw const BackendException(BackendErrorKind.server);
-    }
+    if (create && existing != null) throw duplicateId;
     if (!create) {
       if (existing == null) {
         throw const BackendException(BackendErrorKind.notAllowed);
@@ -1591,16 +1614,18 @@ class FakeSyncBackend implements SyncBackend {
     return putSongLink(songId, field, value);
   }
 
+  /// When set, pushes of sets fail with it.
+  BackendException? setPushError;
+
   @override
   Future<RemoteSet> pushSet(RemoteSet set, {required bool create}) async {
     _requireUser();
     pushCount++;
+    if (setPushError case final e?) throw e;
     if (!bands.containsKey(set.bandId) || !_canManageBand(set.bandId)) {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
-    if (create && sets.containsKey(set.id)) {
-      throw const BackendException(BackendErrorKind.server);
-    }
+    if (create && sets.containsKey(set.id)) throw duplicateId;
     if (!create && !sets.containsKey(set.id)) {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
@@ -1675,6 +1700,7 @@ class FakeSyncBackend implements SyncBackend {
       throw const BackendException(BackendErrorKind.server, null, 400);
     }
     if (create) {
+      if (attachments.containsKey(attachment.id)) throw duplicateId;
       if (attachmentUploadError case final e?) throw e;
       if (bytes == null || bytes.length > 1024 * 1024) {
         throw const BackendException(BackendErrorKind.server, {
@@ -1720,6 +1746,22 @@ class FakeSyncBackend implements SyncBackend {
       throw const BackendException(BackendErrorKind.notAllowed);
     }
     if (attachmentUpdateError case final e?) throw e;
+    // As the server (server/test/trash_test.dart): a purged attachment
+    // cannot be restored, and only who may delete songs purges one; a
+    // `purged` on an attachment that stays undeleted is ignored.
+    if (existing.purged && !attachment.deleted) {
+      throw const BackendException(BackendErrorKind.server, {
+        'data': {
+          'deleted': {'code': 'purged'},
+        },
+      }, 400);
+    }
+    if (attachment.purged &&
+        attachment.deleted &&
+        !existing.purged &&
+        !_mayDeleteSongs(existing.organizationId)) {
+      throw const BackendException(BackendErrorKind.notAllowed);
+    }
     return putAttachment(
       RemoteAttachment(
         id: attachment.id,
@@ -1733,11 +1775,7 @@ class FakeSyncBackend implements SyncBackend {
         deletedAt: attachment.deletedAt,
         // As the server: only a deleted attachment is purged, by those who
         // may delete it (ADR-0070); a purge cannot be undone.
-        purged:
-            existing.purged ||
-            (attachment.purged &&
-                attachment.deleted &&
-                _mayDeleteSongs(existing.organizationId)),
+        purged: existing.purged || (attachment.purged && attachment.deleted),
       ),
     );
   }

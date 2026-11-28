@@ -261,7 +261,23 @@ class AttachmentSync {
   }) async {
     if (local != null && remote.revision <= local.revision) return null;
     // A pending local change (rename, delete) wins and is pushed.
-    if (local != null && dirty) return null;
+    if (local != null && dirty) {
+      if (local.revision == 0) {
+        // An upload of this device that reached the server, whose answer
+        // got lost (#1245): the local change is pushed on top of it as a
+        // change, not as a new upload, which would be dropped once the
+        // attachment is deleted here.
+        await (db.update(
+          db.attachments,
+        )..where((x) => x.id.equals(remote.id))).write(
+          AttachmentsCompanion(
+            revision: Value(remote.revision),
+            remoteFile: Value(remote.file),
+          ),
+        );
+      }
+      return null;
+    }
     if (!songExists) return null; // the song is gone
     if (log) await changes?.attachment(local, remote);
     final fileName = local?.fileName ?? localFileName(remote);
@@ -363,6 +379,24 @@ class AttachmentSync {
     return count;
   }
 
+  /// Pushes [remote]; an upload the server already has is sent again as a
+  /// change (#1245): an earlier upload reached the server and only its
+  /// answer got lost, so PocketBase refuses the second create of the same
+  /// ID (`validation_pk_invalid`), which is no lasting refusal.
+  Future<RemoteAttachment> _pushOrRecover(
+    RemoteAttachment remote, {
+    required bool create,
+    List<int>? bytes,
+  }) async {
+    try {
+      return await backend.pushAttachment(remote, create: create, bytes: bytes);
+    } on BackendException catch (e) {
+      if (!create || e.fieldCode('id') != 'validation_pk_invalid') rethrow;
+      _log.info('Attachment ${remote.id} is on the server already');
+      return backend.pushAttachment(remote, create: false);
+    }
+  }
+
   Future<PushResult> push(OutboxEntry entry) async {
     final storage = this.storage;
     final row = await (db.select(db.attachments).join([
@@ -411,11 +445,7 @@ class AttachmentSync {
       purged: a.purged,
     );
     try {
-      final stored = await backend.pushAttachment(
-        remote,
-        create: create,
-        bytes: bytes,
-      );
+      final stored = await _pushOrRecover(remote, create: create, bytes: bytes);
       await db.transaction(() async {
         await (db.update(
           db.attachments,
