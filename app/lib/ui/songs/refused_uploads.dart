@@ -53,8 +53,28 @@ class RefusedUploadMarker extends StatelessWidget {
 }
 
 /// The message about the changes the server refused and the sync undone
-/// (#1229, #1260).
-String undoneChangesText(AppLocalizations l10n, List<RefusedChange> undone) =>
+/// (#1229, #1260), and the new songs it refused, kept on this device
+/// (#1263).
+String undoneChangesText(AppLocalizations l10n, List<RefusedChange> undone) {
+  final kept = [
+    for (final c in undone)
+      if (c.kind == RefusedRecord.keptSong) c,
+  ];
+  final others = [
+    for (final c in undone)
+      if (c.kind != RefusedRecord.keptSong) c,
+  ];
+  return [
+    if (kept.isNotEmpty)
+      switch (kept) {
+        [final c] => l10n.songKeptOnDevice(c.name),
+        _ => l10n.songsKeptOnDevice(kept.length),
+      },
+    if (others.isNotEmpty) _undoneText(l10n, others),
+  ].join(' ');
+}
+
+String _undoneText(AppLocalizations l10n, List<RefusedChange> undone) =>
     switch (undone) {
       [final c] => switch (c.kind) {
         RefusedRecord.attachment => l10n.attachmentChangeUndone(
@@ -64,6 +84,7 @@ String undoneChangesText(AppLocalizations l10n, List<RefusedChange> undone) =>
         RefusedRecord.song => l10n.songChangeUndone(c.name),
         RefusedRecord.set => l10n.setChangeUndone(c.name),
         RefusedRecord.adjustment => l10n.adjustmentChangeUndone(c.name),
+        RefusedRecord.keptSong => l10n.songKeptOnDevice(c.name),
       },
       _ when undone.every((c) => c.kind == RefusedRecord.attachment) =>
         l10n.attachmentChangesUndone(undone.length),
@@ -72,7 +93,8 @@ String undoneChangesText(AppLocalizations l10n, List<RefusedChange> undone) =>
 
 /// After a sync: tells the person once which attachments the server
 /// refused (#1225) and which changes it refused and were undone: of
-/// attachments (#1229), songs, sets and personal adjustments (#1260). The
+/// attachments (#1229), songs, sets and personal adjustments (#1260), and
+/// which new songs it refused and were kept on this device (#1263). The
 /// sync does not send them again by itself, so each refusal is told once.
 /// Call from the home screen's `build`.
 void listenForRefusedUploads(BuildContext context, WidgetRef ref) {

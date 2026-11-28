@@ -6845,6 +6845,23 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String songKeptOnDevice(String song) {
+    return 'El servidor no aceptó la canción nueva “$song”. Se conservó en “En este dispositivo”.';
+  }
+
+  @override
+  String songsKeptOnDevice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'El servidor no aceptó $count canciones nuevas. Se conservaron en “En este dispositivo”.',
+      one: 'El servidor no aceptó 1 canción nueva. Se conservó en “En este dispositivo”.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String attachmentPdfLimit(String limit) {
     return 'PDF o imagen, como máximo $limit';
   }

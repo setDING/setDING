@@ -2,7 +2,11 @@ import '../../data/database.dart';
 import 'sync_store.dart';
 
 /// The kind of record whose change the server refused.
-enum RefusedRecord { song, set, attachment, adjustment }
+///
+/// [keptSong] is a new song the server refused for good: it is not undone
+/// but moved into the local library "On this device", so its text is never
+/// lost (#1263).
+enum RefusedRecord { song, set, attachment, adjustment, keptSong }
 
 /// A change the server refused for good in a sync run (ADR-0004): an
 /// attachment change on the server (#1229), or a change of a song, set or
@@ -61,6 +65,22 @@ class RefusedChanges {
     if (!_changes.any((c) => c.kind == change.kind && c.id == change.id)) {
       _changes.add(change);
     }
+  }
+
+  /// Marks the undone song [id] as kept in the local library (#1263).
+  void keep(String id) {
+    _changes = [
+      for (final c in _changes)
+        if (c.kind == RefusedRecord.song && c.id == id)
+          (
+            kind: RefusedRecord.keptSong,
+            id: c.id,
+            name: c.name,
+            songTitle: c.songTitle,
+          )
+        else
+          c,
+    ];
   }
 
   /// IDs of the records of [kind] undone since the last [take].

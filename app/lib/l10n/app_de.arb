@@ -4277,6 +4277,24 @@
       }
     }
   },
+  "songKeptOnDevice": "Der Server hat den neuen Song «{song}» nicht angenommen. Er wurde in «Auf diesem Gerät» behalten.",
+  "@songKeptOnDevice": {
+    "description": "A new song the server refused for good; kept in the local library \"On this device\" (#1263).",
+    "placeholders": {
+      "song": {
+        "type": "String"
+      }
+    }
+  },
+  "songsKeptOnDevice": "{count, plural, =1{Der Server hat 1 neuen Song nicht angenommen. Er wurde in «Auf diesem Gerät» behalten.} other{Der Server hat {count} neue Songs nicht angenommen. Sie wurden in «Auf diesem Gerät» behalten.}}",
+  "@songsKeptOnDevice": {
+    "description": "Several new songs the server refused for good in one sync; kept in the local library \"On this device\" (#1263).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "attachmentPdfLimit": "PDF oder Bild, höchstens {limit}",
   "@attachmentPdfLimit": {
     "description": "Shown before a file is picked (ADR-0070); limit is e.g. \"1 MB\".",

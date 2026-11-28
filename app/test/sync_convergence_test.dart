@@ -194,12 +194,9 @@ class _ChaosBackend extends FakeSyncBackend {
   @override
   Future<RemoteSong> pushSong(RemoteSong song, {required bool create}) {
     _before('pushSong ${song.id}');
-    // Changes only: a song a device created and the server refused is
-    // removed on that device, while a set it pushed in the same run may
-    // name it already; which is right is not this test's question.
-    if (!create) {
-      _maybeRefuse('pushSong ${song.id}', RefusedRecord.song, song.id, false);
-    }
+    // A new song the server refuses is kept in the local library of its
+    // device (#1263); a set pushed in the same run keeps its item.
+    _maybeRefuse('pushSong ${song.id}', RefusedRecord.song, song.id, create);
     return _after(
       'pushSong ${song.id}',
       () => super.pushSong(song, create: create),
@@ -273,7 +270,7 @@ class _Device {
       db,
       server,
       bands,
-      copies: BandCopyService(db, storage),
+      copies: BandCopyService(db, storage, userId: user.id),
     );
     songs = SongRepository(db, storage, libraryId: _org, userId: user.id);
     sets = SetRepository(db, storage, bandId: _band);
@@ -661,12 +658,16 @@ class _Scenario {
       // Refused changes of songs, sets and adjustments were undone (the
       // comparisons above) and reported (#1260).
       for (final r in server.refusedRecords[d.name] ?? const <String>{}) {
+        // A new song the server never had was kept on the device instead
+        // (#1263).
+        final kept = r.startsWith('song:') ? 'keptSong:${r.substring(5)}' : r;
         expect(
-          d.reportedUndone,
-          contains(r),
+          d.reportedUndone.contains(r) || d.reportedUndone.contains(kept),
+          isTrue,
           reason: '${d.name}: the refused change of $r was reported',
         );
       }
+      await _checkKept(d);
     }
   }
 
@@ -697,6 +698,22 @@ class _Scenario {
     expect(local, remote, reason: '${d.name}: songs as on the server');
   }
 
+  /// Every new song the server refused is kept in the local library of
+  /// its device with its text, once (#1263).
+  Future<void> _checkKept(_Device d) async {
+    final local = [
+      for (final s in await (d.db.select(
+        d.db.songs,
+      )..where((s) => s.libraryId.equals(localBandId))).get())
+        s.title,
+    ];
+    final kept = [
+      for (final r in d.reportedUndone)
+        if (r.startsWith('keptSong:')) 'Song ${r.substring(9)}',
+    ];
+    expect(local..sort(), kept..sort(), reason: '${d.name}: kept songs');
+  }
+
   /// Items of songs that were deleted at some time are left out: a device
   /// that pulls the deletion of a song removes it from its sets without
   /// pushing them (`SongSync.writeSong`), while the server keeps the item
@@ -704,6 +721,13 @@ class _Scenario {
   /// one is right is an open decision (#1245), not a sync error.
   bool _deletedOnce(String? songId) =>
       songId != null && server.everDeleted.contains(songId);
+
+  /// An item naming a song the server does not have, e.g. a new song it
+  /// refused (#1263), is a "song missing" item on every device.
+  RemoteSetItem _missingAsNull(RemoteSetItem i) =>
+      i.songId == null || server.songs.containsKey(i.songId)
+      ? i
+      : RemoteSetItem.fromJson({...i.toJson(), 'song': null});
 
   Future<void> _checkSets(_Device d) async {
     final local = <String, String>{};
@@ -735,7 +759,7 @@ class _Scenario {
             'revision': s.revision,
             'items': [
               for (final i in s.items)
-                if (!_deletedOnce(i.songId)) i.toJson(),
+                if (!_deletedOnce(i.songId)) _missingAsNull(i).toJson(),
             ],
           }),
     };
@@ -810,7 +834,18 @@ class _Scenario {
   }
 
   Future<void> _checkOverlays(_Device d) async {
-    final rows = await d.db.select(d.db.personalOverlays).get();
+    // Those of songs kept in the local library (#1263) belong to this
+    // device, as all adjustments there do (ADR-0020).
+    final kept = {
+      for (final s in await (d.db.select(
+        d.db.songs,
+      )..where((s) => s.libraryId.equals(localBandId))).get())
+        s.id,
+    };
+    final rows = [
+      for (final o in await d.db.select(d.db.personalOverlays).get())
+        if (!kept.contains(o.songId)) o,
+    ];
     // Personal adjustments stay with their person (ADR-0006, ADR-0020).
     expect(
       {for (final o in rows) o.ownerId},

@@ -10404,6 +10404,18 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Der Server hat 1 Änderung nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.} other{Der Server hat {count} Änderungen nicht angenommen. Sie wurden auf diesem Gerät rückgängig gemacht.}}'**
   String syncChangesUndone(int count);
 
+  /// A new song the server refused for good; kept in the local library "On this device" (#1263).
+  ///
+  /// In de, this message translates to:
+  /// **'Der Server hat den neuen Song «{song}» nicht angenommen. Er wurde in «Auf diesem Gerät» behalten.'**
+  String songKeptOnDevice(String song);
+
+  /// Several new songs the server refused for good in one sync; kept in the local library "On this device" (#1263).
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Der Server hat 1 neuen Song nicht angenommen. Er wurde in «Auf diesem Gerät» behalten.} other{Der Server hat {count} neue Songs nicht angenommen. Sie wurden in «Auf diesem Gerät» behalten.}}'**
+  String songsKeptOnDevice(int count);
+
   /// Shown before a file is picked (ADR-0070); limit is e.g. "1 MB".
   ///
   /// In de, this message translates to:

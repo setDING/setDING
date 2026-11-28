@@ -172,6 +172,31 @@ void main() {
     );
   });
 
+  test('refused new songs are told as kept on this device (#1263)', () {
+    final l10n = lookupAppLocalizations(const Locale('en'));
+    RefusedChange change(RefusedRecord kind, [String name = 'X']) =>
+        (kind: kind, id: '${kind.name}$name', name: name, songTitle: name);
+    expect(
+      undoneChangesText(l10n, [change(RefusedRecord.keptSong, 'New')]),
+      'The server did not accept the new song “New”. It was kept in “On '
+      'this device”.',
+    );
+    expect(
+      undoneChangesText(l10n, [
+        change(RefusedRecord.keptSong, 'A'),
+        change(RefusedRecord.keptSong, 'B'),
+      ]),
+      l10n.songsKeptOnDevice(2),
+    );
+    expect(
+      undoneChangesText(l10n, [
+        change(RefusedRecord.keptSong, 'New'),
+        change(RefusedRecord.set, 'Gig'),
+      ]),
+      '${l10n.songKeptOnDevice('New')} ${l10n.setChangeUndone('Gig')}',
+    );
+  });
+
   testWidgets('the marker shows why; the menu retries and removes', (
     tester,
   ) async {
