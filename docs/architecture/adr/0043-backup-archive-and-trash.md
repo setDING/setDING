@@ -203,8 +203,12 @@ Deleted songs and sets can be **restored for 30 days**.
   restores the personal adjustments, arrangements and annotations the song's
   deletion removed, as for the undo (ADR-0015).
 - **Deleting a set keeps its items**, so a restored set is complete. Deleting
-  a song still removes its set items; restoring it from the trash does not put
-  them back (the undo of #267 still does).
+  a song still removes its set items on the deleting device, which pushes the
+  sets; restoring it from the trash does not put them back (the undo of #267
+  still does). An item another device added before it learned of the deletion
+  stays on the server and on every device (#1261): shown as "Song no longer
+  exists" while the song is deleted or purged, and as the song again after a
+  restore.
 - A daily job on the server **purges** records deleted more than 30 days ago:
   the song text, set items and attachment files are removed (with a song also
   its attachments) and the record is marked `purged`. Superusers can start the
@@ -360,6 +364,10 @@ Deleted songs and sets can be **restored for 30 days**.
   is named after its ID and `../x` was written outside the attachment folder.
   ZIPs inside a ChordPro ZIP are not unpacked, names with backslashes are cut to
   their file name.
+- 2026-11-28: A set item of a deleted song stays when the deletion is pulled
+  (owner decision, #1261, ADR-0004): only the deleting device removes the song
+  from its sets; an item added elsewhere meanwhile shows "Song no longer exists"
+  on every device until the song is restored. The set screen looks as before.
 
 ## Open points
 

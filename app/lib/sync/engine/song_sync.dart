@@ -376,11 +376,11 @@ class SongSync {
             createdAt: Value.absentIfNull(remote.created),
           ),
         );
-    if (remote.deleted) {
-      await (db.delete(
-        db.setItems,
-      )..where((i) => i.songId.equals(remote.id))).go();
-    } else if (before != null && before.deleted) {
+    // A deleted song keeps its set items (#1261): the set shows it as a
+    // missing song until it is restored, as the server and every other
+    // device do. Only the device that deletes it removes it from its sets,
+    // and pushes them.
+    if (!remote.deleted && before != null && before.deleted) {
       await _restoreAttachmentsDeletedWith(before);
     }
   }

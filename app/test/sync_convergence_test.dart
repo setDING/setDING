@@ -127,15 +127,6 @@ class _ChaosBackend extends FakeSyncBackend {
 
   void quiet() => transient = lost = refuse = 0;
 
-  /// Songs deleted on the server at some time.
-  final everDeleted = <String>{};
-
-  @override
-  RemoteSong putSong(RemoteSong song, {String? by}) {
-    if (song.deleted) everDeleted.add(song.id);
-    return super.putSong(song, by: by);
-  }
-
   static const _transientErrors = [
     BackendException(BackendErrorKind.network),
     BackendException(BackendErrorKind.server, null, 500),
@@ -714,14 +705,6 @@ class _Scenario {
     expect(local..sort(), kept..sort(), reason: '${d.name}: kept songs');
   }
 
-  /// Items of songs that were deleted at some time are left out: a device
-  /// that pulls the deletion of a song removes it from its sets without
-  /// pushing them (`SongSync.writeSong`), while the server keeps the item
-  /// another device added meanwhile, also after the song is restored. Which
-  /// one is right is an open decision (#1245), not a sync error.
-  bool _deletedOnce(String? songId) =>
-      songId != null && server.everDeleted.contains(songId);
-
   /// An item naming a song the server does not have, e.g. a new song it
   /// refused (#1263), is a "song missing" item on every device.
   RemoteSetItem _missingAsNull(RemoteSetItem i) =>
@@ -744,10 +727,7 @@ class _Scenario {
         'name': s.name,
         'deleted': s.deleted,
         'revision': s.revision,
-        'items': [
-          for (final i in items)
-            if (!_deletedOnce(i.songId)) RemoteSetItem.fromEntry(i).toJson(),
-        ],
+        'items': [for (final i in items) RemoteSetItem.fromEntry(i).toJson()],
       });
     }
     final remote = {
@@ -757,10 +737,7 @@ class _Scenario {
             'name': s.name,
             'deleted': s.deleted,
             'revision': s.revision,
-            'items': [
-              for (final i in s.items)
-                if (!_deletedOnce(i.songId)) _missingAsNull(i).toJson(),
-            ],
+            'items': [for (final i in s.items) _missingAsNull(i).toJson()],
           }),
     };
     expect(local, remote, reason: '${d.name}: sets as on the server');
