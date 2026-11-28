@@ -117,4 +117,15 @@ function storage(e) {
   });
 }
 
-module.exports = { usage, checkUpload, mayUpload, storage };
+/// A report screenshot over the maximum size (300 KB, ADR-0070 §2) is left
+/// out instead of refusing the report: apps from before the limit scale
+/// screenshots to 1 MB only, and reporting must not fail on the size.
+function dropOversizedScreenshot(e) {
+  if (!(e.auth && e.auth.collection().name === "users")) return;
+  const maxSize = e.record.collection().fields.getByName("screenshot").maxSize;
+  const files = uploadedFiles(e, "screenshot");
+  if (maxSize <= 0 || !files.some((f) => Number(f.size) > maxSize)) return;
+  e.record.set("screenshot", e.record.isNew() ? "" : e.record.original().getString("screenshot"));
+}
+
+module.exports = { usage, checkUpload, mayUpload, storage, dropOversizedScreenshot };

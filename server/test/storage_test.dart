@@ -482,7 +482,9 @@ void main() {
       filename: 'shot.png',
       contentType: 'image/png',
     );
-    expect(tooLarge.status, 400);
+    // Left out, so that older apps still report (ADR-0070 §2).
+    tooLarge.expectStatus(200);
+    expect(tooLarge.json['screenshot'], '');
     final fits = await member.postMultipart(
       'song_reports',
       {

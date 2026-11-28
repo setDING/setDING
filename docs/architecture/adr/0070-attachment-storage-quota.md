@@ -268,6 +268,10 @@ limit, and that deleting does not free space until the purge. Therefore:
     `live_bytes` (attachments of songs in the library) and `trash_bytes`
     (deleted attachments and those of deleted songs), and 404 to everyone who
     may not upload PDFs and for a closed organization.
+  - A report screenshot over 300 KB is left out by the server (the report is
+    saved without it) instead of refusing the report: apps from before this
+    decision scale screenshots to 1 MB only, and reporting must not fail on the
+    size (section 2).
 
 ## Open points
 
