@@ -406,6 +406,14 @@ void main() {
       bandId: localBandId,
     );
     expect(result.songs.imported, hasLength(1));
+    expect(result.songs.skippedFiles, [
+      (
+        song: 'Big',
+        name: 'Big score',
+        sizeBytes: 2 * 1024 * 1024,
+        limitBytes: 1024 * 1024,
+      ),
+    ]);
     final imported = result.songs.songIds[id]!;
     expect(
       [

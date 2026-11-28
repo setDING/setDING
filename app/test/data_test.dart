@@ -14,6 +14,7 @@ import 'package:setding/data/import_export.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
 import 'package:drift/drift.dart' show Value;
+import 'package:archive/archive.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -465,6 +466,30 @@ void main() {
       );
       expect(song.songKey, 'G');
       expect(await service.setKey('gone', g.guess.key), isFalse);
+    });
+
+    // ADR-0070: a ZIP's PDFs are not attached; a large one does not stop
+    // the import and is listed with the skipped files.
+    test('a large PDF in a ZIP is skipped, its song imported', () async {
+      final service = ImportExportService(songs, sets);
+      final zip = ZipEncoder().encodeBytes(
+        Archive()
+          ..add(
+            ArchiveFile.bytes('Song.cho', utf8.encode('{title: Song}\n[C]x')),
+          )
+          ..add(
+            ArchiveFile.bytes(
+              'Score.pdf',
+              Uint8List(2 * 1024 * 1024)..setAll(0, '%PDF-1.4'.codeUnits),
+            ),
+          ),
+      );
+      final result = await service.importFiles([
+        ImportFile('songs.zip', Uint8List.fromList(zip)),
+      ]);
+      expect(result.imported, 1);
+      expect(result.skipped, ['Score.pdf']);
+      expect(await songs.getAttachments(result.songIds.single), isEmpty);
     });
 
     test('the import removes the CCLI footer (#785)', () async {

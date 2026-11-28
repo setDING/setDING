@@ -21,6 +21,7 @@ import '../widgets/export_format.dart';
 import '../widgets/loading_indicator.dart';
 import '../widgets/section_header.dart';
 import '../routes.dart';
+import '../backup/skipped_files.dart';
 
 /// Exports [songIds]: as one ChordPro file (a single song, not on web) or
 /// as a setDING archive with options (ADR-0043 §1c, issue #870).
@@ -550,6 +551,7 @@ class _ImportDialogState extends ConsumerState<SongArchiveImportDialog> {
                     onTap: () => context.push<void>(AppPaths.song(song.id)),
                   ),
               ],
+              SkippedFilesReport(songs.skippedFiles),
             ],
           ),
         ),

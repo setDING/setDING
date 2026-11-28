@@ -15,6 +15,7 @@ import importDialog from '../../../../../docs/screenshots/import_dialog_de.png';
 import songsSelected from '../../../../../docs/screenshots/songs_selected_de.png';
 import songExport from '../../../../../docs/screenshots/song_export_de.png';
 import songImport from '../../../../../docs/screenshots/song_import_de.png';
+import songImportSkipped from '../../../../../docs/screenshots/song_import_skipped_de.png';
 import songsConversions from '../../../../../docs/screenshots/songs_conversions_de.png';
 import songsTags from '../../../../../docs/screenshots/songs_tags_de.png';
 import songsLanguages from '../../../../../docs/screenshots/songs_languages_de.png';
@@ -243,6 +244,14 @@ bearbeiten darfst; vorhandene Anhänge mit gleichem Namen bleiben unverändert. 
 gilt auch beim Import eines Sets.
 
 <Image src={songImport} alt="Die Vorschau «Songs importieren»: ein Song schon hier, ein neuer Song und ein Anhang, der bei einem vorhandenen Song ergänzt wird" />
+
+Ein PDF über 1 MB wird **nicht importiert**, das ist die Grenze des Servers (siehe
+[Speicher der Organisation](/songs/personal/#speicher-der-organisation)): Sein Song
+kommt ohne es, und die Zusammenfassung nach dem Import nennt jedes solche PDF mit
+seinem Song, seiner Grösse und der Grenze. Das gilt für Song- und Set-Archive und
+für Backups; ein ZIP mit ChordPro-Dateien hängt nie PDFs an.
+
+<Image src={songImportSkipped} alt="Die Zusammenfassung «Songs importiert»: ein Song und ein Anhang importiert; das PDF «Partitur (Scan)» von «Morning Light», 2.4 MB, wurde nicht importiert, weil es grösser als 1 MB ist" />
 
 ## Papierkorb
 

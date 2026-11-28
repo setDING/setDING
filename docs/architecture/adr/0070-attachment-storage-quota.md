@@ -290,6 +290,13 @@ limit, and that deleting does not free space until the purge. Therefore:
   *Delete permanently*; a purge is synced as a tombstone (`purged`), and the file
   on the device goes at once. Attachments of the local library are not listed:
   their file goes with the undo of the deletion, as before.
+- 2026-11-28: Import (owner addition to #1226): importing a setDING song or set
+  archive or a backup (also replacing the local library) checks the size of every
+  attachment; a PDF over 1 MB is skipped, its song is imported without it, and the
+  import summary names each skipped PDF with its song, its size and the limit
+  (`SongImport.skippedFiles`, `BackupImportResult.skippedFiles`). A ZIP of
+  ChordPro files never attaches PDFs (they are listed as files that were not
+  imported, as before), so it needs no size check of its own; a test covers it.
 
 ## Open points
 

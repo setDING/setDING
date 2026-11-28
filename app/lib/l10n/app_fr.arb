@@ -1715,5 +1715,7 @@
   "storageTrashCounts": "Les PDF supprimés comptent jusqu'à leur suppression définitive.",
   "storageNearlyFull": "L'espace de stockage de l'organisation est presque plein.",
   "attachmentDoesNotFit": "« {name} » ({size}) ne tient plus dans l'espace de stockage de l'organisation : {used} sur {limit} utilisés. Les PDF supprimés comptent jusqu'à leur suppression définitive.",
-  "trashAttachmentOf": "PDF dans « {song} » · {size}"
+  "trashAttachmentOf": "PDF dans « {song} » · {size}",
+  "importSkippedFiles": "{count, plural, =1{1 pièce jointe n'a pas été importée, car elle est trop volumineuse :} other{{count} pièces jointes n'ont pas été importées, car elles sont trop volumineuses :}}",
+  "importSkippedFile": "« {song} » · {size} ({limit} au maximum)"
 }

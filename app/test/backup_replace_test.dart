@@ -11,6 +11,8 @@ import 'package:setding/data/database.dart';
 import 'package:setding/data/set_repository.dart';
 import 'package:setding/data/song_repository.dart';
 
+import 'test_attachments.dart';
+
 /// Replacing the local library by a backup (ADR-0054 section 2).
 void main() {
   final pdf = Uint8List.fromList('%PDF-1.4 score'.codeUnits);
@@ -95,6 +97,18 @@ void main() {
       'source': {'kind': 'organization', 'id': 'o1', 'name': 'School'},
     }, local.files);
     expect(BackupService.isLocalArchive(org), isFalse);
+  });
+
+  test('a PDF over 1 MB is skipped and named (ADR-0070)', () async {
+    final ids = await fill();
+    await addOldPdf(db, storage, ids.song, name: 'Big');
+    final contents = await backup();
+    final result = await service.replaceLocal(contents);
+    expect(result.files, 1);
+    expect(
+      [for (final f in result.skippedFiles) (f.song, f.name)],
+      [('Hello', 'Big')],
+    );
   });
 
   test('the library is replaced with the original IDs', () async {

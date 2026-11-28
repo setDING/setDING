@@ -87,6 +87,7 @@ map=(
   delete_account 36_delete_account
   song_export 37_song_export
   song_import 37b_song_import
+  song_import_skipped 37c_song_import_skipped
   songs_conversions 38_songs_conversions
   song_details_key 47_song_details_key
   editor_invalid_key 48_editor_invalid_key

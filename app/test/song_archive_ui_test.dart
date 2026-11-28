@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/data/backup.dart';
+import 'package:setding/data/database.dart';
 import 'package:setding/data/import_export.dart';
 import 'package:setding/data/song_archive.dart';
 import 'package:setding/ui/songs/import_dialog.dart';
@@ -185,6 +186,66 @@ void main() {
       () => SongArchiveService.read(saved.single.$2),
     ))!;
     expect(archive.titles.toSet(), {'Alpha', 'Beta'});
+    await app.dispose(tester);
+  });
+
+  // ADR-0070 (#1226): a PDF over 1 MB is skipped, the summary names it with
+  // its song, its size and the limit.
+  testWidgets('the summary names the PDFs skipped for their size', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final zip = (await tester.runAsync(() async {
+      final song = await app.songs.createSong(source: '{title: Big}\n[C]x');
+      final big = Uint8List(2 * 1024 * 1024)..setAll(0, pdf);
+      await app.storage.write('big.pdf', big);
+      await app.db
+          .into(app.db.attachments)
+          .insert(
+            AttachmentsCompanion.insert(
+              id: 'big',
+              songId: song,
+              name: 'Full score',
+              fileName: 'big.pdf',
+              sizeBytes: big.length,
+              updatedAt: DateTime.now(),
+            ),
+          );
+      final zip = await SongArchiveService(BackupService(app.db, app.storage))
+          .export([song]);
+      await app.songs.deleteSong(song);
+      return zip;
+    }))!;
+    await tester.pumpWidget(
+      app.build(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => showImportDialog(
+                context,
+                pick: ({extensions}) async => [ImportFile('Songs.zip', zip)],
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Choose files'));
+    await waitFor(tester, () => shown(const Key('song-import-start')));
+    await tester.tap(find.byKey(const Key('song-import-start')));
+    await waitFor(tester, () => shown(const Key('song-import-result')));
+    expect(
+      find.text('1 attachment was not imported because it is too large:'),
+      findsOneWidget,
+    );
+    expect(find.text('Full score'), findsOneWidget);
+    expect(find.text('“Big” · 2.0 MB (at most 1 MB)'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('song-import-close')));
+    await tester.pumpAndSettle();
     await app.dispose(tester);
   });
 

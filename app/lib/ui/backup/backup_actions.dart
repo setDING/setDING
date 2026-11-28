@@ -19,6 +19,7 @@ import 'full_backup.dart' show lastBackupKey;
 import 'replace_local.dart';
 import '../widgets/loading_indicator.dart';
 import '../routes.dart';
+import 'skipped_files.dart';
 
 /// Exports [library] as a backup archive (ADR-0043). An organization is
 /// synced first; the export stops if anything is not on this device yet.
@@ -486,6 +487,7 @@ class _BackupImportDialogState extends ConsumerState<_BackupImportDialog> {
                     onTap: () => context.push<void>(AppPaths.song(song.id)),
                   ),
               ],
+              SkippedFilesReport(result.skippedFiles),
             ],
           ),
         ),
