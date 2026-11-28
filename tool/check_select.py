@@ -68,6 +68,7 @@ RULES = [
     ('tool/release/', ['changelog']),
     ('CHANGELOG.md', ['changelog']),
     ('tool/coverage/', ['tools']),
+    ('tool/ci/', ['tools']),  # nightly CI test summary (#1249)
     ('tool/build-web.sh', ['app-web']),
     ('tool/build-site.sh', ['website']),
     ('tool/check-ops.sh', ['ops']),

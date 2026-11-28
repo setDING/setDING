@@ -31,6 +31,16 @@ if [ -n "${TEST_CONCURRENCY:-}" ]; then
 fi
 parallel="${CHECK_PARALLEL:-1}"
 
+# TEST_REPORT_DIR=<dir> also writes each test run's results as JSON to
+# <dir>/<job>.json (the nightly CI summary, tool/ci/test_report.py, #1249).
+# report NAME prints the flag for job NAME, or nothing.
+report() {
+  if [ -n "${TEST_REPORT_DIR:-}" ]; then
+    mkdir -p "$TEST_REPORT_DIR"
+    printf '%s\n' "--file-reporter=json:$TEST_REPORT_DIR/$1.json"
+  fi
+}
+
 # --- Jobs -------------------------------------------------------------------
 # Each job runs in its own subshell with `set -e`; the first failing command
 # fails the job.
@@ -47,6 +57,9 @@ job_tools() {
   python3 -m unittest -q test_upgrade_guard
   # Which server the make server-* targets work on (#1055).
   python3 -m unittest -q test_server_targets
+  # The test summary of the nightly CI run (#1249).
+  cd "$ROOT/tool/ci"
+  python3 -m unittest -q test_test_report
   cd "$ROOT/tool/server-dist"
   python3 -m unittest -q test_doc_example
   python3 -m unittest -q test_previous_bundle
@@ -58,7 +71,9 @@ dart_package() {
   dart pub get >/dev/null
   dart format --output=none --set-exit-if-changed .
   dart analyze --fatal-infos
-  dart test "${concurrency[@]}"
+  local flags=()
+  mapfile -t flags < <(report "$(basename "$1")")
+  dart test "${concurrency[@]}" "${flags[@]}"
 }
 
 job_chordpro() { dart_package packages/chordpro; }
@@ -116,7 +131,9 @@ PY
 # from breaking them silently.
 job_app_tests() {
   cd "$ROOT/app"
-  flutter test "${concurrency[@]}" test test_screenshots
+  local flags=()
+  mapfile -t flags < <(report app)
+  flutter test "${concurrency[@]}" "${flags[@]}" test test_screenshots
 }
 
 # The web client is a build of the same app (ADR-0018): code that only works

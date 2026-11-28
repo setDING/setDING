@@ -1,0 +1,125 @@
+# Nightly full check of main (ADR-0010, docs/development/git-workflow.md
+# section 7, #1249).
+#
+# Runs every job of the test gate (make check-full) and the coverage
+# measurement every night, so failures that only show in the full parallel run
+# and outdated libraries are found early. The run's page shows a summary of the
+# tests and the line coverage; the reports are kept as artifacts. A red run
+# opens an issue (or comments on the open one); the next green run closes it.
+# It is not a required check: the local make check stays the gate.
+name: Nightly
+
+on:
+  schedule:
+    # 02:17 UTC, outside the busy full hour of GitHub's scheduler.
+    - cron: '17 2 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: nightly
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Flutter version (FLUTTER_VERSION in the Makefile)
+        id: flutter
+        run: echo "version=$(sed -n 's/^FLUTTER_VERSION *?= *//p' Makefile)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ steps.flutter.outputs.version }}
+          cache: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+
+      - name: lcov (HTML coverage report)
+        run: sudo apt-get install -y --no-install-recommends lcov
+
+      - name: Versions and runner resources
+        run: |
+          flutter --version
+          echo "CPUs: $(nproc)"
+          free -h
+
+      - name: Full check (make check-full)
+        env:
+          CHECK_FULL: '1'
+          TEST_REPORT_DIR: ${{ runner.temp }}/test-reports
+        run: tool/check.sh
+
+      - name: Test summary
+        if: ${{ !cancelled() }}
+        run: |
+          shopt -s nullglob
+          reports=("$RUNNER_TEMP"/test-reports/*.json)
+          if [ ${#reports[@]} -eq 0 ]; then
+            echo "No test reports (the check stopped before the tests)." >> "$GITHUB_STEP_SUMMARY"
+          else
+            python3 tool/ci/test_report.py "${reports[@]}" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Coverage (make coverage)
+        if: ${{ !cancelled() }}
+        env:
+          COVERAGE_MARKDOWN: ${{ github.step_summary }}
+        run: tool/coverage/coverage.sh
+
+      - name: Keep the reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: nightly-reports
+          retention-days: 30
+          if-no-files-found: ignore
+          path: |
+            ${{ runner.temp }}/test-reports/
+            packages/chordpro/coverage/
+            app/coverage/
+
+  # A red night opens an issue for the agents (red main has the highest
+  # priority, git-workflow.md section 7); the next green night closes it.
+  report:
+    needs: check
+    if: ${{ always() && github.ref == 'refs/heads/main' && (needs.check.result == 'success' || needs.check.result == 'failure') }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TITLE: 'ci: nightly full check failed'
+      RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      RESULT: ${{ needs.check.result }}
+    steps:
+      - name: Open, update or close the issue
+        run: |
+          open="$(gh issue list --state open --search "\"$TITLE\" in:title" \
+            --json number,title --jq ".[] | select(.title == \"$TITLE\") | .number" | head -n 1)"
+          if [ "$RESULT" = failure ]; then
+            if [ -n "$open" ]; then
+              gh issue comment "$open" --body "Still failing on \`${GITHUB_SHA::8}\`: $RUN"
+            else
+              gh issue create --title "$TITLE" --label type:fix --label priority:high \
+                --body "The nightly full check (\`make check-full\`) failed on \`main\` at \`${GITHUB_SHA::8}\`: $RUN
+
+          The run's page has the test summary; the failing job's output is in the log of *Full check*. Reproduce with \`make check-full\`, fix forward or revert in a PR (git-workflow.md section 7). The next green night closes this issue."
+            fi
+          elif [ -n "$open" ]; then
+            gh issue close "$open" --comment "Green again on \`${GITHUB_SHA::8}\`: $RUN"
+          fi

@@ -70,6 +70,41 @@ class SummarizeTest(unittest.TestCase):
         self.assertNotIn("roles.dart", out.getvalue())
         self.assertIn("    lib/rich.dart", out.getvalue())
 
+    def test_markdown_lists_parts_areas_and_lowest_files(self):
+        files = {
+            "lib/sync/engine/a.dart": {1: 1, 2: 0},
+            "lib/sync/b.dart": {1: 1, 2: 1},
+            "lib/main.dart": {1: 0, 2: 0},
+        }
+        all_files = sorted(files) + ["lib/ui/unused.dart"]
+        text = summary.markdown([("app", files, all_files)], lowest=1)
+        self.assertIn("| app | 50.0 % | 3/6 | 3 | 1 |", text)
+        self.assertIn("| sync | 75.0 % | 3/4 |", text)
+        self.assertIn("| lib | 0.0 % | 0/2 |", text)
+        # Lowest area first.
+        self.assertLess(text.index("| lib |"), text.index("| sync |"))
+        self.assertIn("| 0.0 % | 0/2 | `lib/main.dart` |", text)
+        self.assertNotIn("`lib/sync/b.dart`", text)
+        self.assertIn("Not loaded by any test: `lib/ui/unused.dart`", text)
+
+    def test_main_appends_markdown_to_a_file(self):
+        root = tempfile.mkdtemp()
+        os.makedirs(os.path.join(root, "lib"))
+        with open(os.path.join(root, "lib", "x.dart"), "w") as f:
+            f.write("int f() => 1;\n")
+        lcov = os.path.join(root, "lcov.info")
+        with open(lcov, "w") as f:
+            f.write("SF:lib/x.dart\nDA:1,1\nend_of_record\n")
+        target = os.path.join(root, "summary.md")
+        with open(target, "w") as f:
+            f.write("## Tests\n")
+        with contextlib.redirect_stdout(io.StringIO()):
+            summary.main(["--part", "pkg", lcov, root, "--markdown", target])
+        with open(target) as f:
+            text = f.read()
+        self.assertTrue(text.startswith("## Tests\n## Line coverage"))
+        self.assertIn("| pkg | 100.0 % | 1/1 | 1 | 0 |", text)
+
 
 if __name__ == "__main__":
     unittest.main()

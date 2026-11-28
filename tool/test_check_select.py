@@ -39,6 +39,9 @@ class SelectTest(unittest.TestCase):
     def test_upgrade_guard_runs_its_tests(self):
         self.assertEqual(jobs('tool/upgrade_guard.py'), ['tools'])
 
+    def test_nightly_test_summary_runs_its_tests(self):
+        self.assertEqual(jobs('tool/ci/test_report.py'), ['tools'])
+
     def test_help_links_reach_the_website(self):
         # The website tests that the app's help pages exist (#993).
         self.assertEqual(jobs('app/lib/ui/widgets/docs_link.dart'),
