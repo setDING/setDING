@@ -78,6 +78,8 @@ described in detail in [`docs/development/git-workflow.md`](../../development/gi
 - 2026-11-22: Every bug fix comes with a regression test that reproduces the bug, fails without the fix and passes with it, at the lowest test level that can show it; a PR that cannot add one says why (#861). Owner request.
 - 2026-11-22: `main` is checked before the test gate runs, not after: `git fetch origin`, rebase only if `origin/main` moved, then `make check` once on the up-to-date branch. That run is the merge gate unless `main` moves before the merge; the former run before the rebase is dropped, saving one `make check` per PR. Owner request.
 
+- 2026-11-28: Nightly full check on GitHub Actions (`.github/workflows/nightly.yml`, #1249): every night at 02:17 UTC it runs every job of the test gate (`make check-full`) and the coverage measurement on `main`. The run's page shows a summary of the tests (passed, failed, skipped, failures, slowest tests; `tool/ci/test_report.py` from the JSON reports `tool/check.sh` writes with `TEST_REPORT_DIR`) and of the line coverage (`tool/coverage/summary.py --markdown`); the reports and the lcov/HTML coverage are kept 30 days as an artifact. A red night opens the issue *ci: nightly full check failed* (or comments on it), the next green night closes it. It finds failures that only show in the full parallel run (#1240) and outdated libraries. It is not a required check; PR and push triggers stay off and the local `make check` stays the gate. Owner request.
+
 ## Open points
 
 - Re-enable CI on every PR and push to `main` as a required check (`test`) when heading towards version 1, together with branch protection.

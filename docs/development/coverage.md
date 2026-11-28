@@ -33,6 +33,14 @@ Generated code (`*.g.dart`, the l10n output in `app/lib/l10n/generated/`) is lef
 If `genhtml` (package `lcov`) is installed, an HTML report is written to
 `coverage/html/index.html` of each part.
 
+## Nightly on GitHub
+
+The nightly CI run (`.github/workflows/nightly.yml`, #1249) runs `make coverage`
+on `main` with `COVERAGE_MARKDOWN` set: `summary.py --markdown` appends the
+coverage of each part, its areas (the folders below `lib/`), the least covered
+files and the files no test loads to the run's page. The lcov files and the HTML
+reports are in the run's artifact `nightly-reports`.
+
 ## Reading the numbers
 
 - Line coverage shows which code ran during a test, not whether a test checked
