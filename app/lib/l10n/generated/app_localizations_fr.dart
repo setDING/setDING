@@ -126,7 +126,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get attachmentsTooltip => 'Contient des pièces jointes PDF';
+  String get attachmentsTooltip => 'Contient des pièces jointes (PDF, images)';
 
   @override
   String get keyOriginal => 'Originale';
@@ -4940,10 +4940,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get changeSongText => 'Texte modifié';
 
   @override
-  String get changeSongPdf => 'PDF modifié';
+  String get changeSongAttachment => 'Pièce jointe modifiée';
 
   @override
-  String get changeSongTextAndPdf => 'Texte et PDF modifiés';
+  String get changeSongTextAndAttachment => 'Texte et pièce jointe modifiés';
 
   @override
   String changeSetAdded(int count) {

@@ -527,8 +527,9 @@ void main() {
         subtitleOf(tester, 'set'),
         '2 songs added, 1 removed, sequence of "A" changed · by Bob',
       );
-      // A person not known on this device is not named.
-      expect(subtitleOf(tester, 'pdf'), 'PDF changed');
+      // A person not known on this device is not named. A PDF or an image
+      // (#1248).
+      expect(subtitleOf(tester, 'pdf'), 'Attachment changed');
       expect(subtitleOf(tester, 'new'), 'New song · by Bob');
 
       // Show all: also the changes seen before, with their date.
