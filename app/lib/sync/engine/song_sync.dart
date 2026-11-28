@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import '../../data/attachment_storage.dart';
 import '../../data/band_copy.dart';
 import '../../data/database.dart';
 import '../../data/outbox.dart';
@@ -7,6 +8,7 @@ import '../../data/song_repository.dart' show SongMeta, songMetas;
 import '../../util/log.dart';
 import '../sync_backend.dart';
 import 'change_recorder.dart';
+import 'refused_changes.dart';
 import 'sync_store.dart';
 
 const _log = Log('sync');
@@ -20,7 +22,15 @@ const _log = Log('sync');
 /// only them is never a conflict. The review status (ADR-0060) works the
 /// same way, as one outbox entry per song ([pushReview]).
 class SongSync {
-  SongSync(this.db, this.backend, this.store, {this.copies, this.changes});
+  SongSync(
+    this.db,
+    this.backend,
+    this.store, {
+    this.copies,
+    this.changes,
+    this.storage,
+    RefusedChanges? undone,
+  }) : undone = undone ?? RefusedChanges(store);
 
   final AppDatabase db;
   final SyncBackend backend;
@@ -32,14 +42,32 @@ class SongSync {
   /// Records changes of other people (ADR-0045).
   final ChangeRecorder? changes;
 
+  /// Where attachment files are stored, to remove those of a song the
+  /// server no longer shows ([pullUndone]).
+  final AttachmentStorage? storage;
+
+  /// Changes of songs the server refused for good (#1260).
+  final RefusedChanges undone;
+
   /// Changes by others than [logChangesFor] (the signed-in user) are
   /// recorded in the change log (ADR-0045); null records nothing, e.g. on
   /// the first sync of the library or band.
   /// Returns (pulled, new conflicts).
   Future<(int, int)> pull(String orgId, {String? logChangesFor}) async {
+    final (ids, conflicts) = await _pull(orgId, logChangesFor: logChangesFor);
+    return (ids.length, conflicts);
+  }
+
+  /// [pull]; returns the IDs of the songs the server sent and the number of
+  /// new conflicts. Songs in [quiet] are never recorded as changes.
+  Future<(Set<String>, int)> _pull(
+    String orgId, {
+    String? logChangesFor,
+    Set<String> quiet = const {},
+  }) async {
     final since = await store.cursor(orgId, SyncCollection.songs);
     final remote = await backend.pullSongs(orgId, since);
-    if (remote.isEmpty) return (0, 0);
+    if (remote.isEmpty) return (const <String>{}, 0);
     final metas = await songMetas([for (final s in remote) s.chordpro]);
     var conflicts = 0;
     await db.transaction(() async {
@@ -74,7 +102,9 @@ class SongSync {
           dirty: dirty.contains(song.id),
           knownConflict: known.contains(song.id),
           pendingLinks: pendingLinks,
-          log: ChangeRecorder.records(song.updatedBy, logChangesFor),
+          log:
+              !quiet.contains(song.id) &&
+              ChangeRecorder.records(song.updatedBy, logChangesFor),
         )) {
           conflicts++;
         }
@@ -87,7 +117,106 @@ class SongSync {
         );
       }
     });
-    return (remote.length, conflicts);
+    return ({for (final s in remote) s.id}, conflicts);
+  }
+
+  /// Pulls the server's version of the songs whose change the server
+  /// refused in this run (#1260), so that they are undone at once; a song
+  /// the server does not send back is not visible to the person any more
+  /// (or never reached the server) and is removed from this device, as
+  /// attachments are (#1248). Undone songs are not recorded as changes of
+  /// others (ADR-0045).
+  Future<int> pullUndone({String? logChangesFor}) => undone.pullAgain(
+    SyncCollection.songs,
+    RefusedRecord.song,
+    pull: (org, quiet) async =>
+        (await _pull(org, logChangesFor: logChangesFor, quiet: quiet)).$1,
+    remove: _removeInvisible,
+  );
+
+  /// Undoes the refused [entry] of [song] (#1260): its change, its link
+  /// fields or its review status. The server's version is pulled again.
+  Future<void> _undo(OutboxEntry entry, SongEntry song) => undone.undo(
+    entry,
+    (
+      kind: RefusedRecord.song,
+      id: song.id,
+      name: song.title,
+      songTitle: song.title,
+    ),
+    collection: SyncCollection.songs,
+    scope: song.libraryId,
+    revision: song.revision,
+    setRevision: (before) =>
+        (db.update(db.songs)..where((s) => s.id.equals(song.id))).write(
+          SongsCompanion(revision: Value(before)),
+        ),
+  );
+
+  /// Removes the songs [ids] from this device with everything that belongs
+  /// to them and their pending changes: the server does not show them to
+  /// the person (#1260).
+  Future<void> _removeInvisible(Set<String> ids) async {
+    final files = await db.transaction(() async {
+      final list = ids.toList();
+      final marks = List.filled(list.length, '?').join(', ');
+      final args = [for (final id in list) Variable.withString(id)];
+      Future<List<QueryRow>> select(String sql) =>
+          db.customSelect(sql, variables: args).get();
+      final attachments = await select(
+        'SELECT id, file_name FROM attachments WHERE song_id IN ($marks)',
+      );
+      final reports = await select(
+        'SELECT id, screenshot_file FROM song_reports '
+        'WHERE song_id IN ($marks)',
+      );
+      final records = {
+        ...list,
+        for (final a in attachments) a.read<String>('id'),
+        for (final r in reports) r.read<String>('id'),
+      };
+      // Pending changes of them: overlays, links, annotations and
+      // arrangements name the song in a composite record ID.
+      for (final e in await db.select(db.syncOutbox).get()) {
+        final parts = e.recordId.split(':');
+        if (records.contains(e.recordId) || parts.any(ids.contains)) {
+          await (db.delete(db.syncOutbox)..where(
+                (o) =>
+                    o.collection.equals(e.collection) &
+                    o.recordId.equals(e.recordId),
+              ))
+              .go();
+        }
+      }
+      for (final table in [
+        'set_items',
+        'band_arrangements',
+        'personal_overlays',
+        'annotations',
+        'song_reports',
+        'attachments',
+        'song_conflicts',
+      ]) {
+        await db.customStatement(
+          'DELETE FROM $table WHERE song_id IN ($marks)',
+          list,
+        );
+      }
+      await db.customStatement('DELETE FROM songs WHERE id IN ($marks)', list);
+      return [
+        for (final a in attachments) a.read<String>('file_name'),
+        for (final r in reports) ?r.readNullable<String>('screenshot_file'),
+      ];
+    });
+    _log.info('Removed ${ids.length} songs the server no longer shows');
+    for (final f in files) {
+      if (f.isEmpty) continue;
+      try {
+        await storage?.delete(f);
+      } catch (_) {
+        // Already gone; nothing to keep.
+      }
+    }
   }
 
   /// Applies a server song ([local], [dirty] and [knownConflict] describe
@@ -336,10 +465,11 @@ class SongSync {
         }
         return PushResult.conflict;
       }
-      if (e.kind == BackendErrorKind.notAllowed) {
-        // No (longer) permission: the change stays local.
-        _log.warning('Song ${song.id} not pushed: not allowed');
-        await store.done(entry);
+      if (e.refused) {
+        // No (longer) permission, or a validation error: sending it again
+        // gets the same answer, so the change is undone (#1260).
+        _log.warning('Song ${song.id} refused by the server, undone', e);
+        await _undo(entry, song);
         return PushResult.skipped;
       }
       rethrow;
@@ -387,10 +517,10 @@ class SongSync {
       });
       return PushResult.done;
     } on BackendException catch (e) {
-      if (e.kind == BackendErrorKind.notAllowed) {
-        // No (longer) permission: the change stays local.
-        _log.warning('Link of song $songId not pushed: not allowed');
-        await store.done(entry);
+      if (e.refused) {
+        // As for the song itself, the change is undone (#1260).
+        _log.warning('Link of song $songId refused by the server, undone', e);
+        await _undo(entry, song);
         return PushResult.skipped;
       }
       rethrow;
@@ -440,10 +570,10 @@ class SongSync {
       });
       return PushResult.done;
     } on BackendException catch (e) {
-      if (e.kind == BackendErrorKind.notAllowed) {
-        // No (longer) permission: the change stays local.
-        _log.warning('Review of song $songId not pushed: not allowed');
-        await store.done(entry);
+      if (e.refused) {
+        // As for the song itself, the change is undone (#1260).
+        _log.warning('Review of song $songId refused by the server, undone', e);
+        await _undo(entry, song);
         return PushResult.skipped;
       }
       rethrow;

@@ -6830,6 +6830,33 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String songChangeUndone(String song) {
+    return 'Der Server hat die Änderung am Song «$song» nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.';
+  }
+
+  @override
+  String setChangeUndone(String set) {
+    return 'Der Server hat die Änderung am Set «$set» nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.';
+  }
+
+  @override
+  String adjustmentChangeUndone(String song) {
+    return 'Der Server hat deine persönlichen Anpassungen an «$song» nicht angenommen. Sie wurden auf diesem Gerät rückgängig gemacht.';
+  }
+
+  @override
+  String syncChangesUndone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Der Server hat $count Änderungen nicht angenommen. Sie wurden auf diesem Gerät rückgängig gemacht.',
+      one: 'Der Server hat 1 Änderung nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String attachmentPdfLimit(String limit) {
     return 'PDF oder Bild, höchstens $limit';
   }

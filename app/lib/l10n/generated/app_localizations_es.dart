@@ -6818,6 +6818,33 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String songChangeUndone(String song) {
+    return 'El servidor no aceptó el cambio de la canción “$song”. Se deshizo en este dispositivo.';
+  }
+
+  @override
+  String setChangeUndone(String set) {
+    return 'El servidor no aceptó el cambio del set “$set”. Se deshizo en este dispositivo.';
+  }
+
+  @override
+  String adjustmentChangeUndone(String song) {
+    return 'El servidor no aceptó tus ajustes personales de “$song”. Se deshicieron en este dispositivo.';
+  }
+
+  @override
+  String syncChangesUndone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'El servidor no aceptó $count cambios. Se deshicieron en este dispositivo.',
+      one: 'El servidor no aceptó 1 cambio. Se deshizo en este dispositivo.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String attachmentPdfLimit(String limit) {
     return 'PDF o imagen, como máximo $limit';
   }

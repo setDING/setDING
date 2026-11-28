@@ -160,13 +160,15 @@ void main() {
       expect(server.songs[id]!.reviewReason, 'Mine', reason: 'last writer');
     });
 
-    test('a refused review change stays local and is not retried', () async {
+    test('a refused review change is undone and not retried (#1260)', () async {
       final id = await synced('A');
       server.refuseReview = true;
       await review.setToReview(id, reason: 'x');
-      await engine.sync();
+      final report = await engine.sync();
       expect(await outbox(), isEmpty);
       expect(server.songs[id]!.reviewState, isNull);
+      expect((await local(id)).reviewState, isNull, reason: 'undone');
+      expect(report.undoneChanges.single.id, id);
     });
 
     test('approve all, and undo', () async {

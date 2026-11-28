@@ -5,10 +5,11 @@
 // random changes to songs, sets, attachments and personal adjustments, go
 // offline and online and sync in random order, while the server fails some
 // requests for a while (network, 5xx, 429), loses some answers after it
-// stored the change, and refuses some attachment changes for good. After a
-// final sync round of every device, each device must agree with the server,
-// refused changes must have been reported, and personal adjustments must
-// stay with their person.
+// stored the change, and refuses some changes of songs, sets, attachments
+// and personal adjustments for good (#1260). After a final sync round of
+// every device, each device must agree with the server, refused changes
+// must have been undone and reported, and personal adjustments must stay
+// with their person.
 //
 // The seeds are fixed, so every run checks the same scenarios; a failure
 // prints the seed and the operation log. FUZZ_ITERATIONS sets the number of
@@ -83,7 +84,7 @@ void main() {
 
 /// A server that fails requests now and then, as a real network and server
 /// do (ADR-0004): for a while (network, 5xx, 429), after storing the change
-/// (the answer got lost), or for good (an attachment change refused).
+/// (the answer got lost), or for good (a change refused, #1229, #1260).
 class _ChaosBackend extends FakeSyncBackend {
   _ChaosBackend(this.random);
 
@@ -97,6 +98,27 @@ class _ChaosBackend extends FakeSyncBackend {
   /// Lasting refusals given, by device: attachment IDs.
   final refusedCreates = <String, Set<String>>{};
   final refusedUpdates = <String, Set<String>>{};
+
+  /// Lasting refusals of songs, sets and adjustments given, by device:
+  /// `<kind>:<id>` as [RefusedChange] names them (#1260).
+  final refusedRecords = <String, Set<String>>{};
+
+  /// Refuses the push of [what] for good now and then (#1260): with 403/404
+  /// or a validation error (400). A create gets 403 only: the backends
+  /// send a create that failed with a server error again as a change.
+  void _maybeRefuse(String what, RefusedRecord kind, String id, bool create) {
+    if (random.nextDouble() >= refuse) return;
+    final e = create || random.nextBool()
+        ? const BackendException(BackendErrorKind.notAllowed, null, 403)
+        : const BackendException(BackendErrorKind.server, {
+            'data': {
+              'name': {'code': 'validation_invalid'},
+            },
+          }, 400);
+    log.add('  ! $what refused: $e');
+    refusedRecords.putIfAbsent(device, () => {}).add('${kind.name}:$id');
+    throw e;
+  }
 
   /// The device whose sync is running.
   String device = '';
@@ -172,6 +194,12 @@ class _ChaosBackend extends FakeSyncBackend {
   @override
   Future<RemoteSong> pushSong(RemoteSong song, {required bool create}) {
     _before('pushSong ${song.id}');
+    // Changes only: a song a device created and the server refused is
+    // removed on that device, while a set it pushed in the same run may
+    // name it already; which is right is not this test's question.
+    if (!create) {
+      _maybeRefuse('pushSong ${song.id}', RefusedRecord.song, song.id, false);
+    }
     return _after(
       'pushSong ${song.id}',
       () => super.pushSong(song, create: create),
@@ -181,6 +209,7 @@ class _ChaosBackend extends FakeSyncBackend {
   @override
   Future<RemoteSet> pushSet(RemoteSet set, {required bool create}) {
     _before('pushSet ${set.id}');
+    _maybeRefuse('pushSet ${set.id}', RefusedRecord.set, set.id, create);
     return _after(
       'pushSet ${set.id}',
       () => super.pushSet(set, create: create),
@@ -193,6 +222,12 @@ class _ChaosBackend extends FakeSyncBackend {
     required bool create,
   }) {
     _before('pushOverlay ${overlay.songId}');
+    _maybeRefuse(
+      'pushOverlay ${overlay.songId}',
+      RefusedRecord.adjustment,
+      overlay.songId,
+      create,
+    );
     return _after(
       'pushOverlay ${overlay.songId}',
       () => super.pushOverlay(overlay, create: create),
@@ -258,7 +293,8 @@ class _Device {
 
   bool online = true;
 
-  /// Attachments reported as refused uploads and undone changes.
+  /// Attachments reported as refused uploads, and undone changes as
+  /// `<kind>:<id>`.
   final reportedRefused = <String>{};
   final reportedUndone = <String>{};
 
@@ -276,7 +312,7 @@ class _Device {
         for (final r in report.refusedUploads) r.attachmentId,
       ]);
       reportedUndone.addAll([
-        for (final r in report.undoneChanges) r.attachmentId,
+        for (final r in report.undoneChanges) '${r.kind.name}:${r.id}',
       ]);
       return report;
     } finally {
@@ -622,6 +658,15 @@ class _Scenario {
       await _checkSets(d);
       await _checkAttachments(d);
       await _checkOverlays(d);
+      // Refused changes of songs, sets and adjustments were undone (the
+      // comparisons above) and reported (#1260).
+      for (final r in server.refusedRecords[d.name] ?? const <String>{}) {
+        expect(
+          d.reportedUndone,
+          contains(r),
+          reason: '${d.name}: the refused change of $r was reported',
+        );
+      }
     }
   }
 
@@ -712,7 +757,7 @@ class _Scenario {
     );
     for (final id in server.refusedUpdates[d.name] ?? const <String>{}) {
       expect(
-        d.reportedUndone.contains(id) || refused.contains(id),
+        d.reportedUndone.contains('attachment:$id') || refused.contains(id),
         isTrue,
         reason: '${d.name}: the refused change of $id was reported',
       );

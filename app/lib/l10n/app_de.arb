@@ -4241,6 +4241,42 @@
       }
     }
   },
+  "songChangeUndone": "Der Server hat die Änderung am Song «{song}» nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.",
+  "@songChangeUndone": {
+    "description": "A change of a song the server refused for good; undone on this device (#1260).",
+    "placeholders": {
+      "song": {
+        "type": "String"
+      }
+    }
+  },
+  "setChangeUndone": "Der Server hat die Änderung am Set «{set}» nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.",
+  "@setChangeUndone": {
+    "description": "A change of a set the server refused for good; undone on this device (#1260).",
+    "placeholders": {
+      "set": {
+        "type": "String"
+      }
+    }
+  },
+  "adjustmentChangeUndone": "Der Server hat deine persönlichen Anpassungen an «{song}» nicht angenommen. Sie wurden auf diesem Gerät rückgängig gemacht.",
+  "@adjustmentChangeUndone": {
+    "description": "A change of the personal adjustments of a song the server refused for good; undone on this device (#1260).",
+    "placeholders": {
+      "song": {
+        "type": "String"
+      }
+    }
+  },
+  "syncChangesUndone": "{count, plural, =1{Der Server hat 1 Änderung nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.} other{Der Server hat {count} Änderungen nicht angenommen. Sie wurden auf diesem Gerät rückgängig gemacht.}}",
+  "@syncChangesUndone": {
+    "description": "Several changes (songs, sets, adjustments, attachments) the server refused for good in one sync; undone on this device (#1260).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "attachmentPdfLimit": "PDF oder Bild, höchstens {limit}",
   "@attachmentPdfLimit": {
     "description": "Shown before a file is picked (ADR-0070); limit is e.g. \"1 MB\".",

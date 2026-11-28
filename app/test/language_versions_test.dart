@@ -446,12 +446,18 @@ void main() {
       expect((await local(a)).chordproSource, contains('Theirs'));
     });
 
-    test('a link of a song the server refuses stays local', () async {
+    // Before #1260 the refused link stayed on this device in silence.
+    test('a link of a song the server no longer shows removes the song '
+        '(#1260)', () async {
       final a = await synced('A');
       server.songs.remove(a);
       await songs.setLanguage(a, 'pt');
-      await engine.sync();
-      expect((await local(a)).language, 'pt');
+      final report = await engine.sync();
+      expect(report.undoneChanges.single.id, a);
+      expect(
+        await (db.select(db.songs)..where((s) => s.id.equals(a))).get(),
+        isEmpty,
+      );
       expect(
         (await outbox()).where((e) => e.collection == SyncCollection.songLinks),
         isEmpty,

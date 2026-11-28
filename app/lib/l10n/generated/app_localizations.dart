@@ -10380,6 +10380,30 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Der Server hat die Änderung an 1 Anhang nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.} other{Der Server hat die Änderungen an {count} Anhängen nicht angenommen. Sie wurden auf diesem Gerät rückgängig gemacht.}}'**
   String attachmentChangesUndone(int count);
 
+  /// A change of a song the server refused for good; undone on this device (#1260).
+  ///
+  /// In de, this message translates to:
+  /// **'Der Server hat die Änderung am Song «{song}» nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.'**
+  String songChangeUndone(String song);
+
+  /// A change of a set the server refused for good; undone on this device (#1260).
+  ///
+  /// In de, this message translates to:
+  /// **'Der Server hat die Änderung am Set «{set}» nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.'**
+  String setChangeUndone(String set);
+
+  /// A change of the personal adjustments of a song the server refused for good; undone on this device (#1260).
+  ///
+  /// In de, this message translates to:
+  /// **'Der Server hat deine persönlichen Anpassungen an «{song}» nicht angenommen. Sie wurden auf diesem Gerät rückgängig gemacht.'**
+  String adjustmentChangeUndone(String song);
+
+  /// Several changes (songs, sets, adjustments, attachments) the server refused for good in one sync; undone on this device (#1260).
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Der Server hat 1 Änderung nicht angenommen. Sie wurde auf diesem Gerät rückgängig gemacht.} other{Der Server hat {count} Änderungen nicht angenommen. Sie wurden auf diesem Gerät rückgängig gemacht.}}'**
+  String syncChangesUndone(int count);
+
   /// Shown before a file is picked (ADR-0070); limit is e.g. "1 MB".
   ///
   /// In de, this message translates to:

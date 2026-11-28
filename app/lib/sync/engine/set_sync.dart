@@ -7,6 +7,7 @@ import '../../data/outbox.dart';
 import '../../util/log.dart';
 import '../sync_backend.dart';
 import 'change_recorder.dart';
+import 'refused_changes.dart';
 import 'sync_store.dart';
 
 const _log = Log('sync');
@@ -15,7 +16,13 @@ const _uuid = Uuid();
 /// Sync of sets (ADR-0004, ADR-0015): delta pull per band, a set with its
 /// items as one record, last writer wins.
 class SetSync {
-  SetSync(this.db, this.backend, this.store, {this.changes});
+  SetSync(
+    this.db,
+    this.backend,
+    this.store, {
+    this.changes,
+    RefusedChanges? undone,
+  }) : undone = undone ?? RefusedChanges(store);
 
   final AppDatabase db;
   final SyncBackend backend;
@@ -24,13 +31,25 @@ class SetSync {
   /// Records changes of other people (ADR-0045).
   final ChangeRecorder? changes;
 
+  /// Changes of sets the server refused for good (#1260).
+  final RefusedChanges undone;
+
   /// Changes by others than [logChangesFor] (the signed-in user) are
   /// recorded in the change log (ADR-0045); null records nothing, e.g. on
   /// the first sync of the library or band.
-  Future<int> pull(BandView band, {String? logChangesFor}) async {
-    final since = await store.cursor(band.id, SyncCollection.setlists);
-    final remote = await backend.pullSets(band.id, since);
-    if (remote.isEmpty) return 0;
+  Future<int> pull(BandView band, {String? logChangesFor}) async =>
+      (await _pull(band.id, logChangesFor: logChangesFor)).length;
+
+  /// [pull]; returns the IDs of the sets the server sent. Sets in [quiet]
+  /// are never recorded as changes.
+  Future<Set<String>> _pull(
+    String bandId, {
+    String? logChangesFor,
+    Set<String> quiet = const {},
+  }) async {
+    final since = await store.cursor(bandId, SyncCollection.setlists);
+    final remote = await backend.pullSets(bandId, since);
+    if (remote.isEmpty) return const {};
     await db.transaction(() async {
       final ids = [for (final s in remote) s.id];
       final locals = await SyncStore.byId(
@@ -50,19 +69,44 @@ class SetSync {
           local: locals[set.id],
           dirty: dirty.contains(set.id),
           songExists: songs.contains,
-          log: ChangeRecorder.records(set.updatedBy, logChangesFor),
+          log:
+              !quiet.contains(set.id) &&
+              ChangeRecorder.records(set.updatedBy, logChangesFor),
         );
       }
       if (remote.isNotEmpty) {
         await store.setCursor(
-          band.id,
+          bandId,
           SyncCollection.setlists,
           remote.last.revision,
         );
       }
     });
-    return remote.length;
+    return {for (final s in remote) s.id};
   }
+
+  /// Pulls the server's version of the sets whose change the server refused
+  /// in this run (#1260), so that they are undone at once; a set the server
+  /// does not send back (not visible to the person, or never created) is
+  /// removed from this device with its items. Undone sets are not recorded
+  /// as changes of others (ADR-0045).
+  Future<int> pullUndone({String? logChangesFor}) => undone.pullAgain(
+    SyncCollection.setlists,
+    RefusedRecord.set,
+    pull: (band, quiet) =>
+        _pull(band, logChangesFor: logChangesFor, quiet: quiet),
+    remove: (ids) => db.transaction(() async {
+      await (db.delete(db.setItems)..where((i) => i.setId.isIn(ids))).go();
+      await (db.delete(db.setlists)..where((s) => s.id.isIn(ids))).go();
+      await (db.delete(db.syncOutbox)..where(
+            (o) =>
+                o.collection.equals(SyncCollection.setlists) &
+                o.recordId.isIn(ids),
+          ))
+          .go();
+      _log.info('Removed ${ids.length} sets the server no longer shows');
+    }),
+  );
 
   /// Stores [remote] as the server state, e.g. a set the user plays as a
   /// substitute (ADR-0061), which is never changed on this device.
@@ -206,9 +250,26 @@ class SetSync {
       });
       return PushResult.done;
     } on BackendException catch (e) {
-      if (e.kind == BackendErrorKind.notAllowed) {
-        _log.warning('Set ${set.id} not pushed: not allowed');
-        await store.done(entry);
+      if (e.refused) {
+        // No (longer) permission, or a validation error: sending it again
+        // gets the same answer, so the change is undone (#1260).
+        _log.warning('Set ${set.id} refused by the server, undone', e);
+        await undone.undo(
+          entry,
+          (
+            kind: RefusedRecord.set,
+            id: set.id,
+            name: set.name,
+            songTitle: null,
+          ),
+          collection: SyncCollection.setlists,
+          scope: set.bandId,
+          revision: set.revision,
+          setRevision: (before) =>
+              (db.update(db.setlists)..where((s) => s.id.equals(set.id))).write(
+                SetlistsCompanion(revision: Value(before)),
+              ),
+        );
         return PushResult.skipped;
       }
       rethrow;

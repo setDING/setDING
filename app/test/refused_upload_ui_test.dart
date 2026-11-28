@@ -4,6 +4,11 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:setding/data/database.dart';
+import 'package:setding/data/set_repository.dart';
+import 'package:setding/l10n/generated/app_localizations.dart';
+import 'package:setding/sync/sync_engine.dart'
+    show RefusedChange, RefusedRecord;
+import 'package:setding/ui/songs/refused_uploads.dart';
 import 'package:setding/sync/sync_backend.dart';
 import 'package:setding/ui/songs/song_screen.dart';
 
@@ -98,6 +103,73 @@ void main() {
     await tester.pump();
     expect(find.byKey(const Key('attachment-change-undone')), findsNothing);
     await app.dispose(tester);
+  });
+
+  // A refused change of a set stayed local silently, and a 400 stopped
+  // every later sync (#1260): it is undone and the person is told once.
+  testWidgets('a refused set change is undone and told once', (tester) async {
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'currentBandId': 'b1'},
+      user: _ann,
+    );
+    app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    final sets = SetRepository(app.db, app.storage, bandId: 'b1');
+    final id = (await tester.runAsync(() => sets.createSet(name: 'Gig')))!;
+    await syncNow(tester);
+    await tester.pump(const Duration(seconds: 11));
+    await tester.pumpAndSettle();
+    expect(app.backend.sets[id], isNotNull);
+
+    await tester.runAsync(() => sets.updateSet(id, name: 'Mine'));
+    app.backend.setPushError = const BackendException(
+      BackendErrorKind.server,
+      null,
+      400,
+    );
+    await syncNow(tester);
+    await tester.pump();
+    expect(
+      find.text(
+        'The server did not accept the change to the set “Mine”. It was '
+        'undone on this device.',
+      ),
+      findsOneWidget,
+    );
+
+    // Not again at the next sync.
+    await tester.pump(const Duration(seconds: 11));
+    await tester.pumpAndSettle();
+    await syncNow(tester);
+    await tester.pump();
+    expect(find.byKey(const Key('attachment-change-undone')), findsNothing);
+    await app.dispose(tester);
+  });
+
+  test('several undone changes of different kinds are told together', () {
+    final l10n = lookupAppLocalizations(const Locale('en'));
+    RefusedChange change(RefusedRecord kind) =>
+        (kind: kind, id: kind.name, name: 'X', songTitle: 'Song');
+    expect(
+      undoneChangesText(l10n, [
+        change(RefusedRecord.attachment),
+        change(RefusedRecord.attachment),
+      ]),
+      l10n.attachmentChangesUndone(2),
+    );
+    expect(
+      undoneChangesText(l10n, [
+        change(RefusedRecord.song),
+        change(RefusedRecord.adjustment),
+      ]),
+      'The server did not accept 2 changes. They were undone on this device.',
+    );
+    expect(
+      undoneChangesText(l10n, [change(RefusedRecord.adjustment)]),
+      'The server did not accept your personal adjustments to “X”. They '
+      'were undone on this device.',
+    );
   });
 
   testWidgets('the marker shows why; the menu retries and removes', (

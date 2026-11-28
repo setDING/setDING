@@ -361,7 +361,7 @@ void main() {
   });
 
   test(
-    'the server refuses sets from members; the change stays local',
+    'the server refuses sets from members; the set is undone (#1260)',
     () async {
       final (ann, bob, _, band) = await twoDevices();
       final set = await bob.sets(band).createSet(name: 'Not allowed');
@@ -369,7 +369,8 @@ void main() {
       expect(report.error, isNull);
       await ann.sync();
       expect(await ann.sets(band).watchSets().first, isEmpty);
-      expect((await bob.sets(band).watchSets().first).single.set.id, set);
+      expect(await bob.sets(band).watchSets().first, isEmpty);
+      expect(report.undoneChanges.single.id, set);
       await ann.close();
       await bob.close();
     },

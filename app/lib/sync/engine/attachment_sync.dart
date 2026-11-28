@@ -6,6 +6,7 @@ import '../../data/outbox.dart';
 import '../../util/log.dart';
 import '../sync_backend.dart';
 import 'change_recorder.dart';
+import 'refused_changes.dart';
 import 'sync_store.dart';
 
 const _log = Log('sync');
@@ -19,11 +20,6 @@ typedef RefusedUpload = ({
   UploadRefusal reason,
 });
 
-/// A change of an attachment already on the server (rename, deletion,
-/// restore or purge) that the server refused in a sync run (#1229): it is
-/// undone on this device, which gets the server's version back.
-typedef RefusedChange = ({String attachmentId, String name, String songTitle});
-
 /// Sync of attachments (ADR-0009): PDFs and images for `{image}` (#1227).
 /// Metadata by delta pull and push, files uploaded with their record and
 /// downloaded to every device.
@@ -34,7 +30,8 @@ class AttachmentSync {
     this.store,
     this.storage, {
     this.changes,
-  });
+    RefusedChanges? undone,
+  }) : undone = undone ?? RefusedChanges(store);
 
   final AppDatabase db;
   final SyncBackend backend;
@@ -47,12 +44,10 @@ class AttachmentSync {
   /// Records changes of other people (ADR-0045).
   final ChangeRecorder? changes;
 
-  var _refused = <RefusedUpload>[];
-  var _undone = <RefusedChange>[];
+  /// Changes of attachments on the server the server refused (#1229).
+  final RefusedChanges undone;
 
-  /// Organizations with refused changes whose server version has not been
-  /// pulled again yet ([pullUndone]).
-  final _undoneOrgs = <String>{};
+  var _refused = <RefusedUpload>[];
 
   /// The uploads refused since the last call, for the report of a sync run
   /// (#1225).
@@ -60,15 +55,6 @@ class AttachmentSync {
     final refused = _refused;
     _refused = [];
     return refused;
-  }
-
-  /// The changes refused and undone since the last call, for the report of
-  /// a sync run (#1229).
-  List<RefusedChange> takeUndone() {
-    final undone = _undone;
-    _undone = [];
-    _undoneOrgs.clear();
-    return undone;
   }
 
   /// Pulls the server's version of the attachments whose change the server
@@ -81,25 +67,18 @@ class AttachmentSync {
   /// out of reach): it is removed from this device at once, so that the
   /// device agrees with the "undone" message and not only after the next
   /// band refresh (#1248).
-  Future<int> pullUndone({String? logChangesFor}) async {
-    final orgs = _undoneOrgs.toList();
-    _undoneOrgs.clear();
-    final quiet = {for (final c in _undone) c.attachmentId};
-    final pulled = <String>{};
-    for (final org in orgs) {
-      pulled.addAll(
-        await _pull(org, logChangesFor: logChangesFor, quiet: quiet),
-      );
-    }
-    await _removeInvisible(quiet.difference(pulled));
-    return pulled.length;
-  }
+  Future<int> pullUndone({String? logChangesFor}) => undone.pullAgain(
+    SyncCollection.attachments,
+    RefusedRecord.attachment,
+    pull: (org, quiet) =>
+        _pull(org, logChangesFor: logChangesFor, quiet: quiet),
+    remove: _removeInvisible,
+  );
 
   /// Removes the attachments [ids] from this device, with their files: the
   /// server does not show them to the person any more (#1248). Personal
   /// annotations on them stay (ADR-0006).
   Future<void> _removeInvisible(Set<String> ids) async {
-    if (ids.isEmpty) return;
     final gone = await db.transaction(() async {
       final rows = await (db.select(
         db.attachments,
@@ -492,25 +471,22 @@ class AttachmentSync {
       // server decides, and sending it again would get the same answer.
       // This device's copy counts as older, so the server's version is
       // pulled again ([pullUndone]).
-      await db.transaction(() async {
-        final before = a.revision - 1;
-        await (db.update(db.attachments)..where((x) => x.id.equals(a.id)))
-            .write(AttachmentsCompanion(revision: Value(before)));
-        final cursor = await store.cursor(
-          song.libraryId,
-          SyncCollection.attachments,
-        );
-        if (cursor > before) {
-          await store.setCursor(
-            song.libraryId,
-            SyncCollection.attachments,
-            before,
-          );
-        }
-        await store.done(entry);
-      });
-      _undoneOrgs.add(song.libraryId);
-      _undone.add((attachmentId: a.id, name: a.name, songTitle: song.title));
+      await undone.undo(
+        entry,
+        (
+          kind: RefusedRecord.attachment,
+          id: a.id,
+          name: a.name,
+          songTitle: song.title,
+        ),
+        collection: SyncCollection.attachments,
+        scope: song.libraryId,
+        revision: a.revision,
+        setRevision: (before) =>
+            (db.update(db.attachments)..where((x) => x.id.equals(a.id))).write(
+              AttachmentsCompanion(revision: Value(before)),
+            ),
+      );
       return PushResult.skipped;
     }
   }

@@ -4,7 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../data/database.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../sync/sync_controller.dart';
-import '../../sync/sync_engine.dart' show RefusedChange, RefusedUpload;
+import '../../sync/sync_engine.dart'
+    show RefusedChange, RefusedRecord, RefusedUpload;
 import '../theme.dart';
 import '../widgets/dialogs.dart';
 
@@ -51,10 +52,29 @@ class RefusedUploadMarker extends StatelessWidget {
   }
 }
 
+/// The message about the changes the server refused and the sync undone
+/// (#1229, #1260).
+String undoneChangesText(AppLocalizations l10n, List<RefusedChange> undone) =>
+    switch (undone) {
+      [final c] => switch (c.kind) {
+        RefusedRecord.attachment => l10n.attachmentChangeUndone(
+          c.name,
+          c.songTitle ?? '',
+        ),
+        RefusedRecord.song => l10n.songChangeUndone(c.name),
+        RefusedRecord.set => l10n.setChangeUndone(c.name),
+        RefusedRecord.adjustment => l10n.adjustmentChangeUndone(c.name),
+      },
+      _ when undone.every((c) => c.kind == RefusedRecord.attachment) =>
+        l10n.attachmentChangesUndone(undone.length),
+      _ => l10n.syncChangesUndone(undone.length),
+    };
+
 /// After a sync: tells the person once which attachments the server
-/// refused (#1225) and which changes of attachments it refused and were
-/// undone (#1229). The sync does not send them again by itself, so each
-/// refusal is told once. Call from the home screen's `build`.
+/// refused (#1225) and which changes it refused and were undone: of
+/// attachments (#1229), songs, sets and personal adjustments (#1260). The
+/// sync does not send them again by itself, so each refusal is told once.
+/// Call from the home screen's `build`.
 void listenForRefusedUploads(BuildContext context, WidgetRef ref) {
   ref.listen(syncControllerProvider.select((s) => s.lastReport), (_, report) {
     final refused = report?.refusedUploads ?? const <RefusedUpload>[];
@@ -79,10 +99,7 @@ void listenForRefusedUploads(BuildContext context, WidgetRef ref) {
     if (undone.isNotEmpty) {
       showMessageOn(
         messenger,
-        switch (undone) {
-          [final c] => l10n.attachmentChangeUndone(c.name, c.songTitle),
-          _ => l10n.attachmentChangesUndone(undone.length),
-        },
+        undoneChangesText(l10n, undone),
         key: const Key('attachment-change-undone'),
         duration: const Duration(seconds: 10),
         // After the message about refused uploads of the same sync.

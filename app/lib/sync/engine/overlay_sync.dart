@@ -6,6 +6,7 @@ import '../../data/database.dart';
 import '../../data/outbox.dart';
 import '../../util/log.dart';
 import '../sync_backend.dart';
+import 'refused_changes.dart';
 import 'sync_store.dart';
 
 const _log = Log('sync');
@@ -14,11 +15,15 @@ const _uuid = Uuid();
 /// Sync of personal adjustments with the account (ADR-0020): delta pull per
 /// user, last writer wins, one server record per user and song.
 class OverlaySync {
-  OverlaySync(this.db, this.backend, this.store);
+  OverlaySync(this.db, this.backend, this.store, {RefusedChanges? undone})
+    : undone = undone ?? RefusedChanges(store);
 
   final AppDatabase db;
   final SyncBackend backend;
   final SyncStore store;
+
+  /// Changes of adjustments the server refused for good (#1260).
+  final RefusedChanges undone;
 
   /// Server record ID of the adjustments of [userId] for [songId]: the same
   /// on every device, so two devices never create two records.
@@ -55,10 +60,14 @@ class OverlaySync {
         : VerseChords.all;
   }
 
-  Future<int> pull(String userId) async {
+  Future<int> pull(String userId) async => (await _pull(userId)).length;
+
+  /// [pull]; returns the IDs of the songs whose adjustments the server
+  /// sent.
+  Future<Set<String>> _pull(String userId) async {
     final since = await store.cursor(userId, SyncCollection.overlays);
     final remote = await backend.pullOverlays(since);
-    if (remote.isEmpty) return 0;
+    if (remote.isEmpty) return const {};
     await db.transaction(() async {
       final songIds = [for (final o in remote) o.songId];
       final locals = await SyncStore.byId(
@@ -118,8 +127,21 @@ class OverlaySync {
         remote.last.revision,
       );
     });
-    return remote.length;
+    return {for (final o in remote) o.songId};
   }
+
+  /// Pulls the server's version of the adjustments of [userId] whose change
+  /// the server refused in this run (#1260), so that they are undone at
+  /// once; an adjustment the server does not send back is removed from
+  /// this device. The shared song is never touched (ADR-0006).
+  Future<int> pullUndone(String userId) => undone.pullAgain(
+    SyncCollection.overlays,
+    RefusedRecord.adjustment,
+    pull: (user, _) => _pull(user),
+    remove: (songIds) => (db.delete(
+      db.personalOverlays,
+    )..where((o) => o.ownerId.equals(userId) & o.songId.isIn(songIds))).go(),
+  );
 
   Future<PushResult> push(OutboxEntry entry, String userId) async {
     final (owner, songId) = parseOverlayRecordId(entry.recordId);
@@ -180,9 +202,27 @@ class OverlaySync {
       });
       return PushResult.done;
     } on BackendException catch (e) {
-      if (e.kind == BackendErrorKind.notAllowed) {
-        _log.warning('Overlay ${entry.recordId} not pushed: not allowed');
-        await store.done(entry);
+      if (e.refused) {
+        // No (longer) permission, or a validation error: sending it again
+        // gets the same answer, so the change is undone (#1260).
+        _log.warning('Overlay ${entry.recordId} refused, undone', e);
+        await undone.undo(
+          entry,
+          (
+            kind: RefusedRecord.adjustment,
+            id: songId,
+            name: song.title,
+            songTitle: song.title,
+          ),
+          collection: SyncCollection.overlays,
+          scope: owner,
+          revision: overlay.revision,
+          setRevision: (before) =>
+              (db.update(db.personalOverlays)..where(
+                    (o) => o.ownerId.equals(owner) & o.songId.equals(songId),
+                  ))
+                  .write(PersonalOverlaysCompanion(revision: Value(before))),
+        );
         return PushResult.skipped;
       }
       rethrow;

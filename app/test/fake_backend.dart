@@ -1319,6 +1319,10 @@ class FakeSyncBackend implements SyncBackend {
     return putAnnotations(a);
   }
 
+  /// When set, pushes of personal adjustments fail with it, e.g. a
+  /// refusal (#1260).
+  BackendException? overlayPushError;
+
   @override
   Future<List<RemoteOverlay>> pullOverlays(int since) async {
     _requireUser();
@@ -1335,6 +1339,7 @@ class FakeSyncBackend implements SyncBackend {
   }) async {
     _requireUser();
     pushCount++;
+    if (overlayPushError case final e?) throw e;
     final song = songs[overlay.songId];
     if (overlay.userId != user!.id ||
         song == null ||
@@ -1582,10 +1587,14 @@ class FakeSyncBackend implements SyncBackend {
     return songs[id];
   }
 
+  /// When set, pushes of songs fail with it, e.g. a refusal (#1260).
+  BackendException? songPushError;
+
   @override
   Future<RemoteSong> pushSong(RemoteSong song, {required bool create}) async {
     _requireUser();
     pushCount++;
+    if (songPushError case final e?) throw e;
     final existing = songs[song.id];
     if (create && existing != null) throw duplicateId;
     if (!create) {
