@@ -136,11 +136,20 @@ Forces:
   App content forms (answers in `docs/store/play/console.md`).
 - 2026-11-27: Pre-releases (tags with a suffix) are never uploaded to Google Play
   (ADR-0069, #1178).
+- 2026-11-28: Website installation page (#1141): the Android section shows
+  Google Play first and Obtainium second (devices without Google services,
+  self-hosters), with the note that both share one signature, but only while
+  `googlePlayListed` in `website/src/google-play.ts` is true. It stays false
+  until the app is live in production; until then the page shows Obtainium
+  alone. A plain text link instead of Google's badge (no extra asset). The
+  account deletion page the Play listing needs already exists
+  (`delete-account.mdx`, ADR-0052).
 
 ## Open points
 
 - Closed test with at least 12 testers for 14 days, then production access (#1142).
 - Implementation: workflow, upload key and releases guide #1139 (done), update-check
-  hint for Play installs #1140 (done), website installation page #1141, Play Console
-  setup by the owner #1142.
+  hint for Play installs #1140 (done), website installation page #1141 (done; the Play
+  section is switched on with `googlePlayListed` once the app is in production),
+  Play Console setup by the owner #1142.
 - iOS (App Store) stays open (ADR-0021).

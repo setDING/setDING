@@ -344,6 +344,10 @@ Personal developer accounts must also run a closed test with at least 12 testers
 for 14 days before they may publish to production; see #1142 for the listing and
 policy forms.
 
+Once the app is live in production, set `googlePlayListed` to `true` in
+`website/src/google-play.ts` (a `docs(website)` PR): the installation page then
+shows Google Play first and Obtainium second (#1141).
+
 ## Testing a local build next to a release (Android)
 
 ```bash

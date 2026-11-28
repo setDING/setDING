@@ -8,15 +8,36 @@ sidebar:
 import { Image } from 'astro:assets';
 import menuEntry from '../../../../../../docs/screenshots/settings_app_menu_entry.png';
 import updatePlay from '../../../../../../docs/screenshots/settings_update_google_play.png';
+import GooglePlay from '../../../../components/GooglePlay.astro';
+import { googlePlayUrl } from '../../../../google-play.ts';
 
 All versions are in the
 [releases on GitHub](https://github.com/setDING/setDING/releases/latest).
 
 ## Android
 
+<GooglePlay>
+
+Install setDING from <a href={googlePlayUrl}>Google Play</a>. Google Play keeps the
+app up to date. It runs on 64-bit ARM devices (arm64), which includes practically
+all current tablets.
+
+Without Google Play, for example on a device without Google services, install
+setDING with [Obtainium](https://github.com/ImranR98/Obtainium) from the releases on
+GitHub. Both deliver the same app with the same signature: you can switch later
+without uninstalling setDING, and your data stays.
+
+</GooglePlay>
+
+<GooglePlay listed={false}>
+
 setDING is installed and kept up to date with
 [Obtainium](https://github.com/ImranR98/Obtainium). It runs on 64-bit ARM devices
 (arm64), which includes practically all current tablets.
+
+</GooglePlay>
+
+To install setDING with Obtainium:
 
 1. Install Obtainium (from its GitHub releases or from F-Droid).
 2. In Obtainium, tap **Add app**, enter `https://github.com/setDING/setDING` and tap
