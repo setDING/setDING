@@ -139,14 +139,13 @@ limit, and that deleting does not free space until the purge. Therefore:
 - **Attachments:** a hook on creating an attachment works out the new file's size,
   adds up the organization's usage with one SQL query (`SUM(size_bytes)` of
   section 3), and refuses the record if the total would go over the limit.
-- **Atomic:** the sum and the insert run in the same write transaction. PocketBase
-  sends writes through a single SQLite connection, so two uploads at the same moment
-  cannot both pass the check (to be confirmed in the implementation). A server test uploads in parallel at the limit and
-  checks that only one succeeds.
+- **Atomic:** the sum and the insert run in the same write transaction, which the
+  hook opens before the sum. PocketBase sends writes through a single SQLite
+  connection, so two uploads at the same moment cannot both pass the check. A
+  server test uploads in parallel at the limit and checks that only one succeeds.
 - **The request is refused before the file is kept.** PocketBase writes a record's
   files as part of saving it and removes them when the save fails, so a refused
-  upload should leave no file behind (to be confirmed in the implementation).
-  The server test checks the storage directory.
+  upload leaves no file behind. The server test checks the storage directory.
 - **Data over the limit stays.** Organizations that are already over the limit, or
   get over it because the operator lowers it, keep everything. Only new files are
   refused until enough is purged.
@@ -255,8 +254,21 @@ limit, and that deleting does not free space until the purge. Therefore:
   8. **No further upload limits.**
 - 2026-11-28: Accepted by the owner.
 - 2026-11-28: The marking of any refused upload is implemented (#1225, ADR-0009): local column `attachments.upload_refused` (schema 43) with the reasons *no permission*, *too large* and *refused*, the one-time message after the sync and *Upload again* in the attachment's menu. The quota adds a reason of its own for `storage_limit_reached` (today it shows as *refused by the server*) and the retry when the usage route shows enough room.
+- 2026-11-28: Server part implemented (#1226); the two points to be confirmed
+  (section 5) are settled by server tests (`server/test/storage_test.dart`):
+  - **Serialised:** PocketBase does *not* run a create request in a transaction of
+    its own; only a transaction serialises (all writes go through one SQLite
+    connection). The check therefore opens the write transaction itself, before
+    the sum, and the save joins it (`pb_hooks/storage.pb.js`). Without it, two of
+    six parallel uploads at the limit passed; with it, exactly one does.
+  - **No file left behind:** the check runs before the save, and PocketBase writes
+    the file only with the insert, so a refused upload leaves no file in the
+    storage directory, also for the parallel ones.
+  - The route answers `used_bytes`, `limit_bytes` (null without a limit),
+    `live_bytes` (attachments of songs in the library) and `trash_bytes`
+    (deleted attachments and those of deleted songs), and 404 to everyone who
+    may not upload PDFs and for a closed organization.
 
 ## Open points
 
-- To be confirmed in the implementation: that PocketBase serialises the usage sum
-  and the insert (section 5), and that it removes the file of a refused upload.
+- None.

@@ -45,11 +45,27 @@ Docker, otherwise `/etc/setding/setding.env`). Restart the server after a change
 | `SETDING_BACKUP_KEEP` | How many automatic backups are kept, default `14`. |
 | `SETDING_TRUSTED_PROXY_HEADER` | The header your [reverse proxy](/en/self-hosting/reverse-proxy/) passes the users' IP address in, usually `X-Forwarded-For` (`CF-Connecting-IP` with Cloudflare); several separated by commas. `none` if the server is reached without a proxy. Without the variable, the server keeps what the admin UI shows under **Settings → Trusted proxy** and warns in its log at every start while nothing is entered there. |
 | `SETDING_LOG_DAYS` | How many days PocketBase keeps the request logs (with IP addresses), default `7`; `0` keeps none. |
+| `SETDING_ORG_STORAGE_LIMIT_MB` | The most storage the PDF attachments of one organization may use on the server, in megabytes, default `25`; `0` or `off` sets no limit. Deleted PDFs count until they are purged from the trash. See [Disk space](#disk-space). |
 | `SETDING_WEB_URL` | Address of the web app if it has its own. The invitation page then offers **Open in the browser**. |
 | `TZ` | Time zone for schedules and logs, for example `Europe/Zurich`. |
 
 The settings for backups, logs and the trusted proxy apply at every start and
-replace what the admin UI shows.
+replace what the admin UI shows. An invalid value stops the start with a message.
+
+## Disk space
+
+Each organization may keep at most `SETDING_ORG_STORAGE_LIMIT_MB` of PDFs on the
+server (default 25 MB, about 190 PDFs of a typical size). A PDF may be at most
+1 MB, a screenshot of a mistake report at most 300 KB. Every automatic backup holds
+the files again, so in the worst case the server needs:
+
+**limit × number of organizations × (1 + `SETDING_BACKUP_KEEP`)**
+
+For example, 25 MB × 10 organizations × (1 + 14) = 3.75 GB, plus the database and
+the screenshots. Organizations over the limit keep their files; only new PDFs are
+refused until something is purged from the trash. On a server with
+`SETDING_REGISTRATION=open`, anyone can found several organizations, each with its
+own limit.
 
 ## First organization
 

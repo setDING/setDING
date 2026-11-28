@@ -1,7 +1,13 @@
+import 'dart:convert';
+
 import 'package:setding_server/pocketbase_harness.dart';
 import 'package:test/test.dart';
 
 import 'support/fixtures.dart';
+
+final _pdf = utf8.encode(
+  '%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n',
+);
 
 /// Permission matrix through the API (AGENTS.md "Permissions on the server",
 /// issue #632, ADR-0023): every role calls the API directly for the actions
@@ -41,6 +47,7 @@ void main() {
   late String adminOrgMembership;
   late String contactId; // a contact of `f` without an account (ADR-0064)
   late String foreignContact; // a contact of `g`
+  late String deletedAttachment; // a PDF of the leader's song, deleted
 
   setUpAll(() async {
     pb = await PocketBase.start();
@@ -141,6 +148,24 @@ void main() {
               filter: 'organization = "${f.orgId}" && user = "${orgAdmin.id}"',
             )).single['id']
             as String;
+    final attachment = await leader.postMultipart(
+      'attachments',
+      {
+        'id': uuid(),
+        'organization': f.orgId,
+        'song': leaderSong['id'] as String,
+        'name': 'Score',
+      },
+      fileField: 'file',
+      bytes: _pdf,
+      filename: 'score.pdf',
+      contentType: 'application/pdf',
+    );
+    attachment.expectStatus(200);
+    deletedAttachment = attachment.json['id'] as String;
+    (await orgAdmin.patch('attachments', deletedAttachment, {
+      'deleted': true,
+    })).expectStatus(200);
   });
   tearDownAll(() => pb.stop());
 
@@ -674,6 +699,58 @@ void main() {
       () => member.delete('songs', song['id'] as String),
       unchanged: ('songs', () => song['id'] as String, 'deleted'),
     );
+
+    // Storage limit (ADR-0070): purging a single attachment is for those
+    // who may delete it; the usage is for those who may upload PDFs.
+    for (final (name, user) in [
+      ('leader', () => leader),
+      ('member', () => member),
+      ('set planner', () => planner),
+      ('admin of another organization', () => g.admin),
+    ]) {
+      refused(
+        '$name purges a deleted attachment',
+        () => user().patch('attachments', deletedAttachment, {
+          'deleted': true,
+          'purged': true,
+        }),
+        unchanged: ('attachments', () => deletedAttachment, 'purged'),
+      );
+    }
+    for (final (name, user, org) in [
+      ('member', () => member, () => f.orgId),
+      ('set planner', () => planner, () => f.orgId),
+      ('substitute', () => substitute, () => f.orgId),
+      ('outsider', () => outsider, () => f.orgId),
+      ('admin of another organization', () => g.admin, () => f.orgId),
+      (
+        'leader of a closed organization',
+        () => closedLeader,
+        () => closed.orgId,
+      ),
+      ('guest', () => pb.guest, () => f.orgId),
+    ]) {
+      refused(
+        '$name reads the storage usage of an organization',
+        () => user().send('GET', '/api/setding/organizations/${org()}/storage'),
+      );
+    }
+
+    test('the size of an attachment cannot be forged', () async {
+      final before = await field(
+        'attachments',
+        deletedAttachment,
+        'size_bytes',
+      );
+      expect(before, _pdf.length);
+      (await orgAdmin.patch('attachments', deletedAttachment, {
+        'size_bytes': 1,
+      })).expectStatus(200);
+      expect(
+        await field('attachments', deletedAttachment, 'size_bytes'),
+        before,
+      );
+    });
 
     test('server-maintained fields cannot be forged', () async {
       final r = await leader.post('songs', {
@@ -1245,6 +1322,15 @@ void main() {
       (await librarian.patch('songs', song['id'] as String, {
         'review_state': 'to_review',
       })).expectStatus(200);
+    });
+
+    test('librarians and band leaders read the storage usage', () async {
+      for (final user in [librarian, leader, orgAdmin]) {
+        (await user.send(
+          'GET',
+          '/api/setding/organizations/${f.orgId}/storage',
+        )).expectStatus(200);
+      }
     });
 
     test('organization admins change organization roles', () async {

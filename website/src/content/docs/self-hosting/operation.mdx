@@ -46,11 +46,29 @@ den Server neu.
 | `SETDING_BACKUP_KEEP` | Wie viele automatische Backups bleiben, Standard `14`. |
 | `SETDING_TRUSTED_PROXY_HEADER` | Der Header, mit dem dein [Reverse-Proxy](/self-hosting/reverse-proxy/) die IP-Adresse der Nutzer weitergibt, meist `X-Forwarded-For` (bei Cloudflare `CF-Connecting-IP`); mehrere durch Kommas getrennt. `none`, wenn der Server ohne Proxy erreichbar ist. Ohne die Variable behält der Server, was in der Verwaltung unter **Settings → Trusted proxy** steht, und warnt bei jedem Start im Log, solange dort nichts eingetragen ist. |
 | `SETDING_LOG_DAYS` | Wie viele Tage PocketBase die Protokolle der Anfragen (mit IP-Adressen) aufbewahrt, Standard `7`; `0` speichert keine. |
+| `SETDING_ORG_STORAGE_LIMIT_MB` | Wie viel Speicher die PDF-Anhänge einer Organisation auf dem Server höchstens belegen dürfen, in Megabyte, Standard `25`; `0` oder `off` setzt keine Grenze. Gelöschte PDFs zählen, bis sie aus dem Papierkorb endgültig gelöscht sind. Siehe [Speicherplatz](#speicherplatz). |
 | `SETDING_WEB_URL` | Adresse der Web-App, falls sie eine eigene hat. Dann bietet die Einladungsseite **Im Browser öffnen** an. |
 | `TZ` | Zeitzone für Zeitpläne und Logs, zum Beispiel `Europe/Zurich`. |
 
 Die Einstellungen für Backups, Protokolle und den Trusted Proxy gelten bei jedem
-Start und überschreiben, was in der Verwaltung steht.
+Start und überschreiben, was in der Verwaltung steht. Ein ungültiger Wert verhindert
+den Start mit einer Meldung.
+
+## Speicherplatz
+
+Jede Organisation darf höchstens `SETDING_ORG_STORAGE_LIMIT_MB` an PDFs auf dem
+Server ablegen (Standard 25 MB, etwa 190 PDFs üblicher Grösse). Ein PDF darf
+höchstens 1 MB gross sein, ein Screenshot einer Fehlermeldung höchstens 300 KB.
+Jedes automatische Backup enthält die Dateien noch einmal, im schlimmsten Fall
+braucht der Server also:
+
+**Grenze × Anzahl Organisationen × (1 + `SETDING_BACKUP_KEEP`)**
+
+Zum Beispiel 25 MB × 10 Organisationen × (1 + 14) = 3,75 GB, dazu die Datenbank und
+die Screenshots. Organisationen über der Grenze behalten ihre Dateien; nur neue PDFs
+werden abgelehnt, bis etwas aus dem Papierkorb endgültig gelöscht ist. Auf einem
+Server mit `SETDING_REGISTRATION=open` kann jede Person mehrere Organisationen
+gründen, jede mit ihrer eigenen Grenze.
 
 ## Erste Organisation
 

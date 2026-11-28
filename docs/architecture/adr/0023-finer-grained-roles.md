@@ -116,6 +116,8 @@ for creating an account, like every invitation.
 | Edit existing songs and attachments | ✓ | ✓ | own songs² | – | – |
 | Delete songs and attachments | ✓ | ✓ | – | – | – |
 | Restore songs from the trash or delete them permanently (ADR-0043, #866) | ✓ | ✓ | – | – | – |
+| Delete a single deleted attachment permanently (ADR-0070) | ✓ | ✓ | – | – | – |
+| See the organization's storage usage (ADR-0070) | ✓ | ✓ | ✓ | – | – |
 | Link language versions, set a song's language (ADR-0053) | ✓ | ✓ | own songs²³ | – | – |
 | Report a mistake in a song of the organization (ADR-0060) | ✓ | ✓ | ✓ | ✓ | ✓ |
 | See the mistake reports of a song (ADR-0060) | ✓ | ✓ | ✓ | ✓ | own reports |
@@ -239,6 +241,7 @@ sets of that band like any member; librarian rights concern the library only.
 - 2026-11-23: **ADR-0061** (#1003): a set's lineup is chosen by whoever may edit the set, from the band and the organization; a person in the lineup who is not a member of the band (a substitute) sees that set read-only with the band arrangements of its songs, through a server route, not as a role of the band, so *no guest role* stays; the lineup's mail addresses only for set editors. Server tests with the implementation.
 - 2026-11-23: **ADR-0060** (#985): everyone in the organization reports mistakes in its songs; members see only their own reports, the other roles all; approving a song, setting it to review and resolving reports follow the right to edit the song, and a review-only change keeps `updated_by` (like ADR-0053). Server tests with #987.
 - 2026-11-26: **ADR-0064** (#1096): contacts (people without an account) are seen by name by everyone in the organization, created and edited by band leaders and set planners of any band and organization admins, who alone see their mail addresses; only organization admins delete them; a personal invitation for a contact follows the right to invite. Server tests with the implementation.
+- 2026-11-28: **ADR-0070** (#1226): the storage usage route `GET /api/setding/organizations/{id}/storage` answers those who may upload PDFs (organization admins, librarians, leaders of one of its bands; everyone else gets 404); a single deleted attachment is purged by those who may delete it (organization admins and librarians); the update rule of attachments refuses a change of `purged` to band leaders.
 
 ## Open points
 

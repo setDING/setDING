@@ -344,6 +344,7 @@ Deleted songs and sets can be **restored for 30 days**.
 - 2026-11-22: The songs of the manifest may carry an optional `createdAt`
   (the creation date of ADR-0045's *Newest songs*, #876); readers that do
   not know it ignore it, the format version stays 1.
+- 2026-11-28: A single deleted attachment can be deleted permanently at once (ADR-0070, #1226): `attachments` joins `PURGEABLE` (#866), for organization admins and librarians (the right to delete it); its file is removed and the record stays as a tombstone, so its size no longer counts against the storage limit.
 
 ## Open points
 

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:test/test.dart';
 
@@ -179,33 +180,86 @@ void main() {
       expect(r.json['deleted'], isFalse);
     });
 
-    test('an attachment cannot be purged on its own', () async {
-      final f = await BandFixture.create(pb);
+    Future<Response> uploadTo(BandFixture f, Client client, String song) =>
+        client.postMultipart(
+          'attachments',
+          {
+            'id': uuid(),
+            'organization': f.orgId,
+            'song': song,
+            'name': 'Score',
+            'pages': '1',
+            'size_bytes': '${_pdf.length}',
+          },
+          fileField: 'file',
+          bytes: _pdf,
+          filename: 'score.pdf',
+          contentType: 'application/pdf',
+        );
+
+    test('a librarian purges a single deleted attachment (ADR-0070)', () async {
+      final f = await BandFixture.create(pb, memberIsLibrarian: true);
       final song = await f.createSong(f.admin);
-      final upload = await f.admin.postMultipart(
-        'attachments',
-        {
-          'id': uuid(),
-          'organization': f.orgId,
-          'song': song['id'],
-          'name': 'Score',
-          'pages': '1',
-          'size_bytes': '${_pdf.length}',
-        },
-        fileField: 'file',
-        bytes: _pdf,
-        filename: 'score.pdf',
-        contentType: 'application/pdf',
-      );
+      final upload = await uploadTo(f, f.admin, song['id'] as String);
       upload.expectStatus(200);
-      final r = await f.admin.patch('attachments', upload.json['id'], {
+      final id = upload.json['id'] as String;
+      // Not deleted: `purged` is ignored.
+      final kept = await f.member.patch('attachments', id, {'purged': true});
+      kept.expectStatus(200);
+      expect(kept.json['purged'], isFalse);
+      expect(kept.json['file'], isNotEmpty);
+
+      final r = await f.member.patch('attachments', id, {
         'deleted': true,
         'purged': true,
       });
       r.expectStatus(200);
-      expect(r.json['purged'], isFalse);
-      expect(r.json['file'], isNotEmpty);
+      expect(r.json['purged'], isTrue);
+      expect(r.json['file'], '');
+      final stored = await pb.superuser.view('attachments', id);
+      expect(stored.json['purged'], isTrue);
+      expect(stored.json['deleted'], isTrue);
+      expect(stored.json['file'], '');
+      expect(
+        Directory(
+          '${pb.dataDir}/storage/${upload.json['collectionId']}/$id',
+        ).listSync(recursive: true).whereType<File>(),
+        isEmpty,
+      );
+      // The song stays in the library.
+      expect(
+        (await pb.superuser.view('songs', song['id'])).json['deleted'],
+        isFalse,
+      );
+      // A purged attachment cannot be restored.
+      final restore = await f.member.patch('attachments', id, {
+        'deleted': false,
+      });
+      expect(restore.status, 400);
     });
+
+    test(
+      'a band leader cannot purge an attachment of their own song',
+      () async {
+        final f = await BandFixture.create(pb);
+        final leader = await f.addLeader();
+        final song = await f.createSong(leader);
+        final upload = await uploadTo(f, leader, song['id'] as String);
+        upload.expectStatus(200);
+        final id = upload.json['id'] as String;
+        (await f.admin.patch('attachments', id, {
+          'deleted': true,
+        })).expectStatus(200);
+        final r = await leader.patch('attachments', id, {
+          'deleted': true,
+          'purged': true,
+        });
+        expect(r.status, greaterThanOrEqualTo(400));
+        final stored = await pb.superuser.view('attachments', id);
+        expect(stored.json['purged'], isFalse);
+        expect(stored.json['file'], isNotEmpty);
+      },
+    );
   });
 
   test('a deleted set keeps its items for a restore', () async {

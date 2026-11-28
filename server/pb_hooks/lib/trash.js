@@ -5,14 +5,17 @@
 const RETENTION_DAYS = 30;
 
 /// Collections whose deleted records a user may purge at once by setting
-/// `purged` (#866). Attachments are purged with their song.
-const PURGEABLE = ["songs", "setlists"];
+/// `purged` (#866). A single deleted attachment can be purged too, so that
+/// its file stops counting against the storage limit (ADR-0070 §3); the
+/// update rules allow it to organization admins and librarians. Attachments
+/// are also purged with their song.
+const PURGEABLE = ["songs", "setlists", "attachments"];
 
 /// Keeps `deleted_at` and `purged` consistent for a write request of a user:
 /// `deleted_at` is taken from the client when the record is deleted (it may
 /// have been deleted offline; not in the future, now if missing), cleared on
-/// restore and otherwise kept. `purged` sent on a deleted song or set
-/// (deleted before or with this request) deletes it permanently (#866): its
+/// restore and otherwise kept. `purged` sent on a deleted song, set or
+/// attachment (deleted before or with this request) deletes it permanently (#866): its
 /// content is cleared like by the daily purge; the update rules allow it to
 /// those who may delete the record. Otherwise clients cannot set `purged`,
 /// and a purged record cannot be restored. Superusers (operators, tests) are
