@@ -6836,4 +6836,9 @@ class AppLocalizationsEs extends AppLocalizations {
   ) {
     return '«$name» ($size) ya no cabe en el almacenamiento de la organización: $used de $limit ocupados. Los PDF eliminados cuentan hasta que se eliminan definitivamente.';
   }
+
+  @override
+  String trashAttachmentOf(String song, String size) {
+    return 'PDF en «$song» · $size';
+  }
 }

@@ -1720,9 +1720,23 @@ class FakeSyncBackend implements SyncBackend {
         sizeBytes: existing.sizeBytes,
         deleted: attachment.deleted,
         deletedAt: attachment.deletedAt,
+        // As the server: only a deleted attachment is purged, by those who
+        // may delete it (ADR-0070); a purge cannot be undone.
+        purged:
+            existing.purged ||
+            (attachment.purged &&
+                attachment.deleted &&
+                _mayDeleteSongs(existing.organizationId)),
       ),
     );
   }
+
+  bool _mayDeleteSongs(String orgId) => orgMembers.any(
+    (m) =>
+        m.scopeId == orgId &&
+        m.user.id == user?.id &&
+        (m.role == OrgRole.admin || m.role == OrgRole.librarian),
+  );
 
   int downloads = 0;
 

@@ -48,15 +48,28 @@ class _TrashScreenState extends ConsumerState<TrashScreen> {
 
   TrashRepository get _repo => ref.read(trashRepositoryProvider);
 
-  Future<void> _restore(Iterable<String> ids) => switch (widget.kind) {
-    TrashKind.songs => Future.wait(ids.map(_repo.restoreSong)),
-    TrashKind.sets => Future.wait(ids.map(_repo.restoreSet)),
-  };
+  /// The attachments among the entries shown (ADR-0070).
+  var _attachmentIds = <String>{};
 
-  Future<void> _purge(Iterable<String> ids) => switch (widget.kind) {
-    TrashKind.songs => _repo.purgeSongs(ids),
-    TrashKind.sets => _repo.purgeSets(ids),
-  };
+  Future<void> _restore(Iterable<String> ids) async {
+    final attachments = ids.where(_attachmentIds.contains).toList();
+    final others = ids.where((id) => !_attachmentIds.contains(id));
+    if (attachments.isNotEmpty) await _repo.restoreAttachments(attachments);
+    await switch (widget.kind) {
+      TrashKind.songs => Future.wait(others.map(_repo.restoreSong)),
+      TrashKind.sets => Future.wait(others.map(_repo.restoreSet)),
+    };
+  }
+
+  Future<void> _purge(Iterable<String> ids) async {
+    final attachments = ids.where(_attachmentIds.contains).toList();
+    final others = ids.where((id) => !_attachmentIds.contains(id)).toList();
+    if (attachments.isNotEmpty) await _repo.purgeAttachments(attachments);
+    await switch (widget.kind) {
+      TrashKind.songs => _repo.purgeSongs(others),
+      TrashKind.sets => _repo.purgeSets(others),
+    };
+  }
 
   Future<void> _restoreOne(_TrashEntry entry) async {
     final messenger = ScaffoldMessenger.of(context);
@@ -116,7 +129,9 @@ class _TrashScreenState extends ConsumerState<TrashScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final AsyncValue<List<_TrashEntry>> entries = switch (widget.kind) {
-      TrashKind.songs =>
+      // Deleted songs and PDFs deleted on their own, which count against
+      // the storage until purged (ADR-0070).
+      TrashKind.songs => _merge(
         ref
             .watch(trashedSongsProvider(widget.id))
             .whenData(
@@ -125,6 +140,21 @@ class _TrashScreenState extends ConsumerState<TrashScreen> {
                   _TrashEntry(s.id, s.title, s.artist, s.deletedAt!),
               ],
             ),
+        ref
+            .watch(trashedAttachmentsProvider(widget.id))
+            .whenData(
+              (attachments) => [
+                for (final (a, song) in attachments)
+                  _TrashEntry(
+                    a.id,
+                    a.name,
+                    l10n.trashAttachmentOf(song, formatBytes(a.sizeBytes)),
+                    a.deletedAt!,
+                    attachment: true,
+                  ),
+              ],
+            ),
+      ),
       TrashKind.sets =>
         ref
             .watch(trashedSetsProvider(widget.id))
@@ -144,6 +174,10 @@ class _TrashScreenState extends ConsumerState<TrashScreen> {
     };
     final list = entries.value ?? const <_TrashEntry>[];
     final all = {for (final e in list) e.id};
+    _attachmentIds = {
+      for (final e in list)
+        if (e.attachment) e.id,
+    };
     // Entries restored or purged elsewhere leave the selection.
     final selected = _selected?.intersection(all);
 
@@ -230,7 +264,11 @@ class _TrashScreenState extends ConsumerState<TrashScreen> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                         child: Text(
-                          l10n.trashHint(trashRetention.inDays),
+                          [
+                            l10n.trashHint(trashRetention.inDays),
+                            if (_attachmentIds.isNotEmpty)
+                              l10n.storageTrashCounts,
+                          ].join(' '),
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ),
@@ -282,13 +320,32 @@ List<(_Group, List<_TrashEntry>)> _groups(List<_TrashEntry> entries) {
   ];
 }
 
+/// [songs] and [attachments] in one list, most recently deleted first.
+AsyncValue<List<_TrashEntry>> _merge(
+  AsyncValue<List<_TrashEntry>> songs,
+  AsyncValue<List<_TrashEntry>> attachments,
+) => songs.whenData(
+  (s) =>
+      [...s, ...?attachments.value]
+        ..sort((a, b) => b.deletedAt.compareTo(a.deletedAt)),
+);
+
 class _TrashEntry {
-  const _TrashEntry(this.id, this.title, this.detail, this.deletedAt);
+  const _TrashEntry(
+    this.id,
+    this.title,
+    this.detail,
+    this.deletedAt, {
+    this.attachment = false,
+  });
 
   final String id;
   final String title;
   final String? detail;
   final DateTime deletedAt;
+
+  /// A PDF deleted on its own (ADR-0070), not a song or set.
+  final bool attachment;
 }
 
 class _TrashTile extends StatelessWidget {
@@ -325,7 +382,9 @@ class _TrashTile extends StatelessWidget {
               onChanged: (_) => onToggle(),
             )
           : Icon(
-              kind == TrashKind.songs
+              entry.attachment
+                  ? Icons.picture_as_pdf_outlined
+                  : kind == TrashKind.songs
                   ? Icons.music_note_outlined
                   : Icons.queue_music_outlined,
             ),

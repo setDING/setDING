@@ -1,5 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+
+import 'package:drift/drift.dart' show Value;
+import 'package:setding/data/database.dart';
+import 'package:setding/ui/trash/trash_screen.dart';
 
 import 'test_app.dart';
 
@@ -197,6 +203,55 @@ void main() {
       () => app.db.select(app.db.songs).get(),
     );
     expect([for (final s in songs!) s.title]..sort(), ['One', 'Two']);
+    await app.dispose(tester);
+  });
+
+  // ADR-0070: a PDF deleted on its own counts against the storage until it
+  // is deleted permanently, from the trash of its organization's library.
+  testWidgets('a deleted PDF is in the trash and is deleted permanently', (
+    tester,
+  ) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(prefs: {'language': 'en'});
+    final songs = TestApp.songsIn(app, 'o1', userId: 'ann');
+    final id = (await tester.runAsync(() async {
+      final song = await songs.createSong(source: '{title: Morning Light}');
+      final a = await songs.addAttachment(
+        song,
+        name: 'Horns',
+        bytes: Uint8List.fromList('%PDF-1.4 x'.codeUnits),
+      );
+      await (app.db.update(
+        app.db.attachments,
+      )..where((x) => x.id.equals(a))).write(
+        AttachmentsCompanion(
+          revision: const Value(1),
+          deleted: const Value(true),
+          deletedAt: Value(DateTime.now()),
+        ),
+      );
+      return a;
+    }))!;
+    await tester.pumpWidget(
+      app.build(home: const TrashScreen.songs(libraryId: 'o1')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('PDF in “Morning Light”'), findsOneWidget);
+    expect(find.textContaining('Deleted PDFs count'), findsOneWidget);
+    await tester.tap(find.byKey(ValueKey('trash-menu-$id')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete permanently'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Delete permanently'));
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pumpAndSettle();
+    expect(find.text('Horns'), findsNothing);
+    final row = await tester.runAsync(
+      () => (app.db.select(
+        app.db.attachments,
+      )..where((x) => x.id.equals(id))).getSingle(),
+    );
+    expect(row!.purged, isTrue);
     await app.dispose(tester);
   });
 }

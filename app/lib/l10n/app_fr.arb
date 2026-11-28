@@ -1714,5 +1714,6 @@
   "storageUsageUnlimited": "Stockage : {used}",
   "storageTrashCounts": "Les PDF supprimés comptent jusqu'à leur suppression définitive.",
   "storageNearlyFull": "L'espace de stockage de l'organisation est presque plein.",
-  "attachmentDoesNotFit": "« {name} » ({size}) ne tient plus dans l'espace de stockage de l'organisation : {used} sur {limit} utilisés. Les PDF supprimés comptent jusqu'à leur suppression définitive."
+  "attachmentDoesNotFit": "« {name} » ({size}) ne tient plus dans l'espace de stockage de l'organisation : {used} sur {limit} utilisés. Les PDF supprimés comptent jusqu'à leur suppression définitive.",
+  "trashAttachmentOf": "PDF dans « {song} » · {size}"
 }

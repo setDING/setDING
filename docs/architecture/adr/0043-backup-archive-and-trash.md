@@ -345,6 +345,8 @@ Deleted songs and sets can be **restored for 30 days**.
   (the creation date of ADR-0045's *Newest songs*, #876); readers that do
   not know it ignore it, the format version stays 1.
 - 2026-11-28: A single deleted attachment can be deleted permanently at once (ADR-0070, #1226): `attachments` joins `PURGEABLE` (#866), for organization admins and librarians (the right to delete it); its file is removed and the record stays as a tombstone, so its size no longer counts against the storage limit.
+- 2026-11-28: The songs trash of an organization's library lists the PDFs deleted
+  on their own as well, to restore or delete permanently (ADR-0070, #1226).
 
 ## Open points
 
