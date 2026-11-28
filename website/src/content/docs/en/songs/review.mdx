@@ -11,6 +11,7 @@ import banner from '../../../../../../docs/screenshots/song_review_banner.png';
 import sheet from '../../../../../../docs/screenshots/song_report_sheet.png';
 import marking from '../../../../../../docs/screenshots/song_report_marking.png';
 import reports from '../../../../../../docs/screenshots/song_reports.png';
+import refused from '../../../../../../docs/screenshots/song_report_refused.png';
 
 An imported song looks finished, but often is not: a wrong chord, a missing
 verse, a different key than the one your band plays. setDING therefore keeps
@@ -67,6 +68,15 @@ with a category chosen it sends the report, without one it cancels.
 
 The report is stored on your device and sent with the next sync, also when you
 are offline.
+
+If the server does not accept a new report (for example because you no longer
+have the permission), it stays on your device and setDING tells you once. In the
+song's **Mistake reports** it is marked **Only on this device** with the reason.
+It is not sent again with every sync: **Send again** sends it with the next sync,
+for example once you have the permission again; **Withdraw** removes it from your
+device.
+
+<Image src={refused} alt="A mistake report with “Only on this device: no permission to report mistakes” and Send again" />
 
 ### With a screenshot
 

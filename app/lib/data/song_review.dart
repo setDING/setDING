@@ -134,6 +134,10 @@ extension SongReportRowX on SongReportRow {
   SongReportStatus get statusValue => SongReportStatus.parse(status);
   SongReportLocation? get locationValue => SongReportLocation.decode(location);
   bool get isOpen => statusValue == SongReportStatus.open;
+
+  /// A new report the server refused (#1269): only on this device until
+  /// the person sends it again.
+  bool get onlyHere => revision == 0 && uploadRefused != null;
 }
 
 /// Counts for the *To do* of people who may approve (ADR-0060).
@@ -370,11 +374,39 @@ class SongReviewRepository {
     ),
   );
 
-  /// The author withdraws an open report.
-  Future<void> withdraw(String id) => _update(
-    id,
-    SongReportsCompanion(status: Value(SongReportStatus.withdrawn.name)),
-  );
+  /// The author withdraws an open report. A new report the server refused
+  /// (#1269) is only on this device: withdrawing it removes it, with its
+  /// screenshot.
+  Future<void> withdraw(String id) async {
+    final report = await reportById(id);
+    if (report == null) return;
+    if (report.onlyHere) {
+      await db.transaction(() async {
+        await (db.delete(db.songReports)..where((r) => r.id.equals(id))).go();
+        await (db.delete(db.syncOutbox)..where(
+              (o) =>
+                  o.collection.equals(SyncCollection.songReports) &
+                  o.recordId.equals(id),
+            ))
+            .go();
+      });
+      final file = report.screenshotFile;
+      if (file != null && await storage.exists(file)) {
+        await storage.delete(file);
+      }
+      return;
+    }
+    await _update(
+      id,
+      SongReportsCompanion(status: Value(SongReportStatus.withdrawn.name)),
+    );
+  }
+
+  /// Sends a new report the server refused (#1269) again with the next
+  /// sync, e.g. after the person got the permission back; like *Upload
+  /// again* of a refused attachment (#1225).
+  Future<void> sendAgain(String id) =>
+      _update(id, const SongReportsCompanion(uploadRefused: Value(null)));
 
   /// Resolves a report with [resolution] as the answer to the reporter.
   Future<void> resolve(String id, {String? resolution}) async {

@@ -92,6 +92,61 @@ void main() {
     await app.dispose(tester);
   });
 
+  // A new report the server refused stays on this device, marked, and is
+  // sent again only on request (#1269).
+  testWidgets('a refused report is marked as only on this device and sent '
+      'again on request', (tester) async {
+    useTabletSize(tester);
+    final app = await TestApp.create(
+      prefs: {'language': 'en', 'currentBandId': 'b1'},
+      user: _bob,
+    );
+    app.backend.addBand('b1', 'Rock', admin: _ann, organizationId: 'o1');
+    app.backend.addMember('b1', _bob, BandRole.member);
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    await syncNow(tester);
+    await tester.runAsync(
+      () => TestApp.songsIn(app, 'o1').createSong(source: '{title: Song}'),
+    );
+    await syncNow(tester);
+    await tester.pumpAndSettle();
+    await openSong(tester, 'Song');
+    app.backend.reportPushError = const BackendException(
+      BackendErrorKind.notAllowed,
+    );
+    await tester.tap(find.byType(PopupMenuButton<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('song-report')));
+    await tester.pumpAndSettle();
+    await fillAndSend(tester, 'Bar 3 is Em');
+    expect(
+      (await reports(tester, app)).single.uploadRefused,
+      UploadRefusal.notAllowed,
+    );
+
+    await tester.pump(const Duration(seconds: 11));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('open-song-reports')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('report-only-here')), findsOneWidget);
+    expect(
+      find.textContaining(
+        'Only on this device: no permission to report mistakes',
+        findRichText: true,
+      ),
+      findsOneWidget,
+    );
+
+    app.backend.reportPushError = null;
+    await tester.tap(find.byKey(const Key('report-send-again')));
+    await settleSync(tester);
+    expect(app.backend.reports.values.single.comment, 'Bar 3 is Em');
+    expect(find.byKey(const Key('report-only-here')), findsNothing);
+    expect(find.byKey(const Key('report-send-again')), findsNothing);
+    await app.dispose(tester);
+  });
+
   testWidgets('whoever may edit the song resolves a report with an answer '
       'and opens it again', (tester) async {
     useTabletSize(tester);

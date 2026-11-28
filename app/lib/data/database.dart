@@ -265,6 +265,12 @@ class SongReports extends Table {
   /// Purged with its song (ADR-0043): no text, location or screenshot.
   BoolColumn get purged => boolean().withDefault(const Constant(false))();
 
+  /// Why the server refused to take the new report (#1269, schema 44);
+  /// null when it is on the server or not sent yet. Like a refused
+  /// attachment upload (#1225), a refused report stays on this device only
+  /// and is not sent again until the person sends it again.
+  TextColumn get uploadRefused => textEnum<UploadRefusal>().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -336,9 +342,10 @@ class Attachments extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-/// Why the server refused an attachment upload (#1225): the person may not
-/// add it (any more), the file is too large, another reason the server
-/// gave, or the organization's storage is full (ADR-0070). Each one is a
+/// Why the server refused an attachment upload (#1225) or a new mistake
+/// report (#1269): the person may not add it (any more), the file (the
+/// report's screenshot) is too large, another reason the server gave, or
+/// the organization's storage is full (ADR-0070). Each one is a
 /// lasting answer, unlike a network or server error. Stored by name, so new
 /// values go at the end.
 enum UploadRefusal { notAllowed, tooLarge, refused, storageFull }
@@ -832,7 +839,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 43;
+  int get schemaVersion => 44;
 
   /// Creates the full-text index of the songs and its triggers (again) and
   /// fills it. Needed after a migration that rebuilds the `songs` table
@@ -1210,6 +1217,11 @@ class AppDatabase extends _$AppDatabase {
       if (from < 43) {
         // Refused attachment uploads (#1225).
         await m.addColumn(attachments, attachments.uploadRefused);
+      }
+      if (from < 44 && from >= 37) {
+        // Refused new mistake reports (#1269); from before schema 37 the
+        // table is created with the column.
+        await m.addColumn(songReports, songReports.uploadRefused);
       }
     },
     beforeOpen: (details) async {

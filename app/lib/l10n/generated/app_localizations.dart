@@ -10320,7 +10320,7 @@ abstract class AppLocalizations {
   /// **'Link kopiert'**
   String get linkCopied;
 
-  /// Marker of an attachment the server refused (#1225); reason is one of uploadRefusal*.
+  /// Marker of an attachment (#1225) or a new mistake report (#1269) the server refused; reason is one of uploadRefusal* or reportRefusal*.
   ///
   /// In de, this message translates to:
   /// **'Nur auf diesem Gerät: {reason}'**
@@ -10540,6 +10540,30 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count, plural, =1{1 Bild wurde nicht importiert, weil sein Inhalt nicht zu seinem Dateityp passt:} other{{count} Bilder wurden nicht importiert, weil ihr Inhalt nicht zu ihrem Dateityp passt:}}'**
   String importSkippedWrongType(int count);
+
+  /// Why the server refused a new mistake report (#1269), the end of attachmentOnlyHere.
+  ///
+  /// In de, this message translates to:
+  /// **'keine Berechtigung, Fehler zu melden'**
+  String get reportRefusalNotAllowed;
+
+  /// Why the server refused a new mistake report (#1269): its screenshot is too large; the end of attachmentOnlyHere.
+  ///
+  /// In de, this message translates to:
+  /// **'der Screenshot ist für den Server zu gross'**
+  String get reportRefusalTooLarge;
+
+  /// Action on a mistake report the server refused (#1269): send it again with the next sync, like retryUpload.
+  ///
+  /// In de, this message translates to:
+  /// **'Erneut senden'**
+  String get reportSendAgain;
+
+  /// Message after reportSendAgain (#1269).
+  ///
+  /// In de, this message translates to:
+  /// **'Die Meldung wird erneut gesendet'**
+  String get reportSentAgainMessage;
 }
 
 class _AppLocalizationsDelegate

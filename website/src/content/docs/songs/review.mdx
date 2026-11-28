@@ -11,6 +11,7 @@ import banner from '../../../../../docs/screenshots/song_review_banner_de.png';
 import sheet from '../../../../../docs/screenshots/song_report_sheet_de.png';
 import marking from '../../../../../docs/screenshots/song_report_marking_de.png';
 import reports from '../../../../../docs/screenshots/song_reports_de.png';
+import refused from '../../../../../docs/screenshots/song_report_refused_de.png';
 
 Ein importierter Song sieht fertig aus, ist es aber oft nicht: ein falscher
 Akkord, eine fehlende Strophe, eine andere Tonart als bei euch. setDING merkt
@@ -70,6 +71,16 @@ gewählten Kategorie sendet es die Meldung, ohne bricht es ab.
 
 Die Meldung wird auf deinem Gerät gespeichert und beim nächsten Sync
 übertragen, auch wenn du gerade offline bist.
+
+Nimmt der Server eine neue Meldung nicht an (zum Beispiel weil du keine
+Berechtigung mehr hast), bleibt sie auf deinem Gerät und setDING meldet das
+einmal. In den **Fehlermeldungen** des Songs steht sie dann mit **Nur auf diesem
+Gerät** und dem Grund. Sie wird nicht bei jedem Sync erneut gesendet: Mit
+**Erneut senden** schickst du sie beim nächsten Sync noch einmal, zum Beispiel
+wenn du die Berechtigung wieder hast; **Zurückziehen** entfernt sie von deinem
+Gerät.
+
+<Image src={refused} alt="Eine Fehlermeldung mit «Nur auf diesem Gerät: keine Berechtigung, Fehler zu melden» und «Erneut senden»" />
 
 ### Mit Screenshot
 
